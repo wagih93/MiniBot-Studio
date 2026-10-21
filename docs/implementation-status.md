@@ -47,7 +47,7 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-036 | Control a light and play a sound | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-037 | Customize the robot | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-038 | Export and import projects | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-039 | Assess the existing repository and record a baseline | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | Inspect repo, run baseline |
+| US-039 | Assess the existing repository and record a baseline | 0 | P0 | Blocked | feat/US-039-repo-assessment | pending-local-commit | not created (authentication required) | 5 criteria verified on branch; no additional stories already satisfy all AC | `git --no-pager ls-files` -> 9 scaffold files only.<br>`Get-ChildItem -Recurse -Filter package.json ...` -> No package.json files found; no install/test/build scripts available. | `gh` is not authenticated in this environment, so creating a pull request is currently blocked. | Authenticate GitHub CLI, push branch, open US-039 PR. |
 | US-040 | Add continuous integration | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-041 | Document contribution conventions and track story status | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-042 | Validate the Copilot agent definition | 0 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
