@@ -1,21 +1,20 @@
 ## Story
 
-- **Story ID:** <!-- e.g. MB-CORE-003 -->
-- **Backlog entry:** <!-- docs/PRODUCT_BACKLOG_STYKANIMATE.md#... -->
-- **Title format:** `[<STORY-ID>] <Imperative summary>`
-- **One story per PR.** Unrelated changes belong in another PR.
+- **Story ID:** <!-- e.g. US-011 -->
+- **Backlog entry:** <!-- docs/PRODUCT_BACKLOG_STYKANIMATE.md, section and story -->
+- **Sprint:** <!-- e.g. 2 -->
+- **Base:** <!-- sprint branch, or the dependency's branch if stacked (say "stacked on #N") -->
+- Title format: `[US-###] <Imperative summary>`. One story per PR.
 
 ## User value
-
-<!-- Who benefits and how -->
 
 ## Summary of implementation
 
 ## Acceptance criteria
 
-<!-- Copy each AC from the backlog. Check only what you verified. -->
-- [ ] AC 1:
-- [ ] AC 2:
+<!-- Copy each criterion from the backlog. Tick only what you verified. -->
+- [ ] 
+- [ ] 
 
 ## Tests added or updated
 
@@ -31,28 +30,26 @@ Do not list a command you did not run.
 
 - [ ] Not applicable
 - [ ] Screenshots attached
-- [ ] Arabic text and RTL layout checked
-- [ ] Touch targets and keyboard focus checked
-- [ ] Accessibility considerations noted:
+- [ ] Arabic text and RTL layout checked (robot directions and coordinates not mirrored)
+- [ ] Touch and mouse checked; targets large enough
+- [ ] Accessibility considerations:
 
 ## Security and privacy
 
-- [ ] No dynamic code execution (`eval`, `new Function`)
-- [ ] No new network requests or telemetry
-- [ ] Imported data is validated and bounded
+- [ ] No `eval()` or `new Function()`
+- [ ] No new network requests, telemetry or external assets
+- [ ] Imported data validated and bounded
 - Notes:
 
 ## Licensing
 
 - [ ] No upstream StykAnimate code or assets
-- [ ] Upstream-derived material is allowed by an accepted ADR (link):
-- [ ] New dependencies and their licenses listed in the notices file
+- [ ] Upstream material used only as allowed by the accepted US-045 decision (link):
+- [ ] New dependencies and their licenses added to the notices file
 
-## Scope and status
+## Status and scope
 
-- [ ] `docs/implementation-status.md` updated (status is `In Review`, not `Done`)
+- [ ] `docs/implementation-status.md` updated (this story is `In Review`, not `Done`)
 - [ ] Changes limited to this story
 
 ## Known limitations and follow-up work
-
-## Risks

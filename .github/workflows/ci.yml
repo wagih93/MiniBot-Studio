@@ -1,6 +1,6 @@
-# TEMPLATE – not verified against the real repository.
-# MB-SET-002 must replace the steps below with the scripts that actually exist in package.json.
-# `--if-present` skips a missing script silently; remove it for required checks once scripts exist.
+# TEMPLATE - not verified against the real repository.
+# US-040 must replace these steps with scripts that actually exist in package.json.
+# `--if-present` skips a missing script silently; remove it for required checks.
 name: CI
 
 on:
