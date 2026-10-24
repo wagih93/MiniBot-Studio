@@ -93,6 +93,26 @@ button {
   background: #fff8dc;
 }
 
+.cell.wall {
+  background: #e4e9ef;
+}
+
+.cell.robot.moving-east {
+  animation: robot-step-east 0.22s ease-out;
+}
+
+.cell.robot.moving-west {
+  animation: robot-step-west 0.22s ease-out;
+}
+
+.cell.robot.moving-north {
+  animation: robot-step-north 0.22s ease-out;
+}
+
+.cell.robot.moving-south {
+  animation: robot-step-south 0.22s ease-out;
+}
+
 .block-list {
   display: grid;
   gap: 10px;
@@ -141,6 +161,42 @@ button {
   margin: 0;
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+@keyframes robot-step-east {
+  from {
+    transform: translateX(-30%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes robot-step-west {
+  from {
+    transform: translateX(30%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes robot-step-north {
+  from {
+    transform: translateY(30%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes robot-step-south {
+  from {
+    transform: translateY(-30%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 600px) {

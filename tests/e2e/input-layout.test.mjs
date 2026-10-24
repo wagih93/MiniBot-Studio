@@ -44,9 +44,9 @@ test('Robot world, block area, and controls remain visible and support mouse and
     assert.equal(visibility.hasHorizontalOverflow, false);
     assert.ok(visibility.controlsGap >= 8);
 
+    await mousePage.click('#block-moveForward');
     await mousePage.click('#play-button');
     await mousePage.waitForSelector('#status[data-state="complete"]');
-    await mousePage.click('#block-moveForward');
     await mousePage.waitForSelector('#block-moveForward[data-selected="true"]');
 
     await mouseContext.close();
@@ -58,6 +58,7 @@ test('Robot world, block area, and controls remain visible and support mouse and
     });
     const touchPage = await touchContext.newPage();
     await touchPage.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await touchPage.tap('#block-moveForward');
     await touchPage.tap('#play-button');
     await touchPage.waitForSelector('#status[data-state="complete"]');
     await touchPage.tap('#stop-button');

@@ -1,6 +1,8 @@
 import { arStrings } from './i18n/ar.js';
 import { getLevelById, listLevelIds } from './levels/level-registry.js';
 import { validateLevelData } from './levels/level-validator.js';
+import { createRobotState, moveForward } from './simulator/robot.js';
+import { canMoveForward } from './simulator/world.js';
 
 const statusElement = document.querySelector('#status');
 const playButton = document.querySelector('#play-button');
@@ -13,8 +15,7 @@ const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
 
 const playableLevelIds = listLevelIds().filter((levelId) => levelId !== 'broken-level');
-let activeRunToken = 0;
-let blockButtons = [];
+const statusByState = arStrings.status;
 
 const fallbackLevel = {
   id: 'fallback-safe-level',
@@ -38,19 +39,15 @@ const fallbackLevel = {
   hints: [arStrings.levelMeta.defaultHint]
 };
 
-const statusByState = arStrings.status;
+let activeRunToken = 0;
+let blockButtons = [];
+let selectedBlockType = null;
+let activeLevel = fallbackLevel;
+let robotState = createRobotState(fallbackLevel.robot);
 
 function setStatus(state) {
   statusElement.dataset.state = state;
   statusElement.textContent = statusByState[state];
-}
-
-function setSelectedBlock(selectedButton) {
-  for (const button of blockButtons) {
-    button.dataset.selected = button === selectedButton ? 'true' : 'false';
-  }
-  statusElement.dataset.state = 'idle';
-  statusElement.textContent = `${statusByState.blockSelectedPrefix} ${selectedButton.textContent}`;
 }
 
 function delay(milliseconds) {
@@ -84,27 +81,40 @@ function resolveLevel(levelId) {
   return { level, usedFallback: false };
 }
 
-function renderWorldGrid(level) {
+function isRobotCell(robot, row, column) {
+  return robot.row === row && robot.column === column;
+}
+
+function isGoalCell(level, row, column) {
+  return level.goals.some((goal) => goal.row === row && goal.column === column);
+}
+
+function isObstacleCell(level, row, column) {
+  return level.obstacles.some((obstacle) => obstacle.row === row && obstacle.column === column);
+}
+
+function renderWorldGrid(level, robot, movementAnimation = null) {
   worldGridElement.style.gridTemplateColumns = `repeat(${level.grid.columns}, minmax(36px, 1fr))`;
   const cells = [];
-
-  const goalKey = new Set(level.goals.map((goal) => `${goal.row}-${goal.column}`));
-  const obstacleKey = new Set(level.obstacles.map((obstacle) => `${obstacle.row}-${obstacle.column}`));
-  const robotKey = `${level.robot.row}-${level.robot.column}`;
 
   for (let row = 0; row < level.grid.rows; row += 1) {
     for (let column = 0; column < level.grid.columns; column += 1) {
       const cellElement = document.createElement('span');
       cellElement.classList.add('cell');
-      const key = `${row}-${column}`;
+      cellElement.dataset.row = String(row);
+      cellElement.dataset.column = String(column);
 
-      if (key === robotKey) {
+      if (isRobotCell(robot, row, column)) {
         cellElement.classList.add('robot');
         cellElement.textContent = '🤖';
-      } else if (goalKey.has(key)) {
+
+        if (movementAnimation && movementAnimation.row === row && movementAnimation.column === column) {
+          cellElement.classList.add(`moving-${movementAnimation.direction}`);
+        }
+      } else if (isGoalCell(level, row, column)) {
         cellElement.classList.add('target');
         cellElement.textContent = '⭐';
-      } else if (obstacleKey.has(key)) {
+      } else if (isObstacleCell(level, row, column)) {
         cellElement.classList.add('wall');
         cellElement.textContent = '⬛';
       }
@@ -116,14 +126,29 @@ function renderWorldGrid(level) {
   worldGridElement.replaceChildren(...cells);
 }
 
+function clearSelectedBlocks() {
+  for (const button of blockButtons) {
+    button.dataset.selected = 'false';
+  }
+}
+
+function setSelectedBlock(button, blockType) {
+  clearSelectedBlocks();
+  button.dataset.selected = 'true';
+  selectedBlockType = blockType;
+  statusElement.dataset.state = 'idle';
+  statusElement.textContent = `${statusByState.blockSelectedPrefix} ${button.textContent}`;
+}
+
 function createBlockButton(blockType) {
   const button = document.createElement('button');
   button.type = 'button';
   button.id = `block-${blockType}`;
   button.classList.add('block-item');
   button.textContent = arStrings.blockArea.labelsByType[blockType] ?? blockType;
+  button.dataset.selected = 'false';
   button.addEventListener('click', () => {
-    setSelectedBlock(button);
+    setSelectedBlock(button, blockType);
   });
   return button;
 }
@@ -131,6 +156,7 @@ function createBlockButton(blockType) {
 function renderAvailableBlocks(level) {
   blockButtons = level.availableBlocks.map((blockType) => createBlockButton(blockType));
   blockListElement.replaceChildren(...blockButtons);
+  selectedBlockType = null;
 }
 
 function renderLevelMeta(level) {
@@ -148,13 +174,48 @@ function updateLevelIndicator(levelId) {
   levelIndicatorElement.textContent = arStrings.levelIndicator;
 }
 
-async function runRobotSession(runToken) {
+async function executeMoveForward(runToken) {
+  if (!canMoveForward(activeLevel, robotState)) {
+    setStatus('blocked');
+    return;
+  }
+
+  const nextRobotState = moveForward(robotState);
+  robotState = nextRobotState;
+
+  renderWorldGrid(activeLevel, robotState, {
+    row: robotState.row,
+    column: robotState.column,
+    direction: robotState.direction
+  });
   setStatus('running');
-  await delay(120);
+  await delay(220);
+
   if (runToken !== activeRunToken) {
     return;
   }
+
+  renderWorldGrid(activeLevel, robotState);
   setStatus('complete');
+}
+
+async function runRobotSession(runToken) {
+  if (!selectedBlockType) {
+    setStatus('noBlockSelected');
+    return;
+  }
+
+  if (selectedBlockType === 'moveForward') {
+    await executeMoveForward(runToken);
+    return;
+  }
+
+  setStatus('unsupported');
+}
+
+function resetRobotPosition() {
+  robotState = createRobotState(activeLevel.robot);
+  renderWorldGrid(activeLevel, robotState);
 }
 
 function applyStaticLabels() {
@@ -177,8 +238,11 @@ function applyStaticLabels() {
 function initializeLevel() {
   const levelId = getActiveLevelId();
   const { level, usedFallback } = resolveLevel(levelId);
+  activeLevel = level;
+  robotState = createRobotState(level.robot);
+
   updateLevelIndicator(level.id);
-  renderWorldGrid(level);
+  renderWorldGrid(level, robotState);
   renderAvailableBlocks(level);
   renderLevelMeta(level);
   setStatus(usedFallback ? 'fallback' : 'idle');
@@ -196,6 +260,7 @@ stopButton.addEventListener('click', () => {
 
 resetButton.addEventListener('click', () => {
   activeRunToken += 1;
+  resetRobotPosition();
   setStatus('reset');
 });
 

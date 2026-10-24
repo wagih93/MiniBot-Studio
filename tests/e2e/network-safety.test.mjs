@@ -28,6 +28,7 @@ test('Robot Lab session blocks non-local network requests', async () => {
 
   try {
     await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.click('#block-moveForward');
     await page.click('#play-button');
     await page.waitForSelector('#status[data-state="complete"]');
     await page.click('#stop-button');
