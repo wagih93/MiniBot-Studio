@@ -13,12 +13,37 @@
   </head>
   <body>
     <main class="robot-lab" aria-label="مختبر الروبوت">
-      <h1>مختبر الروبوت</h1>
-      <p id="status" data-state="idle">الحالة: جاهز</p>
+      <header class="robot-lab__header">
+        <h1 id="app-heading"></h1>
+        <p id="level-indicator" class="level-indicator"></p>
+      </header>
+      <nav class="primary-actions" role="navigation" aria-label="القائمة الرئيسية">
+        <button id="start-button" type="button"></button>
+        <button id="continue-button" type="button"></button>
+        <button id="parents-button" type="button"></button>
+      </nav>
+      <section class="movement-guide" aria-label="دليل الاتجاهات">
+        <h2 id="movement-heading"></h2>
+        <ul class="movement-guide__list">
+          <li>
+            <span class="direction-icon" data-direction="forward" aria-hidden="true">↑</span>
+            <span id="move-forward-label"></span>
+          </li>
+          <li>
+            <span class="direction-icon" data-direction="right" aria-hidden="true">→</span>
+            <span id="turn-right-label"></span>
+          </li>
+          <li>
+            <span class="direction-icon" data-direction="left" aria-hidden="true">←</span>
+            <span id="turn-left-label"></span>
+          </li>
+        </ul>
+      </section>
+      <p id="status" class="status" data-state="idle"></p>
       <div class="controls" role="group" aria-label="أزرار التحكم">
-        <button id="play-button" type="button">تشغيل</button>
-        <button id="stop-button" type="button">إيقاف</button>
-        <button id="reset-button" type="button">إعادة</button>
+        <button id="play-button" type="button"></button>
+        <button id="stop-button" type="button"></button>
+        <button id="reset-button" type="button"></button>
       </div>
     </main>
   </body>

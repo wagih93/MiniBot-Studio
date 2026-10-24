@@ -1,22 +1,41 @@
 body {
   font-family: "Segoe UI", Tahoma, sans-serif;
   margin: 0;
-  padding: 24px;
+  padding: 16px;
   background: #f7fbff;
   color: #1a1a1a;
+  line-height: 1.5;
 }
 
 .robot-lab {
-  max-width: 520px;
+  max-width: 720px;
   margin-inline: auto;
   background: #ffffff;
   border: 1px solid #d5e1ee;
   border-radius: 12px;
   padding: 20px;
+  display: grid;
+  gap: 16px;
 }
 
+.robot-lab__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.level-indicator {
+  margin: 0;
+  font-weight: 600;
+  color: #1f4a78;
+}
+
+.primary-actions,
 .controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -27,4 +46,53 @@ button {
   border-radius: 8px;
   padding: 10px 14px;
   cursor: pointer;
+  min-inline-size: 110px;
+}
+
+.movement-guide {
+  border: 1px solid #d5e1ee;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.movement-guide__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.movement-guide__list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.direction-icon {
+  direction: ltr;
+  unicode-bidi: isolate;
+  inline-size: 1.5rem;
+  text-align: center;
+  border: 1px solid #2a65a0;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.status {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .primary-actions,
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  button {
+    inline-size: 100%;
+  }
 }
