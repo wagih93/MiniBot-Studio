@@ -334,19 +334,29 @@ request. A sprint is a planning grouping, not a unit of delivery.
 | Fix branch | `fix/US-###-short-kebab-case` | `fix/US-006-wall-collision` |
 | Test branch | `test/US-###-short-kebab-case` | `test/US-033-engine-turns` |
 | Docs branch | `docs/US-###-short-kebab-case` | `docs/US-058-readme-setup` |
-| Sprint integration branch | `sprint/<n>-short-kebab-case` | `sprint/2-block-editor` |
 | Commit | `<type>(US-###): <imperative summary>` | `feat(US-011): add drag and drop from toolbox` |
 | Pull request title | `[US-###] <Imperative summary>` | `[US-011] Add drag and drop from toolbox` |
-| Sprint roll-up PR | `[SPRINT-<n>] <Sprint goal>` | `[SPRINT-2] Block editor` |
 
-Pull requests for stories target the current sprint integration branch.
-When a story depends on a story whose pull request is still open, its
-branch starts from that story's branch and its pull request targets that
-branch (a stacked pull request, noted in the description). At the end of
-a sprint, a roll-up pull request from the sprint branch to the default
-branch carries no new code; it lists the story pull requests and their
-verification. A human reviews and merges. Status for every story lives
-in `docs/implementation-status.md`.
+Pull requests form a linear stack so the agent never waits for reviews.
+The first story of a run branches from the default branch (or from the
+newest unmerged story branch). Each next story branches from the
+previous story's branch and its pull request targets that branch
+(noted as "stacked on #N"). A human merges from the bottom of the stack
+up; GitHub retargets the next pull request when a merged base branch is
+deleted. Status for every story lives in `docs/implementation-status.md`,
+which the agent commits after every story as a checkpoint.
+
+### 5.7 Autonomous runs
+
+The agent runs without asking questions. Where the backlog contains a
+step only a human can do (visual judgment of the Arabic layout, native
+Arabic review of wording, an observed session with the child, checking
+the agent in the picker, the license decision in US-045), the agent
+automates what it can, adds an unchecked "Human verification" item to
+the pull request, sets the story to `In Review`, and continues. Such a
+story becomes `Done` only after a human completes the check and the pull
+request is merged. Default decisions for ambiguous choices are listed in
+the agent file and recorded in each pull request.
 
 ------------------------------------------------------------------------
 
@@ -1569,13 +1579,14 @@ story is `Done` or `Deferred` with a reason.
 
 1.  Work sprints in order. Within a sprint, take stories in the order
     listed, skipping any whose dependencies are not satisfied.
-2.  Each story: branch, implement, test, commit, push, open its own pull
-    request, update the status file.
+2.  Each story: branch from the previous story's branch, implement,
+    test, commit, push, open its own pull request, and commit the
+    status-file update. Then continue immediately with the next story.
 3.  The backlog is **clean** when every story is `Done` or `Deferred`
     with a recorded reason, no story is `Blocked` without a recorded
     human decision, and CI is green on the default branch.
-4.  A session may end before the backlog is clean. The status file lets
-    the next session resume at the next eligible story.
+4.  A run may end early at a tool or context limit. The status file lets
+    the next run resume at the next eligible story.
 
 ------------------------------------------------------------------------
 

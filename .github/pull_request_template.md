@@ -3,7 +3,7 @@
 - **Story ID:** <!-- e.g. US-011 -->
 - **Backlog entry:** <!-- docs/PRODUCT_BACKLOG_STYKANIMATE.md, section and story -->
 - **Sprint:** <!-- e.g. 2 -->
-- **Base:** <!-- sprint branch, or the dependency's branch if stacked (say "stacked on #N") -->
+- **Base:** <!-- default branch, or the previous story's branch (say "stacked on #N") -->
 - Title format: `[US-###] <Imperative summary>`. One story per PR.
 
 ## User value
@@ -30,7 +30,8 @@ Do not list a command you did not run.
 
 - [ ] Not applicable
 - [ ] Screenshots attached
-- [ ] Arabic text and RTL layout checked (robot directions and coordinates not mirrored)
+- [ ] Arabic text and RTL layout checked by automated test (robot directions and coordinates not mirrored)
+- [ ] Human verification still needed (visual check / native Arabic review): <!-- yes/no and what -->
 - [ ] Touch and mouse checked; targets large enough
 - [ ] Accessibility considerations:
 

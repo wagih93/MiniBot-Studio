@@ -1,61 +1,60 @@
-id	title	priority	estimate	sprint	depends_on
-US-001	Launch the app in Arabic	P0	3	1	US-039
-US-002	Provide a simple home screen	P0	3	2	US-001
-US-003	Provide a parent settings area	P1	5	4	US-002, US-026
-US-004	Support different screen sizes and input methods	P0	5	1	US-001
-US-005	Render a grid-based world	P0	5	1	US-022, US-004
-US-006	Move the robot	P0	5	1	US-005
-US-007	Rotate the robot	P0	3	1	US-006
-US-008	Collect objects and detect goals	P0	3	1	US-006
-US-009	Play, stop, and reset the world	P0	5	1	US-006, US-021
-US-010	Show the block toolbox	P0	3	2	US-004
-US-011	Add a block to the program	P0	8	2	US-010
-US-012	Reorder and delete blocks	P0	5	2	US-011
-US-013	Execute and highlight blocks one at a time	P0	8	2	US-009, US-012, US-014
-US-014	Validate programs before running them	P0	5	2	US-011
-US-015	Save and restore a program	P1	5	3	US-012
-US-016	Implement start and movement blocks	P0	3	2	US-013
-US-017	Implement turning blocks	P0	3	2	US-016, US-007
-US-018	Implement repeat blocks	P1	8	5	US-013, US-021
-US-019	Implement simple conditions	P2	8	5	US-018
-US-020	Implement sensors and events	P2	8	5	US-019
-US-021	Enforce safe execution limits	P0	3	1	US-006
-US-022	Define levels as data	P0	5	1	US-039
-US-023	Deliver the first five challenges	P0	5	3	US-017, US-008, US-022
-US-024	Provide progressive hints	P1	5	3	US-023
-US-025	Celebrate level completion	P0	3	3	US-023
-US-026	Persist learning progress	P1	5	3	US-025
-US-027	Track learning concepts without pressure	P2	5	7	US-026
-US-028	Provide spoken Arabic instructions	P1	5	4	US-023
-US-029	Provide optional sound effects	P1	3	4	US-009
-US-030	Guide first-time users	P1	5	4	US-013
-US-031	Work offline	P0	5	4	US-023
-US-032	Keep saved data local	P1	5	4	US-026
-US-033	Test the execution engine	P0	8	1	US-040, US-006
-US-034	Handle errors gracefully	P0	3	2	US-022
-US-035	Provide a free-play lab	P2	8	7	US-023
-US-036	Control a light and play a sound	P2	5	7	US-009, US-029
-US-037	Customize the robot	P2	5	7	US-005
-US-038	Export and import projects	P2	5	7	US-015, US-026
-US-039	Assess the existing repository and record a baseline	P0	3	0	none
-US-040	Add continuous integration	P0	3	0	US-039
-US-041	Document contribution conventions and track story status	P0	3	0	US-039
-US-042	Validate the Copilot agent definition	P1	2	0	US-041
-US-043	Enforce a content security policy and static safety checks	P0	3	0	US-040
-US-044	Add browser end-to-end tests for the main learning flow	P1	5	3	US-040, US-023
-US-045	Decide MiniBot Studio's license (gate)	P0	2	0	US-039
-US-046	Vendor the pinned StykAnimate web build	P1	8	6	US-045
-US-047	Open Story Studio from the home screen with an adult gate	P1	5	6	US-046, US-002
-US-048	Verify Arabic and RTL in the vendored editor	P1	3	6	US-046
-US-049	Verify offline use and storage coexistence	P1	5	6	US-046, US-031
-US-050	Provide Arabic activity cards for Story Studio	P1	5	6	US-048
-US-051	Turn a completed robot challenge into a story idea	P2	5	6	US-025, US-047
-US-052	Explain Story Studio data in the parent area	P2	3	6	US-003, US-047
-US-053	Show licenses and source notices	P1	3	6	US-045, US-003
-US-054	Test the Story Studio integration	P1	5	6	US-049
-US-055	Build a minimal original animation workspace (conditional)	P2	13	6	US-045 (decision B only)
-US-056	Audit and fix accessibility	P1	5	5	US-023
-US-057	Respect reduced motion, contrast, and target size	P1	3	4	US-004
-US-058	Document setup, architecture, and conventions	P1	3	7	US-041
-US-059	Write the parent and teacher guide	P1	3	7	US-003
-US-060	Verify and prepare the release	P1	3	7	all P0 stories
+﻿Story	Title	Sprint	Status	DependsOn
+US-039	Baseline repository inspection and ADR capture	0	Todo	-
+US-040	CI and engineering conventions baseline	0	Todo	US-039
+US-041	Repository conventions and safety checks	0	Todo	US-039
+US-042	License and notices review	0	Todo	US-039
+US-043	Engineering foundation and process setup	0	Todo	US-039
+US-045	License decision for Story Studio	0	Blocked	US-042
+US-001	Core game loop foundation	1	Todo	US-039
+US-004	Initial world and level state	1	Todo	US-001
+US-022	Robot movement and position model	1	Todo	US-001
+US-005	Program execution model	1	Todo	US-001
+US-006	Child-friendly execution feedback	1	Todo	US-005
+US-007	Outcome and success conditions	1	Todo	US-005
+US-008	Core challenge flow and controls	1	Todo	US-005
+US-021	Retry and replay handling	1	Todo	US-008
+US-009	Level completion and progression	1	Todo	US-008
+US-033	Safety and recovery behavior	1	Todo	US-009
+US-002	Block editor foundation	2	Todo	US-022
+US-010	Toolbox and block availability	2	Todo	US-002
+US-011	Workspace and serialization setup	2	Todo	US-010
+US-012	Blockly integration	2	Todo	US-011
+US-014	Block validation and rules	2	Todo	US-012
+US-013	Arabic Blockly experience	2	Todo	US-012
+US-016	Program data model	2	Todo	US-011
+US-017	Editor actions and state	2	Todo	US-011
+US-034	Data integrity and validation	2	Todo	US-016
+US-023	Level registry	3	Todo	US-009
+US-025	Level progression model	3	Todo	US-023
+US-024	Challenge manager	3	Todo	US-025
+US-015	Level content structure	3	Todo	US-023
+US-026	Completion tracking and analytics	3	Todo	US-024
+US-044	Browser E2E coverage	3	Todo	US-024
+US-003	Arabic landing shell	4	Todo	US-008
+US-028	Parent dashboard	4	Todo	US-003
+US-029	Sound and accessibility settings	4	Todo	US-028
+US-030	Offline-first storage and privacy	4	Todo	US-028
+US-031	Privacy and data guardrails	4	Todo	US-030
+US-032	Reset and progress hygiene	4	Todo	US-030
+US-057	MVP readiness gate	4	Todo	US-031
+US-018	Repeat loop support	5	Todo	US-014
+US-019	Conditional execution	5	Todo	US-018
+US-020	Sensor-aware branching	5	Todo	US-019
+US-056	Advanced behaviors and edge cases	5	Todo	US-020
+US-046	Story Studio entry screen	6	Blocked	US-045
+US-047	Story Studio content workflow	6	Blocked	US-046
+US-048	Story Studio authoring tools	6	Blocked	US-046
+US-049	Story Studio content flow	6	Blocked	US-047
+US-050	Story Studio card UI	6	Blocked	US-047
+US-051	Story Studio licensing page	6	Blocked	US-046
+US-052	Story Studio asset safety	6	Blocked	US-046
+US-053	Story Studio adult-gated access	6	Blocked	US-046
+US-054	Story Studio release certification	6	Blocked	US-053
+US-035	Robotics lab and experiments	7	Todo	US-033
+US-036	Backup and restore strategy	7	Todo	US-035
+US-037	Documentation and support materials	7	Todo	US-036
+US-038	Release notes and packaging	7	Todo	US-037
+US-027	Polish and review loop	7	Todo	US-038
+US-058	Release validation	7	Todo	US-038
+US-059	Launch documentation	7	Todo	US-058
+US-060	Final backlog closeout	7	Todo	US-059

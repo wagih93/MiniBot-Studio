@@ -1,71 +1,81 @@
-# Implementation Status
+﻿# Implementation Status
 
-Resumable record of story progress. Update this file on the same branch as each story.
+This repository starts from a minimal onboarding scaffold. It contains the project setup, backlog, and guidance files described in the MiniBot Studio kickoff instructions. No application source, package manifest, or UI implementation exists yet.
 
-Statuses: `Todo`, `In Progress`, `Blocked`, `In Review`, `Done`, `Deferred`.
-A story with an open pull request is `In Review`, never `Done`.
+## Repository assessment
 
-**Baseline (US-039):** not yet run. Record install, test, and build results here.
+- Initial repository state: empty application scaffold only.
+- Default language decision: plain JavaScript with ES modules unless a later story proves a stronger need.
+- Test runner: Node.js built-in test runner where supported.
+- Browser test strategy: Playwright only after US-044.
+- App server: static local server script to be added by the relevant story.
+- Story Studio/StykAnimate: blocked until the licensing decision in US-045 is recorded.
 
-| Story | Title | Sprint | Priority | Status | Branch | Commit SHA | PR | AC status | Validation commands and results | Blockers | Next action |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| US-001 | Launch the app in Arabic | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-002 | Provide a simple home screen | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-003 | Provide a parent settings area | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-004 | Support different screen sizes and input methods | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-005 | Render a grid-based world | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-006 | Move the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-007 | Rotate the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-008 | Collect objects and detect goals | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-009 | Play, stop, and reset the world | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-010 | Show the block toolbox | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-011 | Add a block to the program | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-012 | Reorder and delete blocks | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-013 | Execute and highlight blocks one at a time | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-014 | Validate programs before running them | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-015 | Save and restore a program | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-016 | Implement start and movement blocks | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-017 | Implement turning blocks | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-018 | Implement repeat blocks | 5 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-019 | Implement simple conditions | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-020 | Implement sensors and events | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-021 | Enforce safe execution limits | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-022 | Define levels as data | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-023 | Deliver the first five challenges | 3 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-024 | Provide progressive hints | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-025 | Celebrate level completion | 3 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-026 | Persist learning progress | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-027 | Track learning concepts without pressure | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-028 | Provide spoken Arabic instructions | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-029 | Provide optional sound effects | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-030 | Guide first-time users | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-031 | Work offline | 4 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-032 | Keep saved data local | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-033 | Test the execution engine | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-034 | Handle errors gracefully | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-035 | Provide a free-play lab | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-036 | Control a light and play a sound | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-037 | Customize the robot | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-038 | Export and import projects | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-039 | Assess the existing repository and record a baseline | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | Inspect repo, run baseline |
-| US-040 | Add continuous integration | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-041 | Document contribution conventions and track story status | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-042 | Validate the Copilot agent definition | 0 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-043 | Enforce a content security policy and static safety checks | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-044 | Add browser end-to-end tests for the main learning flow | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-045 | Decide MiniBot Studio's license (gate) | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-046 | Vendor the pinned StykAnimate web build | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-047 | Open Story Studio from the home screen with an adult gate | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-048 | Verify Arabic and RTL in the vendored editor | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-049 | Verify offline use and storage coexistence | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-050 | Provide Arabic activity cards for Story Studio | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-051 | Turn a completed robot challenge into a story idea | 6 | P2 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-052 | Explain Story Studio data in the parent area | 6 | P2 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-053 | Show licenses and source notices | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-054 | Test the Story Studio integration | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
-| US-055 | Build a minimal original animation workspace (conditional) | 6 | P2 | Deferred | - | - | - | 0 criteria verified | - | Only if US-045 decides B | - |
-| US-056 | Audit and fix accessibility | 5 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-057 | Respect reduced motion, contrast, and target size | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-058 | Document setup, architecture, and conventions | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-059 | Write the parent and teacher guide | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-060 | Verify and prepare the release | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
+## Story status snapshot
+
+| Story | Status | Notes |
+| --- | --- | --- |
+| US-039 | Todo | Baseline repo inspection and ADR capture |
+| US-040 | Todo | CI and tooling baseline |
+| US-041 | Todo | Repository conventions and safety checks |
+| US-042 | Todo | License and notices review |
+| US-043 | Todo | Engineering foundation and process setup |
+| US-045 | Blocked | Owner decision required before Story Studio work |
+| US-001 | Todo | Core gameplay and run loop |
+| US-004 | Todo | Initial game state and progression |
+| US-022 | Todo | Robot movement model |
+| US-005 | Todo | Basic program execution |
+| US-006 | Todo | Child-friendly feedback mechanisms |
+| US-007 | Todo | Progress and outcome states |
+| US-008 | Todo | Core challenge flow |
+| US-021 | Todo | Replay and retry loop |
+| US-009 | Todo | Level completion logic |
+| US-033 | Todo | Safety / recovery behavior |
+| US-002 | Todo | Block editor foundations |
+| US-010 | Todo | Toolbox and block palette |
+| US-011 | Todo | Workspace and serialization |
+| US-012 | Todo | Blockly integration |
+| US-014 | Todo | Block validation |
+| US-013 | Todo | Blockly Arabic support |
+| US-016 | Todo | Program data model |
+| US-017 | Todo | Editor actions |
+| US-034 | Todo | Data integrity and validation |
+| US-023 | Todo | Level registry and challenge data |
+| US-025 | Todo | Level progression model |
+| US-024 | Todo | Challenge manager |
+| US-015 | Todo | Level editor / content structure |
+| US-026 | Todo | Level analytics and completion tracking |
+| US-044 | Todo | Browser E2E coverage |
+| US-003 | Todo | Arabic landing and shell |
+| US-028 | Todo | Parent dashboard |
+| US-029 | Todo | Sound and accessibility settings |
+| US-030 | Todo | Offline-first local storage |
+| US-031 | Todo | Privacy and consent guards |
+| US-032 | Todo | Data hygiene and reset controls |
+| US-057 | Todo | MVP readiness gate |
+| US-018 | Todo | Repeat loop support |
+| US-019 | Todo | Condition execution support |
+| US-020 | Todo | Sensor-based branch decisions |
+| US-056 | Todo | Advanced robot behaviors |
+| US-046 | Blocked | Story Studio entry gate requires owner decision |
+| US-047 | Blocked | Story Studio content and licensing checks |
+| US-048 | Blocked | Story Studio authoring tools |
+| US-049 | Blocked | Story Studio content flow |
+| US-050 | Blocked | Story Studio story cards |
+| US-051 | Blocked | Story Studio licensing page |
+| US-052 | Blocked | Story Studio asset safety |
+| US-053 | Blocked | Story Studio adult-gated access |
+| US-054 | Blocked | Story Studio final release checks |
+| US-035 | Todo | Lab and experimentation area |
+| US-036 | Todo | Backup and restore strategy |
+| US-037 | Todo | Documentation and support |
+| US-038 | Todo | Release notes and packaging |
+| US-027 | Todo | Story review and polish |
+| US-058 | Todo | Release validation |
+| US-059 | Todo | Launch documentation |
+| US-060 | Todo | Final backlog closure and sign-off |
+
+## Operational notes
+
+- The backlog file and project guide are available in the repo, but the actual implementation is intentionally deferred until a story branch and ADR are created.
+- No commands beyond file scaffolding were run here. This file should be updated in every story branch as work progresses.

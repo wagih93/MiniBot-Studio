@@ -152,7 +152,7 @@ Follow section 20 of the backlog. In short:
 ## 7. Working rules
 
 - One story, one branch, one commit set, one pull request. Never combine stories.
-- Branch `feat/US-###-short-kebab`, commit `feat(US-###): imperative summary`, PR `[US-###] Imperative summary`. Sprint integration branch `sprint/<n>-short-kebab`; one roll-up PR `[SPRINT-<n>] ...` per sprint with no new code.
+- Branch `feat/US-###-short-kebab`, commit `feat(US-###): imperative summary`, PR `[US-###] Imperative summary`. Stories are stacked: each branch starts from the previous story's branch and its PR targets that branch, so the agent never waits for reviews.
 - Test first where it fits, and every story ships with automated tests that actually ran.
 - Update `docs/implementation-status.md` in every story. A story with an open PR is `In Review`, never `Done`.
 - Check Arabic and RTL by eye on every UI change and attach screenshots.
