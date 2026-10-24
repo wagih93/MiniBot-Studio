@@ -69,6 +69,12 @@ button {
   gap: 6px;
 }
 
+.level-meta {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #20466e;
+}
+
 .cell {
   display: grid;
   place-items: center;

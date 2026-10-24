@@ -11,7 +11,9 @@ const contentTypeByExtension = {
 
 export function createStaticServer(rootDirectory = resolve('.')) {
   return createServer(async (request, response) => {
-    const requestPath = request.url === '/' ? '/index.html' : request.url;
+    const requestTarget = request.url ?? '/';
+    const parsedRequestUrl = new URL(requestTarget, 'http://127.0.0.1');
+    const requestPath = parsedRequestUrl.pathname === '/' ? '/index.html' : parsedRequestUrl.pathname;
     const filePath = join(rootDirectory, requestPath.replace(/^\//, ''));
 
     try {

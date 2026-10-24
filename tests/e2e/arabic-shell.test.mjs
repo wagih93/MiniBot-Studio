@@ -60,7 +60,7 @@ test('Arabic shell uses RTL and stays readable across supported viewports', asyn
       assert.equal(metadata.lang, 'ar');
       assert.equal(metadata.dir, 'rtl');
       assert.ok(metadata.heading && metadata.heading.length > 0);
-      assert.match(metadata.levelIndicator ?? '', /1\/3/);
+      assert.match(metadata.levelIndicator ?? '', /1\/\d+/);
       assert.equal(metadata.horizontalOverflow, false);
       assert.equal(metadata.hasClipping, false);
       assert.deepEqual(

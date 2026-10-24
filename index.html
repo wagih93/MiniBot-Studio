@@ -25,32 +25,13 @@
       <div class="workspace">
         <section id="robot-world" class="panel world-panel" aria-label="عالم الروبوت">
           <h2 id="world-heading"></h2>
-          <div class="world-grid" role="img" aria-label="شبكة الروبوت">
-            <span class="cell robot">🤖</span>
-            <span class="cell"></span>
-            <span class="cell wall">⬛</span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell"></span>
-            <span class="cell target">⭐</span>
-          </div>
+          <div id="world-grid" class="world-grid" role="img" aria-label="شبكة الروبوت"></div>
+          <p id="level-hint" class="level-meta"></p>
+          <p id="success-condition" class="level-meta"></p>
         </section>
         <section id="block-area" class="panel block-panel" aria-label="منطقة الأوامر">
           <h2 id="block-area-heading"></h2>
-          <div class="block-list" role="group" aria-label="أوامر الحركة">
-            <button id="block-forward" class="block-item" type="button"></button>
-            <button id="block-right" class="block-item" type="button"></button>
-            <button id="block-left" class="block-item" type="button"></button>
-          </div>
+          <div id="block-list" class="block-list" role="group" aria-label="أوامر الحركة"></div>
         </section>
       </div>
       <section class="movement-guide" aria-label="دليل الاتجاهات">

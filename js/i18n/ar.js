@@ -13,9 +13,17 @@ export const arStrings = {
   },
   blockArea: {
     heading: 'منطقة الأوامر',
-    moveForward: 'تقدّم خطوة',
-    turnRight: 'انعطف يميناً',
-    turnLeft: 'انعطف يساراً'
+    labelsByType: {
+      moveForward: 'تقدّم خطوة',
+      turnRight: 'انعطف يميناً',
+      turnLeft: 'انعطف يساراً'
+    }
+  },
+  levelMeta: {
+    hintPrefix: 'تلميح:',
+    successPrefix: 'الهدف:',
+    defaultHint: 'اتبع المسار حتى النجمة.',
+    defaultSuccess: 'صل إلى النجمة لتنجح.'
   },
   movementGuideHeading: 'تعليمات الحركة',
   movement: {
@@ -34,6 +42,7 @@ export const arStrings = {
     stopped: 'الحالة: تم الإيقاف',
     complete: 'الحالة: اكتمل التشغيل',
     reset: 'الحالة: تمت الإعادة',
-    blockSelectedPrefix: 'الحالة: تم اختيار'
+    blockSelectedPrefix: 'الحالة: تم اختيار',
+    fallback: 'الحالة: بيانات المستوى غير صالحة، تم تحميل مستوى آمن.'
   }
 };

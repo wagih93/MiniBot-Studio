@@ -46,8 +46,8 @@ test('Robot world, block area, and controls remain visible and support mouse and
 
     await mousePage.click('#play-button');
     await mousePage.waitForSelector('#status[data-state="complete"]');
-    await mousePage.click('#block-forward');
-    await mousePage.waitForSelector('#block-forward[data-selected="true"]');
+    await mousePage.click('#block-moveForward');
+    await mousePage.waitForSelector('#block-moveForward[data-selected="true"]');
 
     await mouseContext.close();
 
@@ -62,8 +62,8 @@ test('Robot world, block area, and controls remain visible and support mouse and
     await touchPage.waitForSelector('#status[data-state="complete"]');
     await touchPage.tap('#stop-button');
     await touchPage.waitForSelector('#status[data-state="stopped"]');
-    await touchPage.tap('#block-right');
-    await touchPage.waitForSelector('#block-right[data-selected="true"]');
+    await touchPage.tap('#block-turnRight');
+    await touchPage.waitForSelector('#block-turnRight[data-selected="true"]');
     await touchPage.tap('#reset-button');
     await touchPage.waitForSelector('#status[data-state="reset"]');
 
