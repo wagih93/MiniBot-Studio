@@ -53,7 +53,8 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
       })
     );
 
-    assert.equal(blockSnapshot.length, 3);
+    assert.equal(blockSnapshot.length, 4);
+    assert.ok(blockSnapshot.some((block) => block.id === 'block-start'));
     assert.ok(blockSnapshot.every((block) => block.label.length > 0));
     assert.ok(blockSnapshot.every((block) => block.icon.length > 0));
     assert.ok(blockSnapshot.every((block) => block.width >= 110));
@@ -61,7 +62,7 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
 
     const uniqueIcons = new Set(blockSnapshot.map((block) => block.icon));
     const uniqueBorderStyles = new Set(blockSnapshot.map((block) => block.borderStyle));
-    assert.ok(uniqueIcons.size >= 3);
+    assert.ok(uniqueIcons.size >= 4);
     assert.ok(uniqueBorderStyles.size >= 2);
   } finally {
     await context.close();

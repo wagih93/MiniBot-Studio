@@ -209,6 +209,16 @@ button {
   font-size: 1rem;
 }
 
+.program-demo {
+  margin: 0;
+  border: 1px solid #9bbce1;
+  border-radius: 8px;
+  background: #edf5ff;
+  color: #254c74;
+  padding: 8px 10px;
+  font-size: 0.92rem;
+}
+
 .program-list {
   margin: 0;
   padding-inline-start: 18px;

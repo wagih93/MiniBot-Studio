@@ -20,6 +20,7 @@ const resetButton = document.querySelector('#reset-button');
 const blockListElement = document.querySelector('#block-list');
 const programWorkspaceElement = document.querySelector('#program-workspace');
 const programListElement = document.querySelector('#program-list');
+const programDemoElement = document.querySelector('#program-demo');
 const worldGridElement = document.querySelector('#world-grid');
 const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
@@ -271,6 +272,11 @@ function updateCollectionSummary() {
     `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
 }
 
+function updateProgramDemo() {
+  const shouldShowDemo = activeLevel.id === 'level-001' && programSteps.length === 0;
+  programDemoElement.hidden = !shouldShowDemo;
+}
+
 function setActiveProgramStep(stepId) {
   if (activeProgramStepId === stepId) {
     return;
@@ -350,6 +356,7 @@ function renderProgramWorkspace() {
   for (const removeButton of programListElement.querySelectorAll('.program-step__remove')) {
     removeButton.disabled = isRunInProgress;
   }
+  updateProgramDemo();
 }
 
 function resetProgramWorkspace() {
@@ -811,6 +818,7 @@ function applyStaticLabels() {
   document.querySelector('#world-heading').textContent = arStrings.world.heading;
   document.querySelector('#block-area-heading').textContent = arStrings.blockArea.heading;
   document.querySelector('#program-heading').textContent = arStrings.blockArea.programHeading;
+  programDemoElement.textContent = arStrings.blockArea.firstLevelDemo;
   document.querySelector('#movement-heading').textContent = arStrings.movementGuideHeading;
   document.querySelector('#move-forward-label').textContent = arStrings.movement.forward;
   document.querySelector('#turn-right-label').textContent = arStrings.movement.right;

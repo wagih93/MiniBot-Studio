@@ -15,6 +15,7 @@ export const arStrings = {
     heading: 'منطقة الأوامر',
     programHeading: 'مساحة البرنامج',
     emptyProgram: 'اسحب الأوامر إلى هنا.',
+    firstLevelDemo: 'مثال: أضف كتلة ابدأ ثم كتلة تقدّم خطوة إلى مساحة البرنامج.',
     labelsByType: {
       start: 'ابدأ',
       moveForward: 'تقدّم خطوة',

@@ -12,7 +12,7 @@ export const level001 = {
   },
   goals: [{ row: 3, column: 3, type: 'star' }],
   obstacles: [{ row: 0, column: 2 }],
-  availableBlocks: ['moveForward', 'turnRight', 'turnLeft'],
+  availableBlocks: ['start', 'moveForward', 'turnRight', 'turnLeft'],
   successConditions: {
     reachGoal: true,
     collectAllGoals: true
