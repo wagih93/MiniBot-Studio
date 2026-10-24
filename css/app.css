@@ -230,6 +230,11 @@ button {
   cursor: grab;
 }
 
+.program-step[data-active="true"] {
+  outline: 3px solid #ffb703;
+  background: #fff4d6;
+}
+
 .program-step__icon {
   inline-size: 1.5rem;
   text-align: center;

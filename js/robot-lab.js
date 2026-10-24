@@ -79,6 +79,7 @@ let nextProgramStepId = 1;
 let pendingDraggedBlockType = null;
 let pendingDraggedProgramStepId = null;
 let pendingProgramInsertIndex = null;
+let activeProgramStepId = null;
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -270,6 +271,14 @@ function updateCollectionSummary() {
     `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
 }
 
+function setActiveProgramStep(stepId) {
+  if (activeProgramStepId === stepId) {
+    return;
+  }
+  activeProgramStepId = stepId;
+  renderProgramWorkspace();
+}
+
 function renderProgramWorkspace() {
   const stepElements = [];
 
@@ -292,6 +301,7 @@ function renderProgramWorkspace() {
       const stepElement = document.createElement('li');
       stepElement.classList.add('program-step');
       stepElement.dataset.stepId = String(step.id);
+      stepElement.dataset.active = String(step.id) === String(activeProgramStepId) ? 'true' : 'false';
       stepElement.draggable = true;
 
       const icon = document.createElement('span');
@@ -348,6 +358,7 @@ function resetProgramWorkspace() {
   pendingDraggedBlockType = null;
   pendingDraggedProgramStepId = null;
   pendingProgramInsertIndex = null;
+  activeProgramStepId = null;
   renderProgramWorkspace();
 }
 
@@ -688,35 +699,39 @@ async function executeTurn(runToken, signal, direction, executionConfig) {
 
 function buildInstructionSequence(executionConfig) {
   if (programSteps.length > 0) {
-    return programSteps.map((step) => step.blockType);
+    return programSteps.map((step) => ({ blockType: step.blockType, stepId: step.id }));
   }
 
   if (!selectedBlockType) {
     return [];
   }
 
-  return Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => selectedBlockType);
+  return Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => ({
+    blockType: selectedBlockType,
+    stepId: null
+  }));
 }
 
 function validateProgramForRun(level, instructionSequence) {
   try {
     const validationRules = level.programValidation ?? {};
+    const blockTypes = instructionSequence.map((step) => step.blockType);
     const allowEmptyProgram = validationRules.allowEmptyProgram === true;
-    if (!allowEmptyProgram && instructionSequence.length === 0) {
+    if (!allowEmptyProgram && blockTypes.length === 0) {
       return 'programEmpty';
     }
 
-    if (instructionSequence.length === 0) {
+    if (blockTypes.length === 0) {
       return null;
     }
 
-    if (validationRules.requiresStartBlock && instructionSequence[0] !== 'start') {
+    if (validationRules.requiresStartBlock && blockTypes[0] !== 'start') {
       return 'startRequired';
     }
 
     if (Array.isArray(validationRules.requiredBlocks)) {
       for (const requiredBlockType of validationRules.requiredBlocks) {
-        if (!instructionSequence.includes(requiredBlockType)) {
+        if (!blockTypes.includes(requiredBlockType)) {
           return 'requiredBlockMissing';
         }
       }
@@ -751,7 +766,9 @@ async function runRobotSession(runToken, signal, executionConfig, instructionSeq
       return;
     }
 
-    const instructionType = instructionSequence[stepNumber];
+    const instruction = instructionSequence[stepNumber];
+    const instructionType = instruction.blockType;
+    setActiveProgramStep(instruction.stepId);
     let stepResult = 'unsupported';
     if (instructionType === 'start') {
       stepResult = 'advanced';
@@ -838,6 +855,7 @@ function startRun() {
 
   void runRobotSession(runToken, runController.signal, executionConfig, instructionSequence).finally(() => {
     isRunInProgress = false;
+    setActiveProgramStep(null);
     setProgramEditingEnabled(true);
     if (runToken === activeRunToken && activeRunController === runController) {
       activeRunController = null;
@@ -852,6 +870,7 @@ function cancelActiveRun(nextStatus = null) {
     activeRunController = null;
   }
   isRunInProgress = false;
+  setActiveProgramStep(null);
   setProgramEditingEnabled(true);
 
   if (nextStatus) {
