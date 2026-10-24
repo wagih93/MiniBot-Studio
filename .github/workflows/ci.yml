@@ -27,5 +27,6 @@ jobs:
       - run: npm run lint --if-present
       - run: npm test
       - run: npm run safety:check
+      - run: npm run validate:agent
       - run: npm run test:browser-safety
       - run: npm run build
