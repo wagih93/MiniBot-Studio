@@ -65,6 +65,13 @@ These are covered by US-046, US-048 and US-049.
 
 Legal interpretation; upstream changes after the pinned commit; an adult-grade editor for a young child; shared origin storage; large build size.
 
+## Questions for qualified legal review
+
+- Does planned distribution (GitHub releases, classroom sharing, app bundles) trigger GPL source-offer obligations for all distributed binaries and asset bundles in our intended channels?
+- Is the planned NOTICE/source-link strategy sufficient for GPL-3.0-or-later + third-party-attribution compliance when bundling an unmodified upstream web build?
+- Are there any additional trademark/branding obligations when distributing unmodified upstream assets under a new product name?
+- Are there compatibility concerns between GPL-3.0-or-later distribution and any current or planned third-party dependencies (for example Apache-2.0 dependencies such as Blockly)?
+
 ## Go / no-go
 
 Option A': **go, conditional** on the owner's decision in US-045. Option B: **no-go**. Option C: **fallback** if the owner decides not to use GPL-3.0-or-later.
