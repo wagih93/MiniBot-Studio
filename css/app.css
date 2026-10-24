@@ -49,6 +49,58 @@ button {
   min-inline-size: 110px;
 }
 
+.workspace {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.panel {
+  border: 1px solid #d5e1ee;
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.world-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(36px, 1fr));
+  gap: 6px;
+}
+
+.cell {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid #cbd9e6;
+  background: #f5f9fd;
+  font-size: 1.1rem;
+}
+
+.cell.robot {
+  background: #e7f0fb;
+}
+
+.cell.target {
+  background: #fff8dc;
+}
+
+.block-list {
+  display: grid;
+  gap: 10px;
+}
+
+.block-item {
+  text-align: start;
+}
+
+.block-item[data-selected="true"] {
+  background: #1f4a78;
+  border-color: #173857;
+}
+
 .movement-guide {
   border: 1px solid #d5e1ee;
   border-radius: 10px;
@@ -86,6 +138,7 @@ button {
 }
 
 @media (max-width: 600px) {
+  .workspace,
   .primary-actions,
   .controls {
     display: grid;

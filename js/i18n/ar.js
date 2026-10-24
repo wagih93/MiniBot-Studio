@@ -7,6 +7,16 @@ export const arStrings = {
     continue: 'واصل اللعب',
     parents: 'للأهل'
   },
+  world: {
+    heading: 'عالم الروبوت',
+    description: 'شبكة التجربة'
+  },
+  blockArea: {
+    heading: 'منطقة الأوامر',
+    moveForward: 'تقدّم خطوة',
+    turnRight: 'انعطف يميناً',
+    turnLeft: 'انعطف يساراً'
+  },
   movementGuideHeading: 'تعليمات الحركة',
   movement: {
     forward: 'تقدّم خطوة',
@@ -23,6 +33,7 @@ export const arStrings = {
     running: 'الحالة: الروبوت يتحرك',
     stopped: 'الحالة: تم الإيقاف',
     complete: 'الحالة: اكتمل التشغيل',
-    reset: 'الحالة: تمت الإعادة'
+    reset: 'الحالة: تمت الإعادة',
+    blockSelectedPrefix: 'الحالة: تم اختيار'
   }
 };

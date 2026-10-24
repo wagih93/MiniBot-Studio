@@ -22,6 +22,37 @@
         <button id="continue-button" type="button"></button>
         <button id="parents-button" type="button"></button>
       </nav>
+      <div class="workspace">
+        <section id="robot-world" class="panel world-panel" aria-label="عالم الروبوت">
+          <h2 id="world-heading"></h2>
+          <div class="world-grid" role="img" aria-label="شبكة الروبوت">
+            <span class="cell robot">🤖</span>
+            <span class="cell"></span>
+            <span class="cell wall">⬛</span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell"></span>
+            <span class="cell target">⭐</span>
+          </div>
+        </section>
+        <section id="block-area" class="panel block-panel" aria-label="منطقة الأوامر">
+          <h2 id="block-area-heading"></h2>
+          <div class="block-list" role="group" aria-label="أوامر الحركة">
+            <button id="block-forward" class="block-item" type="button"></button>
+            <button id="block-right" class="block-item" type="button"></button>
+            <button id="block-left" class="block-item" type="button"></button>
+          </div>
+        </section>
+      </div>
       <section class="movement-guide" aria-label="دليل الاتجاهات">
         <h2 id="movement-heading"></h2>
         <ul class="movement-guide__list">
