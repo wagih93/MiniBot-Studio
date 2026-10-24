@@ -11,6 +11,9 @@ import { createRobotState, moveForward, turnLeft, turnRight } from './simulator/
 import { canMoveForward } from './simulator/world.js';
 
 const statusElement = document.querySelector('#status');
+const startButton = document.querySelector('#start-button');
+const continueButton = document.querySelector('#continue-button');
+const parentsButton = document.querySelector('#parents-button');
 const playButton = document.querySelector('#play-button');
 const stopButton = document.querySelector('#stop-button');
 const resetButton = document.querySelector('#reset-button');
@@ -57,6 +60,7 @@ const defaultExecutionConfig = {
   repeatSelectedBlockCount: 1,
   stepDelayMs: 220
 };
+const progressStorageKey = 'minibot.progress.levelId';
 
 let activeRunToken = 0;
 let activeRunController = null;
@@ -115,6 +119,31 @@ function describeSuccessCondition(level) {
 function getActiveLevelId() {
   const requestedLevelId = runtimeSearchParams.get('level');
   return requestedLevelId && requestedLevelId.length > 0 ? requestedLevelId : 'level-001';
+}
+
+function readSavedProgressLevelId() {
+  try {
+    const savedLevelId = window.localStorage.getItem(progressStorageKey);
+    if (!savedLevelId) {
+      return null;
+    }
+    return playableLevelIds.includes(savedLevelId) ? savedLevelId : null;
+  } catch (error) {
+    console.warn('Failed to read saved progress level.', error);
+    return null;
+  }
+}
+
+function saveProgressLevelId(levelId) {
+  if (!playableLevelIds.includes(levelId)) {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(progressStorageKey, levelId);
+  } catch (error) {
+    console.warn('Failed to save progress level.', error);
+  }
 }
 
 function readBoundedIntegerQuery(name, fallback, min, max) {
@@ -231,11 +260,20 @@ function clearSelectedBlocks() {
   }
 }
 
+function syncPrimaryActions() {
+  const hasSavedProgress = readSavedProgressLevelId() !== null;
+  continueButton.hidden = !hasSavedProgress;
+  startButton.disabled = isRunInProgress;
+  continueButton.disabled = isRunInProgress || !hasSavedProgress;
+  parentsButton.disabled = isRunInProgress;
+}
+
 function setProgramEditingEnabled(enabled) {
   playButton.disabled = !enabled;
   for (const button of blockButtons) {
     button.disabled = !enabled;
   }
+  syncPrimaryActions();
 }
 
 function setSelectedBlock(button, blockType) {
@@ -330,6 +368,8 @@ async function executeMoveForward(runToken, signal, executionConfig) {
   }
 
   if (progress.isComplete) {
+    saveProgressLevelId(activeLevel.id);
+    syncPrimaryActions();
     setStatus('levelComplete');
     return 'levelComplete';
   }
@@ -415,9 +455,9 @@ function resetRobotPosition() {
 function applyStaticLabels() {
   document.title = arStrings.pageTitle;
   document.querySelector('#app-heading').textContent = arStrings.heading;
-  document.querySelector('#start-button').textContent = arStrings.primaryActions.start;
-  document.querySelector('#continue-button').textContent = arStrings.primaryActions.continue;
-  document.querySelector('#parents-button').textContent = arStrings.primaryActions.parents;
+  document.querySelector('#start-button-label').textContent = arStrings.primaryActions.start;
+  document.querySelector('#continue-button-label').textContent = arStrings.primaryActions.continue;
+  document.querySelector('#parents-button-label').textContent = arStrings.primaryActions.parents;
   document.querySelector('#world-heading').textContent = arStrings.world.heading;
   document.querySelector('#block-area-heading').textContent = arStrings.blockArea.heading;
   document.querySelector('#movement-heading').textContent = arStrings.movementGuideHeading;
@@ -429,8 +469,7 @@ function applyStaticLabels() {
   resetButton.textContent = arStrings.controls.reset;
 }
 
-function initializeLevel() {
-  const levelId = getActiveLevelId();
+function initializeLevel(levelId) {
   const { level, usedFallback } = resolveLevel(levelId);
   activeLevel = level;
   robotState = createRobotState(level.robot);
@@ -489,6 +528,26 @@ playButton.addEventListener('click', () => {
   startRun();
 });
 
+startButton.addEventListener('click', () => {
+  cancelActiveRun();
+  initializeLevel(playableLevelIds[0] ?? 'level-001');
+});
+
+continueButton.addEventListener('click', () => {
+  const savedLevelId = readSavedProgressLevelId();
+  if (!savedLevelId) {
+    setStatus('continueUnavailable');
+    return;
+  }
+
+  cancelActiveRun();
+  initializeLevel(savedLevelId);
+});
+
+parentsButton.addEventListener('click', () => {
+  setStatus('parentsAreaPending');
+});
+
 stopButton.addEventListener('click', () => {
   cancelActiveRun('stopped');
 });
@@ -500,4 +559,5 @@ resetButton.addEventListener('click', () => {
 });
 
 applyStaticLabels();
-initializeLevel();
+initializeLevel(getActiveLevelId());
+syncPrimaryActions();

@@ -56,6 +56,20 @@ button {
   min-inline-size: 110px;
 }
 
+.primary-actions button {
+  min-block-size: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.primary-action-icon {
+  inline-size: 1.3rem;
+  text-align: center;
+  font-size: 1.15rem;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
