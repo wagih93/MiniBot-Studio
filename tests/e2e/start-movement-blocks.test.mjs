@@ -48,6 +48,7 @@ test('First level exposes Start and Move Forward blocks with a visual add-block 
 
   try {
     await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.waitForSelector('#block-start');
 
     const firstLevelSnapshot = await page.evaluate(() => ({
       blockIds: Array.from(document.querySelectorAll('#block-list .block-item')).map((item) => item.id),
@@ -82,6 +83,7 @@ test('Movement blocks run consecutively and show instruction outcomes', async ()
 
   try {
     await page.goto(`${origin}/index.html?level=level-002&stepDelayMs=120`, { waitUntil: 'networkidle' });
+    await page.waitForSelector('#block-moveForward');
 
     await addBlockToWorkspace(page, 'moveForward');
     await addBlockToWorkspace(page, 'moveForward');

@@ -308,6 +308,26 @@ button {
   overflow-wrap: anywhere;
 }
 
+.level-error {
+  border: 1px solid #e1b9b9;
+  border-radius: 10px;
+  background: #fff4f4;
+  color: #6f2020;
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.level-error p {
+  margin: 0;
+}
+
+.level-error__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 @keyframes robot-step-east {
   from {
     transform: translateX(-30%);

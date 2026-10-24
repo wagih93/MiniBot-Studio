@@ -46,7 +46,13 @@ export const arStrings = {
     play: 'تشغيل',
     stop: 'إيقاف',
     reset: 'إعادة',
-    deleteStep: 'احذف'
+    deleteStep: 'احذف',
+    retryLevel: 'حاول مرة أخرى',
+    returnHome: 'العودة للرئيسية'
+  },
+  levelError: {
+    fallbackMessage: 'تعذّر فتح هذا المستوى. تم فتح مستوى آمن.',
+    retryHint: 'يمكنك المحاولة مرة أخرى أو العودة إلى الشاشة الرئيسية.'
   },
   status: {
     idle: 'الحالة: جاهز',

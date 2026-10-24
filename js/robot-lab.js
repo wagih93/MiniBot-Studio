@@ -21,6 +21,10 @@ const blockListElement = document.querySelector('#block-list');
 const programWorkspaceElement = document.querySelector('#program-workspace');
 const programListElement = document.querySelector('#program-list');
 const programDemoElement = document.querySelector('#program-demo');
+const levelErrorElement = document.querySelector('#level-error');
+const levelErrorMessageElement = document.querySelector('#level-error-message');
+const retryLevelButton = document.querySelector('#retry-level-button');
+const returnHomeButton = document.querySelector('#return-home-button');
 const worldGridElement = document.querySelector('#world-grid');
 const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
@@ -81,6 +85,7 @@ let pendingDraggedBlockType = null;
 let pendingDraggedProgramStepId = null;
 let pendingProgramInsertIndex = null;
 let activeProgramStepId = null;
+let currentRequestedLevelId = getActiveLevelId();
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -196,15 +201,31 @@ function getExecutionConfig(level) {
 function resolveLevel(levelId) {
   const level = getLevelById(levelId);
   if (!level) {
-    return { level: fallbackLevel, usedFallback: true };
+    console.warn('Requested level not found.', { levelId });
+    return { level: fallbackLevel, usedFallback: true, errorType: 'missing' };
   }
 
   const validation = validateLevelData(level);
   if (!validation.isValid) {
-    return { level: fallbackLevel, usedFallback: true };
+    console.warn('Level validation failed.', {
+      levelId,
+      errors: validation.errors
+    });
+    return { level: fallbackLevel, usedFallback: true, errorType: 'invalid' };
   }
 
-  return { level, usedFallback: false };
+  return { level, usedFallback: false, errorType: null };
+}
+
+function hideLevelError() {
+  levelErrorElement.hidden = true;
+  levelErrorMessageElement.textContent = '';
+}
+
+function showLevelError() {
+  levelErrorElement.hidden = false;
+  levelErrorMessageElement.textContent =
+    `${arStrings.levelError.fallbackMessage} ${arStrings.levelError.retryHint}`;
 }
 
 function isRobotCell(robot, row, column) {
@@ -471,6 +492,8 @@ function syncPrimaryActions() {
 
 function setProgramEditingEnabled(enabled) {
   playButton.disabled = !enabled;
+  retryLevelButton.disabled = !enabled;
+  returnHomeButton.disabled = !enabled;
   for (const button of blockButtons) {
     button.disabled = !enabled;
   }
@@ -826,9 +849,12 @@ function applyStaticLabels() {
   playButton.textContent = arStrings.controls.play;
   stopButton.textContent = arStrings.controls.stop;
   resetButton.textContent = arStrings.controls.reset;
+  retryLevelButton.textContent = arStrings.controls.retryLevel;
+  returnHomeButton.textContent = arStrings.controls.returnHome;
 }
 
 function initializeLevel(levelId) {
+  currentRequestedLevelId = levelId;
   const { level, usedFallback } = resolveLevel(levelId);
   activeLevel = level;
   robotState = createRobotState(level.robot);
@@ -841,6 +867,11 @@ function initializeLevel(levelId) {
   updateCollectionSummary();
   renderLevelMeta(level);
   setStatus(usedFallback ? 'fallback' : 'idle');
+  if (usedFallback) {
+    showLevelError();
+  } else {
+    hideLevelError();
+  }
 }
 
 function startRun() {
@@ -908,6 +939,16 @@ continueButton.addEventListener('click', () => {
 
 parentsButton.addEventListener('click', () => {
   setStatus('parentsAreaPending');
+});
+
+retryLevelButton.addEventListener('click', () => {
+  cancelActiveRun();
+  initializeLevel(currentRequestedLevelId);
+});
+
+returnHomeButton.addEventListener('click', () => {
+  cancelActiveRun();
+  initializeLevel(playableLevelIds[0] ?? 'level-001');
 });
 
 stopButton.addEventListener('click', () => {
