@@ -43,6 +43,19 @@ Use `.github/pull_request_template.md` and fill every section with real evidence
 
 Do not claim commands, tests, pushes, or PR actions that did not happen.
 
+## Execution engine test suite
+
+Use the documented suite command:
+
+```bash
+npm run test:engine
+```
+
+This command validates the execution engine end to end by running both unit
+and browser suites, including movement boundaries/walls, repeated turns,
+collectibles and win conditions, stop/reset/concurrency behavior, and
+execution-limit protection.
+
 ## Safety and scope rules
 
 - Keep child-facing UI Arabic (`lang="ar"`, `dir="rtl"`), but keep code identifiers in English.

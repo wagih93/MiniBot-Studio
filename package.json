@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "node --test tests/unit/**/*.test.js",
+    "test:engine": "npm test && npm run test:browser-safety",
     "build": "node ./scripts/build.mjs",
     "safety:check": "node ./scripts/check-static-safety.mjs",
     "test:browser-safety": "node --test --test-concurrency=1 tests/e2e/*.test.mjs",
