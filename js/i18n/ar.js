@@ -49,6 +49,7 @@ export const arStrings = {
     noBlockSelected: 'الحالة: اختر أمراً أولاً.',
     unsupported: 'الحالة: هذا الأمر سيُفعّل في خطوة لاحقة.',
     collected: 'الحالة: أحسنت! تم جمع النجمة.',
-    levelComplete: 'الحالة: رائع! أنهيت التحدي.'
+    levelComplete: 'الحالة: رائع! أنهيت التحدي.',
+    stepLimitExceeded: 'الحالة: تم إيقاف البرنامج لأنه تجاوز الحد الآمن للخطوات.'
   }
 };

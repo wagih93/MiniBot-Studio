@@ -20,6 +20,7 @@ const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
 const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
+const runtimeSearchParams = new URLSearchParams(window.location.search);
 
 const playableLevelIds = listLevelIds().filter((levelId) => levelId !== 'broken-level');
 const statusByState = arStrings.status;
@@ -51,8 +52,14 @@ const fallbackLevel = {
   },
   hints: [arStrings.levelMeta.defaultHint]
 };
+const defaultExecutionConfig = {
+  maxStepsPerRun: 12,
+  repeatSelectedBlockCount: 1,
+  stepDelayMs: 220
+};
 
 let activeRunToken = 0;
+let activeRunController = null;
 let blockButtons = [];
 let selectedBlockType = null;
 let activeLevel = fallbackLevel;
@@ -64,8 +71,36 @@ function setStatus(state) {
   statusElement.textContent = statusByState[state];
 }
 
-function delay(milliseconds) {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+function createAbortError() {
+  const abortError = new Error('Execution cancelled');
+  abortError.name = 'AbortError';
+  return abortError;
+}
+
+function delay(milliseconds, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(createAbortError());
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (signal) {
+        signal.removeEventListener('abort', handleAbort);
+      }
+      resolve();
+    }, milliseconds);
+
+    function handleAbort() {
+      clearTimeout(timeoutId);
+      signal.removeEventListener('abort', handleAbort);
+      reject(createAbortError());
+    }
+
+    if (signal) {
+      signal.addEventListener('abort', handleAbort, { once: true });
+    }
+  });
 }
 
 function describeSuccessCondition(level) {
@@ -77,8 +112,44 @@ function describeSuccessCondition(level) {
 }
 
 function getActiveLevelId() {
-  const requestedLevelId = new URLSearchParams(window.location.search).get('level');
+  const requestedLevelId = runtimeSearchParams.get('level');
   return requestedLevelId && requestedLevelId.length > 0 ? requestedLevelId : 'level-001';
+}
+
+function readBoundedIntegerQuery(name, fallback, min, max) {
+  const rawValue = runtimeSearchParams.get(name);
+  if (rawValue === null) {
+    return fallback;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+  if (!Number.isInteger(parsedValue)) {
+    return fallback;
+  }
+
+  if (parsedValue < min || parsedValue > max) {
+    return fallback;
+  }
+
+  return parsedValue;
+}
+
+function getExecutionConfig(level) {
+  const configuredMaxSteps = level.executionLimits?.maxStepsPerRun;
+  const maxStepsFallback = Number.isInteger(configuredMaxSteps) && configuredMaxSteps > 0
+    ? configuredMaxSteps
+    : defaultExecutionConfig.maxStepsPerRun;
+
+  return {
+    maxStepsPerRun: readBoundedIntegerQuery('maxSteps', maxStepsFallback, 1, 300),
+    repeatSelectedBlockCount: readBoundedIntegerQuery(
+      'repeat',
+      defaultExecutionConfig.repeatSelectedBlockCount,
+      1,
+      300
+    ),
+    stepDelayMs: readBoundedIntegerQuery('stepDelayMs', defaultExecutionConfig.stepDelayMs, 0, 500)
+  };
 }
 
 function resolveLevel(levelId) {
@@ -201,10 +272,10 @@ function updateLevelIndicator(levelId) {
   levelIndicatorElement.textContent = arStrings.levelIndicator;
 }
 
-async function executeMoveForward(runToken) {
+async function executeMoveForward(runToken, signal, executionConfig) {
   if (!canMoveForward(activeLevel, robotState)) {
     setStatus('blocked');
-    return;
+    return 'blocked';
   }
 
   const nextRobotState = moveForward(robotState);
@@ -217,10 +288,17 @@ async function executeMoveForward(runToken) {
     direction: robotState.direction
   });
   setStatus('running');
-  await delay(220);
+  try {
+    await delay(executionConfig.stepDelayMs, signal);
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      return 'aborted';
+    }
+    throw error;
+  }
 
-  if (runToken !== activeRunToken) {
-    return;
+  if (runToken !== activeRunToken || signal.aborted) {
+    return 'aborted';
   }
 
   const progress = updateChallengeProgress(activeLevel, challengeState, robotState);
@@ -229,21 +307,28 @@ async function executeMoveForward(runToken) {
 
   if (progress.collectedGoalKey) {
     setStatus('collected');
-    await delay(180);
-    if (runToken !== activeRunToken) {
-      return;
+    try {
+      await delay(180, signal);
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        return 'aborted';
+      }
+      throw error;
+    }
+    if (runToken !== activeRunToken || signal.aborted) {
+      return 'aborted';
     }
   }
 
   if (progress.isComplete) {
     setStatus('levelComplete');
-    return;
+    return 'levelComplete';
   }
 
-  setStatus('complete');
+  return 'advanced';
 }
 
-async function executeTurn(runToken, direction) {
+async function executeTurn(runToken, signal, direction, executionConfig) {
   const nextRobotState = direction === 'right' ? turnRight(robotState) : turnLeft(robotState);
   robotState = nextRobotState;
 
@@ -254,38 +339,61 @@ async function executeTurn(runToken, direction) {
     turnDirection: direction
   });
   setStatus('running');
-  await delay(220);
+  try {
+    await delay(executionConfig.stepDelayMs, signal);
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      return 'aborted';
+    }
+    throw error;
+  }
 
-  if (runToken !== activeRunToken) {
-    return;
+  if (runToken !== activeRunToken || signal.aborted) {
+    return 'aborted';
   }
 
   renderWorldGrid(activeLevel, robotState);
-  setStatus('complete');
+  return 'advanced';
 }
 
-async function runRobotSession(runToken) {
+async function runRobotSession(runToken, signal, executionConfig) {
   if (!selectedBlockType) {
     setStatus('noBlockSelected');
     return;
   }
 
-  if (selectedBlockType === 'moveForward') {
-    await executeMoveForward(runToken);
-    return;
+  for (let stepNumber = 0; stepNumber < executionConfig.repeatSelectedBlockCount; stepNumber += 1) {
+    if (runToken !== activeRunToken || signal.aborted) {
+      return;
+    }
+
+    if (stepNumber >= executionConfig.maxStepsPerRun) {
+      setStatus('stepLimitExceeded');
+      return;
+    }
+
+    let stepResult = 'unsupported';
+    if (selectedBlockType === 'moveForward') {
+      stepResult = await executeMoveForward(runToken, signal, executionConfig);
+    } else if (selectedBlockType === 'turnRight') {
+      stepResult = await executeTurn(runToken, signal, 'right', executionConfig);
+    } else if (selectedBlockType === 'turnLeft') {
+      stepResult = await executeTurn(runToken, signal, 'left', executionConfig);
+    } else {
+      setStatus('unsupported');
+      return;
+    }
+
+    if (stepResult === 'aborted') {
+      return;
+    }
+
+    if (stepResult === 'blocked' || stepResult === 'levelComplete') {
+      return;
+    }
   }
 
-  if (selectedBlockType === 'turnRight') {
-    await executeTurn(runToken, 'right');
-    return;
-  }
-
-  if (selectedBlockType === 'turnLeft') {
-    await executeTurn(runToken, 'left');
-    return;
-  }
-
-  setStatus('unsupported');
+  setStatus('complete');
 }
 
 function resetRobotPosition() {
@@ -327,18 +435,46 @@ function initializeLevel() {
   setStatus(usedFallback ? 'fallback' : 'idle');
 }
 
-playButton.addEventListener('click', () => {
+function startRun() {
   activeRunToken += 1;
-  void runRobotSession(activeRunToken);
+  if (activeRunController) {
+    activeRunController.abort();
+  }
+
+  const runToken = activeRunToken;
+  const runController = new AbortController();
+  activeRunController = runController;
+  const executionConfig = getExecutionConfig(activeLevel);
+
+  void runRobotSession(runToken, runController.signal, executionConfig).finally(() => {
+    if (runToken === activeRunToken && activeRunController === runController) {
+      activeRunController = null;
+    }
+  });
+}
+
+function cancelActiveRun(nextStatus = null) {
+  activeRunToken += 1;
+  if (activeRunController) {
+    activeRunController.abort();
+    activeRunController = null;
+  }
+
+  if (nextStatus) {
+    setStatus(nextStatus);
+  }
+}
+
+playButton.addEventListener('click', () => {
+  startRun();
 });
 
 stopButton.addEventListener('click', () => {
-  activeRunToken += 1;
-  setStatus('stopped');
+  cancelActiveRun('stopped');
 });
 
 resetButton.addEventListener('click', () => {
-  activeRunToken += 1;
+  cancelActiveRun();
   resetRobotPosition();
   setStatus('reset');
 });
