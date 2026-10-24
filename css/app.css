@@ -1,0 +1,30 @@
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  margin: 0;
+  padding: 24px;
+  background: #f7fbff;
+  color: #1a1a1a;
+}
+
+.robot-lab {
+  max-width: 520px;
+  margin-inline: auto;
+  background: #ffffff;
+  border: 1px solid #d5e1ee;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  border: 1px solid #244d7a;
+  background: #2a65a0;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+}

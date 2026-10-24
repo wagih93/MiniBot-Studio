@@ -23,6 +23,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm run lint --if-present
       - run: npm test
+      - run: npm run safety:check
+      - run: npm run test:browser-safety
       - run: npm run build
