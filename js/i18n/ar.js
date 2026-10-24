@@ -42,7 +42,8 @@ export const arStrings = {
   controls: {
     play: 'تشغيل',
     stop: 'إيقاف',
-    reset: 'إعادة'
+    reset: 'إعادة',
+    deleteStep: 'احذف'
   },
   status: {
     idle: 'الحالة: جاهز',
@@ -61,6 +62,8 @@ export const arStrings = {
     continueUnavailable: 'الحالة: لا يوجد تقدّم محفوظ بعد.',
     parentsAreaPending: 'الحالة: إعدادات الأهل ستظهر في خطوة قادمة.',
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
-    invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.'
+    invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
+    programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',
+    programRemoved: 'الحالة: تم حذف الأمر من البرنامج.'
   }
 };

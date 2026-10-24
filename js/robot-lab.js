@@ -75,6 +75,7 @@ let isRunInProgress = false;
 let programSteps = [];
 let nextProgramStepId = 1;
 let pendingDraggedBlockType = null;
+let pendingDraggedProgramStepId = null;
 let pendingProgramInsertIndex = null;
 
 function setStatus(state) {
@@ -289,6 +290,7 @@ function renderProgramWorkspace() {
       const stepElement = document.createElement('li');
       stepElement.classList.add('program-step');
       stepElement.dataset.stepId = String(step.id);
+      stepElement.draggable = true;
 
       const icon = document.createElement('span');
       icon.classList.add('program-step__icon');
@@ -299,7 +301,28 @@ function renderProgramWorkspace() {
       label.classList.add('program-step__label');
       label.textContent = presentation.label;
 
-      stepElement.append(icon, label);
+      const removeButton = document.createElement('button');
+      removeButton.type = 'button';
+      removeButton.classList.add('program-step__remove');
+      removeButton.setAttribute('aria-label', `${arStrings.controls.deleteStep} ${presentation.label}`);
+      removeButton.textContent = '✕';
+      removeButton.addEventListener('click', () => {
+        removeProgramStep(step.id);
+      });
+
+      stepElement.addEventListener('dragstart', (event) => {
+        pendingDraggedProgramStepId = String(step.id);
+        pendingDraggedBlockType = null;
+        if (event.dataTransfer) {
+          event.dataTransfer.effectAllowed = 'move';
+          event.dataTransfer.setData('application/x-program-step-id', String(step.id));
+        }
+      });
+      stepElement.addEventListener('dragend', () => {
+        clearProgramInsertPreview();
+      });
+
+      stepElement.append(icon, label, removeButton);
       stepElements.push(stepElement);
     }
 
@@ -312,12 +335,16 @@ function renderProgramWorkspace() {
   }
 
   programListElement.replaceChildren(...stepElements);
+  for (const removeButton of programListElement.querySelectorAll('.program-step__remove')) {
+    removeButton.disabled = isRunInProgress;
+  }
 }
 
 function resetProgramWorkspace() {
   programSteps = [];
   nextProgramStepId = 1;
   pendingDraggedBlockType = null;
+  pendingDraggedProgramStepId = null;
   pendingProgramInsertIndex = null;
   renderProgramWorkspace();
 }
@@ -348,11 +375,16 @@ function setProgramInsertPreview(insertIndex, draggedBlockType) {
 }
 
 function clearProgramInsertPreview() {
-  if (pendingProgramInsertIndex === null && pendingDraggedBlockType === null) {
+  if (
+    pendingProgramInsertIndex === null &&
+    pendingDraggedBlockType === null &&
+    pendingDraggedProgramStepId === null
+  ) {
     return;
   }
   pendingProgramInsertIndex = null;
   pendingDraggedBlockType = null;
+  pendingDraggedProgramStepId = null;
   renderProgramWorkspace();
 }
 
@@ -368,8 +400,38 @@ function addProgramStep(blockType, insertIndex = programSteps.length) {
   programSteps.splice(normalizedInsertIndex, 0, newStep);
   pendingProgramInsertIndex = null;
   pendingDraggedBlockType = null;
+  pendingDraggedProgramStepId = null;
   renderProgramWorkspace();
   setStatus('programUpdated');
+  return true;
+}
+
+function removeProgramStep(stepId) {
+  const stepIndex = programSteps.findIndex((step) => String(step.id) === String(stepId));
+  if (stepIndex < 0) {
+    return false;
+  }
+
+  programSteps.splice(stepIndex, 1);
+  renderProgramWorkspace();
+  setStatus('programRemoved');
+  return true;
+}
+
+function moveProgramStep(stepId, insertIndex) {
+  const sourceIndex = programSteps.findIndex((step) => String(step.id) === String(stepId));
+  if (sourceIndex < 0) {
+    setStatus('invalidDrop');
+    return false;
+  }
+
+  const [stepToMove] = programSteps.splice(sourceIndex, 1);
+  const normalizedInsertIndex = Math.max(0, Math.min(insertIndex, programSteps.length));
+  programSteps.splice(normalizedInsertIndex, 0, stepToMove);
+  pendingProgramInsertIndex = null;
+  pendingDraggedProgramStepId = null;
+  renderProgramWorkspace();
+  setStatus('programReordered');
   return true;
 }
 
@@ -391,6 +453,9 @@ function setProgramEditingEnabled(enabled) {
   playButton.disabled = !enabled;
   for (const button of blockButtons) {
     button.disabled = !enabled;
+  }
+  for (const removeButton of programListElement.querySelectorAll('.program-step__remove')) {
+    removeButton.disabled = !enabled;
   }
   programWorkspaceElement.setAttribute('aria-disabled', enabled ? 'false' : 'true');
   syncPrimaryActions();
@@ -440,6 +505,7 @@ function createBlockButton(blockType) {
   });
   button.addEventListener('dragstart', (event) => {
     pendingDraggedBlockType = blockType;
+    pendingDraggedProgramStepId = null;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'copy';
       event.dataTransfer.setData('text/plain', blockType);
@@ -464,14 +530,17 @@ function setupProgramWorkspaceInteractions() {
       return;
     }
 
+    const draggedProgramStepId =
+      event.dataTransfer?.getData('application/x-program-step-id') || pendingDraggedProgramStepId;
     const draggedBlockType = event.dataTransfer?.getData('text/plain') || pendingDraggedBlockType;
-    if (!draggedBlockType) {
+    if (!draggedProgramStepId && !draggedBlockType) {
       return;
     }
 
     event.preventDefault();
     const insertIndex = getProgramInsertIndex(event.clientY);
-    setProgramInsertPreview(insertIndex, draggedBlockType);
+    pendingDraggedProgramStepId = draggedProgramStepId || null;
+    setProgramInsertPreview(insertIndex, draggedBlockType || null);
   });
 
   programWorkspaceElement.addEventListener('dragleave', (event) => {
@@ -485,6 +554,17 @@ function setupProgramWorkspaceInteractions() {
     event.preventDefault();
     if (isRunInProgress) {
       clearProgramInsertPreview();
+      return;
+    }
+
+    const droppedProgramStepId =
+      event.dataTransfer?.getData('application/x-program-step-id') || pendingDraggedProgramStepId;
+    if (droppedProgramStepId) {
+      const insertIndex = pendingProgramInsertIndex ?? programSteps.length;
+      const wasMoved = moveProgramStep(droppedProgramStepId, insertIndex);
+      if (!wasMoved) {
+        clearProgramInsertPreview();
+      }
       return;
     }
 

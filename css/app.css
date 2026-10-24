@@ -222,16 +222,24 @@ button {
   min-block-size: 44px;
   padding: 8px 10px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px;
   background: #ffffff;
   color: #20466e;
+  cursor: grab;
 }
 
 .program-step__icon {
   inline-size: 1.5rem;
   text-align: center;
+}
+
+.program-step__remove {
+  min-inline-size: 36px;
+  min-block-size: 36px;
+  padding: 0;
+  border-radius: 999px;
 }
 
 .program-placeholder {
