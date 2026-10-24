@@ -18,6 +18,8 @@ const playButton = document.querySelector('#play-button');
 const stopButton = document.querySelector('#stop-button');
 const resetButton = document.querySelector('#reset-button');
 const blockListElement = document.querySelector('#block-list');
+const programWorkspaceElement = document.querySelector('#program-workspace');
+const programListElement = document.querySelector('#program-list');
 const worldGridElement = document.querySelector('#world-grid');
 const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
@@ -70,6 +72,10 @@ let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
 let challengeState = createChallengeState(fallbackLevel);
 let isRunInProgress = false;
+let programSteps = [];
+let nextProgramStepId = 1;
+let pendingDraggedBlockType = null;
+let pendingProgramInsertIndex = null;
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -208,6 +214,13 @@ function isObstacleCell(level, row, column) {
   return level.obstacles.some((obstacle) => obstacle.row === row && obstacle.column === column);
 }
 
+function getBlockPresentation(blockType) {
+  return {
+    label: arStrings.blockArea.labelsByType[blockType] ?? blockType,
+    icon: arStrings.blockArea.iconsByType?.[blockType] ?? '⬜'
+  };
+}
+
 function renderWorldGrid(level, robot, robotAnimation = null) {
   worldGridElement.style.gridTemplateColumns = `repeat(${level.grid.columns}, minmax(36px, 1fr))`;
   const cells = [];
@@ -254,6 +267,112 @@ function updateCollectionSummary() {
     `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
 }
 
+function renderProgramWorkspace() {
+  const stepElements = [];
+
+  if (programSteps.length === 0 && pendingProgramInsertIndex === null) {
+    const emptyState = document.createElement('li');
+    emptyState.classList.add('program-empty');
+    emptyState.textContent = arStrings.blockArea.emptyProgram;
+    stepElements.push(emptyState);
+  } else {
+    for (let index = 0; index < programSteps.length; index += 1) {
+      if (pendingProgramInsertIndex === index) {
+        const placeholder = document.createElement('li');
+        placeholder.classList.add('program-placeholder');
+        placeholder.setAttribute('aria-hidden', 'true');
+        stepElements.push(placeholder);
+      }
+
+      const step = programSteps[index];
+      const presentation = getBlockPresentation(step.blockType);
+      const stepElement = document.createElement('li');
+      stepElement.classList.add('program-step');
+      stepElement.dataset.stepId = String(step.id);
+
+      const icon = document.createElement('span');
+      icon.classList.add('program-step__icon');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = presentation.icon;
+
+      const label = document.createElement('span');
+      label.classList.add('program-step__label');
+      label.textContent = presentation.label;
+
+      stepElement.append(icon, label);
+      stepElements.push(stepElement);
+    }
+
+    if (pendingProgramInsertIndex === programSteps.length) {
+      const placeholder = document.createElement('li');
+      placeholder.classList.add('program-placeholder');
+      placeholder.setAttribute('aria-hidden', 'true');
+      stepElements.push(placeholder);
+    }
+  }
+
+  programListElement.replaceChildren(...stepElements);
+}
+
+function resetProgramWorkspace() {
+  programSteps = [];
+  nextProgramStepId = 1;
+  pendingDraggedBlockType = null;
+  pendingProgramInsertIndex = null;
+  renderProgramWorkspace();
+}
+
+function getProgramInsertIndex(clientY) {
+  const stepElements = Array.from(programListElement.querySelectorAll('.program-step'));
+  if (stepElements.length === 0) {
+    return 0;
+  }
+
+  for (let index = 0; index < stepElements.length; index += 1) {
+    const rect = stepElements[index].getBoundingClientRect();
+    if (clientY < rect.top + rect.height / 2) {
+      return index;
+    }
+  }
+
+  return stepElements.length;
+}
+
+function setProgramInsertPreview(insertIndex, draggedBlockType) {
+  if (pendingProgramInsertIndex === insertIndex && pendingDraggedBlockType === draggedBlockType) {
+    return;
+  }
+  pendingProgramInsertIndex = insertIndex;
+  pendingDraggedBlockType = draggedBlockType;
+  renderProgramWorkspace();
+}
+
+function clearProgramInsertPreview() {
+  if (pendingProgramInsertIndex === null && pendingDraggedBlockType === null) {
+    return;
+  }
+  pendingProgramInsertIndex = null;
+  pendingDraggedBlockType = null;
+  renderProgramWorkspace();
+}
+
+function addProgramStep(blockType, insertIndex = programSteps.length) {
+  if (!activeLevel.availableBlocks.includes(blockType)) {
+    setStatus('invalidDrop');
+    return false;
+  }
+
+  const normalizedInsertIndex = Math.max(0, Math.min(insertIndex, programSteps.length));
+  const newStep = { id: nextProgramStepId, blockType };
+  nextProgramStepId += 1;
+  programSteps.splice(normalizedInsertIndex, 0, newStep);
+  pendingProgramInsertIndex = null;
+  pendingDraggedBlockType = null;
+  renderProgramWorkspace();
+  setStatus('programUpdated');
+  return true;
+}
+
 function clearSelectedBlocks() {
   for (const button of blockButtons) {
     button.dataset.selected = 'false';
@@ -273,6 +392,7 @@ function setProgramEditingEnabled(enabled) {
   for (const button of blockButtons) {
     button.disabled = !enabled;
   }
+  programWorkspaceElement.setAttribute('aria-disabled', enabled ? 'false' : 'true');
   syncPrimaryActions();
 }
 
@@ -288,11 +408,14 @@ function setSelectedBlock(button, blockType) {
 function createBlockButton(blockType) {
   const blockLabel = arStrings.blockArea.labelsByType[blockType] ?? blockType;
   const blockIcon = arStrings.blockArea.iconsByType?.[blockType] ?? '⬜';
+  let lastPointerType = 'mouse';
   const button = document.createElement('button');
   button.type = 'button';
   button.id = `block-${blockType}`;
   button.classList.add('block-item', `block-item--${blockType}`);
+  button.draggable = true;
   button.dataset.label = blockLabel;
+  button.dataset.blockType = blockType;
   button.setAttribute('aria-label', blockLabel);
   button.dataset.selected = 'false';
 
@@ -306,8 +429,24 @@ function createBlockButton(blockType) {
   label.textContent = blockLabel;
 
   button.append(icon, label);
+  button.addEventListener('pointerdown', (event) => {
+    lastPointerType = event.pointerType;
+  });
   button.addEventListener('click', () => {
     setSelectedBlock(button, blockType);
+    if (lastPointerType === 'touch') {
+      addProgramStep(blockType);
+    }
+  });
+  button.addEventListener('dragstart', (event) => {
+    pendingDraggedBlockType = blockType;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'copy';
+      event.dataTransfer.setData('text/plain', blockType);
+    }
+  });
+  button.addEventListener('dragend', () => {
+    clearProgramInsertPreview();
   });
   return button;
 }
@@ -317,6 +456,51 @@ function renderAvailableBlocks(level) {
   blockListElement.replaceChildren(...blockButtons);
   selectedBlockType = null;
   setProgramEditingEnabled(!isRunInProgress);
+}
+
+function setupProgramWorkspaceInteractions() {
+  programWorkspaceElement.addEventListener('dragover', (event) => {
+    if (isRunInProgress) {
+      return;
+    }
+
+    const draggedBlockType = event.dataTransfer?.getData('text/plain') || pendingDraggedBlockType;
+    if (!draggedBlockType) {
+      return;
+    }
+
+    event.preventDefault();
+    const insertIndex = getProgramInsertIndex(event.clientY);
+    setProgramInsertPreview(insertIndex, draggedBlockType);
+  });
+
+  programWorkspaceElement.addEventListener('dragleave', (event) => {
+    if (event.relatedTarget && programWorkspaceElement.contains(event.relatedTarget)) {
+      return;
+    }
+    clearProgramInsertPreview();
+  });
+
+  programWorkspaceElement.addEventListener('drop', (event) => {
+    event.preventDefault();
+    if (isRunInProgress) {
+      clearProgramInsertPreview();
+      return;
+    }
+
+    const droppedBlockType = event.dataTransfer?.getData('text/plain') || pendingDraggedBlockType;
+    if (!droppedBlockType) {
+      setStatus('invalidDrop');
+      clearProgramInsertPreview();
+      return;
+    }
+
+    const insertIndex = pendingProgramInsertIndex ?? programSteps.length;
+    const wasAdded = addProgramStep(droppedBlockType, insertIndex);
+    if (!wasAdded) {
+      clearProgramInsertPreview();
+    }
+  });
 }
 
 function renderLevelMeta(level) {
@@ -420,13 +604,13 @@ async function executeTurn(runToken, signal, direction, executionConfig) {
   return 'advanced';
 }
 
-async function runRobotSession(runToken, signal, executionConfig, instructionType) {
-  if (!instructionType) {
+async function runRobotSession(runToken, signal, executionConfig, instructionSequence) {
+  if (instructionSequence.length === 0) {
     setStatus('noBlockSelected');
     return;
   }
 
-  for (let stepNumber = 0; stepNumber < executionConfig.repeatSelectedBlockCount; stepNumber += 1) {
+  for (let stepNumber = 0; stepNumber < instructionSequence.length; stepNumber += 1) {
     if (runToken !== activeRunToken || signal.aborted) {
       return;
     }
@@ -436,6 +620,7 @@ async function runRobotSession(runToken, signal, executionConfig, instructionTyp
       return;
     }
 
+    const instructionType = instructionSequence[stepNumber];
     let stepResult = 'unsupported';
     if (instructionType === 'moveForward') {
       stepResult = await executeMoveForward(runToken, signal, executionConfig);
@@ -475,6 +660,7 @@ function applyStaticLabels() {
   document.querySelector('#parents-button-label').textContent = arStrings.primaryActions.parents;
   document.querySelector('#world-heading').textContent = arStrings.world.heading;
   document.querySelector('#block-area-heading').textContent = arStrings.blockArea.heading;
+  document.querySelector('#program-heading').textContent = arStrings.blockArea.programHeading;
   document.querySelector('#movement-heading').textContent = arStrings.movementGuideHeading;
   document.querySelector('#move-forward-label').textContent = arStrings.movement.forward;
   document.querySelector('#turn-right-label').textContent = arStrings.movement.right;
@@ -489,6 +675,7 @@ function initializeLevel(levelId) {
   activeLevel = level;
   robotState = createRobotState(level.robot);
   challengeState = createChallengeState(level);
+  resetProgramWorkspace();
 
   updateLevelIndicator(level.id);
   renderWorldGrid(level, robotState);
@@ -512,11 +699,16 @@ function startRun() {
   const runController = new AbortController();
   activeRunController = runController;
   const executionConfig = getExecutionConfig(activeLevel);
-  const instructionType = selectedBlockType;
+  const instructionSequence =
+    programSteps.length > 0
+      ? programSteps.map((step) => step.blockType)
+      : selectedBlockType
+        ? Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => selectedBlockType)
+        : [];
   isRunInProgress = true;
   setProgramEditingEnabled(false);
 
-  void runRobotSession(runToken, runController.signal, executionConfig, instructionType).finally(() => {
+  void runRobotSession(runToken, runController.signal, executionConfig, instructionSequence).finally(() => {
     isRunInProgress = false;
     setProgramEditingEnabled(true);
     if (runToken === activeRunToken && activeRunController === runController) {
@@ -574,5 +766,6 @@ resetButton.addEventListener('click', () => {
 });
 
 applyStaticLabels();
+setupProgramWorkspaceInteractions();
 initializeLevel(getActiveLevelId());
 syncPrimaryActions();

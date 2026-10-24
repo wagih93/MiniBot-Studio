@@ -13,6 +13,8 @@ export const arStrings = {
   },
   blockArea: {
     heading: 'منطقة الأوامر',
+    programHeading: 'مساحة البرنامج',
+    emptyProgram: 'اسحب الأوامر إلى هنا.',
     labelsByType: {
       moveForward: 'تقدّم خطوة',
       turnRight: 'انعطف يميناً',
@@ -57,6 +59,8 @@ export const arStrings = {
     levelComplete: 'الحالة: رائع! أنهيت التحدي.',
     stepLimitExceeded: 'الحالة: تم إيقاف البرنامج لأنه تجاوز الحد الآمن للخطوات.',
     continueUnavailable: 'الحالة: لا يوجد تقدّم محفوظ بعد.',
-    parentsAreaPending: 'الحالة: إعدادات الأهل ستظهر في خطوة قادمة.'
+    parentsAreaPending: 'الحالة: إعدادات الأهل ستظهر في خطوة قادمة.',
+    programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
+    invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.'
   }
 };

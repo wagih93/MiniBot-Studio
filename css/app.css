@@ -162,6 +162,7 @@ button {
   align-items: center;
   gap: 10px;
   font-weight: 600;
+  cursor: grab;
 }
 
 .block-item__icon {
@@ -192,6 +193,60 @@ button {
 .block-item[data-selected="true"] {
   background: #1f4a78;
   border-color: #173857;
+}
+
+.program-workspace {
+  border: 1px dashed #7b95b2;
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+  background: #f7fbff;
+}
+
+.program-workspace h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.program-list {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: grid;
+  gap: 8px;
+}
+
+.program-step {
+  border: 1px solid #a2b9d2;
+  border-radius: 8px;
+  min-block-size: 44px;
+  padding: 8px 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: #20466e;
+}
+
+.program-step__icon {
+  inline-size: 1.5rem;
+  text-align: center;
+}
+
+.program-placeholder {
+  border: 2px dashed #2a65a0;
+  border-radius: 8px;
+  min-block-size: 40px;
+  background: #eaf3ff;
+}
+
+.program-empty {
+  list-style: none;
+  border: 1px dashed #b5c7db;
+  border-radius: 8px;
+  padding: 10px;
+  color: #446b93;
 }
 
 .movement-guide {
