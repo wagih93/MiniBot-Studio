@@ -156,6 +156,37 @@ button {
 
 .block-item {
   text-align: start;
+  min-block-size: 56px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.block-item__icon {
+  inline-size: 1.9rem;
+  block-size: 1.9rem;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 1rem;
+}
+
+.block-item--moveForward {
+  border-inline-start: 5px solid #2f8c4f;
+  border-style: solid;
+}
+
+.block-item--turnRight {
+  border-inline-start: 5px solid #8a5a00;
+  border-style: dashed;
+}
+
+.block-item--turnLeft {
+  border-inline-start: 5px solid #465fba;
+  border-style: dotted;
 }
 
 .block-item[data-selected="true"] {

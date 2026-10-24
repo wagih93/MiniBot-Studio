@@ -280,17 +280,32 @@ function setSelectedBlock(button, blockType) {
   clearSelectedBlocks();
   button.dataset.selected = 'true';
   selectedBlockType = blockType;
+  const selectedLabel = button.dataset.label ?? button.textContent;
   statusElement.dataset.state = 'idle';
-  statusElement.textContent = `${statusByState.blockSelectedPrefix} ${button.textContent}`;
+  statusElement.textContent = `${statusByState.blockSelectedPrefix} ${selectedLabel}`;
 }
 
 function createBlockButton(blockType) {
+  const blockLabel = arStrings.blockArea.labelsByType[blockType] ?? blockType;
+  const blockIcon = arStrings.blockArea.iconsByType?.[blockType] ?? '⬜';
   const button = document.createElement('button');
   button.type = 'button';
   button.id = `block-${blockType}`;
-  button.classList.add('block-item');
-  button.textContent = arStrings.blockArea.labelsByType[blockType] ?? blockType;
+  button.classList.add('block-item', `block-item--${blockType}`);
+  button.dataset.label = blockLabel;
+  button.setAttribute('aria-label', blockLabel);
   button.dataset.selected = 'false';
+
+  const icon = document.createElement('span');
+  icon.classList.add('block-item__icon');
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = blockIcon;
+
+  const label = document.createElement('span');
+  label.classList.add('block-item__label');
+  label.textContent = blockLabel;
+
+  button.append(icon, label);
   button.addEventListener('click', () => {
     setSelectedBlock(button, blockType);
   });

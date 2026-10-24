@@ -17,6 +17,11 @@ export const arStrings = {
       moveForward: 'تقدّم خطوة',
       turnRight: 'انعطف يميناً',
       turnLeft: 'انعطف يساراً'
+    },
+    iconsByType: {
+      moveForward: '⬆️',
+      turnRight: '↱',
+      turnLeft: '↰'
     }
   },
   levelMeta: {
