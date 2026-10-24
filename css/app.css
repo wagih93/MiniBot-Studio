@@ -209,6 +209,16 @@ button {
   font-size: 1rem;
 }
 
+.program-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.program-actions button {
+  min-inline-size: 140px;
+  min-block-size: 42px;
+}
+
 .program-demo {
   margin: 0;
   border: 1px solid #9bbce1;

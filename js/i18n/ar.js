@@ -48,7 +48,8 @@ export const arStrings = {
     reset: 'إعادة',
     deleteStep: 'احذف',
     retryLevel: 'حاول مرة أخرى',
-    returnHome: 'العودة للرئيسية'
+    returnHome: 'العودة للرئيسية',
+    saveProgram: 'احفظ البرنامج'
   },
   levelError: {
     fallbackMessage: 'تعذّر فتح هذا المستوى. تم فتح مستوى آمن.',
@@ -77,6 +78,9 @@ export const arStrings = {
     programEmpty: 'الحالة: أضف أوامر إلى البرنامج قبل التشغيل.',
     startRequired: 'الحالة: ابدأ بكتلة ابدأ أولاً.',
     requiredBlockMissing: 'الحالة: البرنامج يحتاج أمراً مطلوباً لهذا التحدي.',
-    validationInternalError: 'الحالة: تعذّر التحقق من البرنامج. حاول مرة أخرى.'
+    validationInternalError: 'الحالة: تعذّر التحقق من البرنامج. حاول مرة أخرى.',
+    programSaved: 'الحالة: تم حفظ البرنامج على هذا الجهاز.',
+    programRestored: 'الحالة: تم استعادة البرنامج المحفوظ.',
+    programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.'
   }
 };

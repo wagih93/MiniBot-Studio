@@ -25,6 +25,7 @@ const levelErrorElement = document.querySelector('#level-error');
 const levelErrorMessageElement = document.querySelector('#level-error-message');
 const retryLevelButton = document.querySelector('#retry-level-button');
 const returnHomeButton = document.querySelector('#return-home-button');
+const saveProgramButton = document.querySelector('#save-program-button');
 const worldGridElement = document.querySelector('#world-grid');
 const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
@@ -70,6 +71,7 @@ const defaultExecutionConfig = {
   stepDelayMs: 220
 };
 const progressStorageKey = 'minibot.progress.levelId';
+const programStorageKey = 'minibot.programs.v1';
 
 let activeRunToken = 0;
 let activeRunController = null;
@@ -159,6 +161,35 @@ function saveProgressLevelId(levelId) {
     window.localStorage.setItem(progressStorageKey, levelId);
   } catch (error) {
     console.warn('Failed to save progress level.', error);
+  }
+}
+
+function loadProgramStore() {
+  try {
+    const rawStore = window.localStorage.getItem(programStorageKey);
+    if (!rawStore) {
+      return {};
+    }
+
+    const parsedStore = JSON.parse(rawStore);
+    if (!parsedStore || typeof parsedStore !== 'object' || Array.isArray(parsedStore)) {
+      console.warn('Program store has unexpected shape.');
+      return null;
+    }
+    return parsedStore;
+  } catch (error) {
+    console.warn('Failed to read program store.', error);
+    return null;
+  }
+}
+
+function writeProgramStore(programStore) {
+  try {
+    window.localStorage.setItem(programStorageKey, JSON.stringify(programStore));
+    return true;
+  } catch (error) {
+    console.warn('Failed to persist program store.', error);
+    return false;
   }
 }
 
@@ -476,6 +507,46 @@ function moveProgramStep(stepId, insertIndex) {
   return true;
 }
 
+function saveCurrentProgramForLevel(levelId) {
+  const programStore = loadProgramStore();
+  if (programStore === null) {
+    setStatus('programLoadFailed');
+    return false;
+  }
+
+  programStore[levelId] = programSteps.map((step) => step.blockType);
+  const wasSaved = writeProgramStore(programStore);
+  if (wasSaved) {
+    setStatus('programSaved');
+  }
+  return wasSaved;
+}
+
+function restoreProgramForLevel(levelId) {
+  const programStore = loadProgramStore();
+  if (programStore === null) {
+    return { restored: false, failed: true };
+  }
+
+  const savedProgram = programStore[levelId];
+  if (!Array.isArray(savedProgram) || savedProgram.length === 0) {
+    return { restored: false, failed: false };
+  }
+
+  const restoredBlocks = savedProgram.filter((blockType) => activeLevel.availableBlocks.includes(blockType));
+  if (restoredBlocks.length === 0) {
+    return { restored: false, failed: false };
+  }
+
+  programSteps = restoredBlocks.map((blockType) => {
+    const step = { id: nextProgramStepId, blockType };
+    nextProgramStepId += 1;
+    return step;
+  });
+  renderProgramWorkspace();
+  return { restored: true, failed: false };
+}
+
 function clearSelectedBlocks() {
   for (const button of blockButtons) {
     button.dataset.selected = 'false';
@@ -494,6 +565,7 @@ function setProgramEditingEnabled(enabled) {
   playButton.disabled = !enabled;
   retryLevelButton.disabled = !enabled;
   returnHomeButton.disabled = !enabled;
+  saveProgramButton.disabled = !enabled;
   for (const button of blockButtons) {
     button.disabled = !enabled;
   }
@@ -842,6 +914,7 @@ function applyStaticLabels() {
   document.querySelector('#block-area-heading').textContent = arStrings.blockArea.heading;
   document.querySelector('#program-heading').textContent = arStrings.blockArea.programHeading;
   programDemoElement.textContent = arStrings.blockArea.firstLevelDemo;
+  saveProgramButton.textContent = arStrings.controls.saveProgram;
   document.querySelector('#movement-heading').textContent = arStrings.movementGuideHeading;
   document.querySelector('#move-forward-label').textContent = arStrings.movement.forward;
   document.querySelector('#turn-right-label').textContent = arStrings.movement.right;
@@ -864,9 +937,18 @@ function initializeLevel(levelId) {
   updateLevelIndicator(level.id);
   renderWorldGrid(level, robotState);
   renderAvailableBlocks(level);
+  const restoreResult = restoreProgramForLevel(level.id);
   updateCollectionSummary();
   renderLevelMeta(level);
-  setStatus(usedFallback ? 'fallback' : 'idle');
+  if (usedFallback) {
+    setStatus('fallback');
+  } else if (restoreResult.failed) {
+    setStatus('programLoadFailed');
+  } else if (restoreResult.restored) {
+    setStatus('programRestored');
+  } else {
+    setStatus('idle');
+  }
   if (usedFallback) {
     showLevelError();
   } else {
@@ -949,6 +1031,10 @@ retryLevelButton.addEventListener('click', () => {
 returnHomeButton.addEventListener('click', () => {
   cancelActiveRun();
   initializeLevel(playableLevelIds[0] ?? 'level-001');
+});
+
+saveProgramButton.addEventListener('click', () => {
+  saveCurrentProgramForLevel(activeLevel.id);
 });
 
 stopButton.addEventListener('click', () => {
