@@ -1,4 +1,10 @@
 import { arStrings } from './i18n/ar.js';
+import {
+  createChallengeState,
+  getCollectedCount,
+  isGoalCollected,
+  updateChallengeProgress
+} from './levels/challenge-manager.js';
 import { getLevelById, listLevelIds } from './levels/level-registry.js';
 import { validateLevelData } from './levels/level-validator.js';
 import { createRobotState, moveForward, turnLeft, turnRight } from './simulator/robot.js';
@@ -10,6 +16,7 @@ const stopButton = document.querySelector('#stop-button');
 const resetButton = document.querySelector('#reset-button');
 const blockListElement = document.querySelector('#block-list');
 const worldGridElement = document.querySelector('#world-grid');
+const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
 const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
@@ -50,6 +57,7 @@ let blockButtons = [];
 let selectedBlockType = null;
 let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
+let challengeState = createChallengeState(fallbackLevel);
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -65,7 +73,7 @@ function describeSuccessCondition(level) {
   if (needsAllGoals) {
     return arStrings.levelMeta.defaultSuccess;
   }
-  return 'الهدف: وصل إلى الهدف المحدد.';
+  return `${arStrings.levelMeta.successPrefix} وصل إلى الهدف المحدد.`;
 }
 
 function getActiveLevelId() {
@@ -124,8 +132,9 @@ function renderWorldGrid(level, robot, robotAnimation = null) {
           }
         }
       } else if (isGoalCell(level, row, column)) {
-        cellElement.classList.add('target');
-        cellElement.textContent = '⭐';
+        const collected = isGoalCollected(challengeState, row, column);
+        cellElement.classList.add(collected ? 'target-collected' : 'target');
+        cellElement.textContent = collected ? '✨' : '⭐';
       } else if (isObstacleCell(level, row, column)) {
         cellElement.classList.add('wall');
         cellElement.textContent = '⬛';
@@ -136,6 +145,12 @@ function renderWorldGrid(level, robot, robotAnimation = null) {
   }
 
   worldGridElement.replaceChildren(...cells);
+}
+
+function updateCollectionSummary() {
+  const collectedCount = getCollectedCount(challengeState);
+  collectionSummaryElement.textContent =
+    `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
 }
 
 function clearSelectedBlocks() {
@@ -208,7 +223,23 @@ async function executeMoveForward(runToken) {
     return;
   }
 
+  const progress = updateChallengeProgress(activeLevel, challengeState, robotState);
   renderWorldGrid(activeLevel, robotState);
+  updateCollectionSummary();
+
+  if (progress.collectedGoalKey) {
+    setStatus('collected');
+    await delay(180);
+    if (runToken !== activeRunToken) {
+      return;
+    }
+  }
+
+  if (progress.isComplete) {
+    setStatus('levelComplete');
+    return;
+  }
+
   setStatus('complete');
 }
 
@@ -259,7 +290,9 @@ async function runRobotSession(runToken) {
 
 function resetRobotPosition() {
   robotState = createRobotState(activeLevel.robot);
+  challengeState = createChallengeState(activeLevel);
   renderWorldGrid(activeLevel, robotState);
+  updateCollectionSummary();
 }
 
 function applyStaticLabels() {
@@ -284,10 +317,12 @@ function initializeLevel() {
   const { level, usedFallback } = resolveLevel(levelId);
   activeLevel = level;
   robotState = createRobotState(level.robot);
+  challengeState = createChallengeState(level);
 
   updateLevelIndicator(level.id);
   renderWorldGrid(level, robotState);
   renderAvailableBlocks(level);
+  updateCollectionSummary();
   renderLevelMeta(level);
   setStatus(usedFallback ? 'fallback' : 'idle');
 }

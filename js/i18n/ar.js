@@ -22,6 +22,7 @@ export const arStrings = {
   levelMeta: {
     hintPrefix: 'تلميح:',
     successPrefix: 'الهدف:',
+    collectionPrefix: 'النجوم المجموعة:',
     defaultHint: 'اتبع المسار حتى النجمة.',
     defaultSuccess: 'صل إلى النجمة لتنجح.'
   },
@@ -46,6 +47,8 @@ export const arStrings = {
     fallback: 'الحالة: بيانات المستوى غير صالحة، تم تحميل مستوى آمن.',
     blocked: 'الحالة: هناك عائق أمام الروبوت. جرّب مساراً آخر.',
     noBlockSelected: 'الحالة: اختر أمراً أولاً.',
-    unsupported: 'الحالة: هذا الأمر سيُفعّل في خطوة لاحقة.'
+    unsupported: 'الحالة: هذا الأمر سيُفعّل في خطوة لاحقة.',
+    collected: 'الحالة: أحسنت! تم جمع النجمة.',
+    levelComplete: 'الحالة: رائع! أنهيت التحدي.'
   }
 };

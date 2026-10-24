@@ -10,7 +10,7 @@
     "test": "node --test tests/unit/**/*.test.js",
     "build": "node ./scripts/build.mjs",
     "safety:check": "node ./scripts/check-static-safety.mjs",
-    "test:browser-safety": "node --test tests/e2e/*.test.mjs",
+    "test:browser-safety": "node --test --test-concurrency=1 tests/e2e/*.test.mjs",
     "validate:agent": "node ./scripts/validate-agent-frontmatter.mjs"
   },
   "devDependencies": {

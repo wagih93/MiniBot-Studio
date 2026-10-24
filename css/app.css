@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   font-family: "Segoe UI", Tahoma, sans-serif;
   margin: 0;
@@ -9,6 +15,7 @@ body {
 
 .robot-lab {
   max-width: 720px;
+  inline-size: min(100%, 720px);
   margin-inline: auto;
   background: #ffffff;
   border: 1px solid #d5e1ee;
@@ -73,6 +80,7 @@ button {
   margin: 0;
   font-size: 0.95rem;
   color: #20466e;
+  overflow-wrap: anywhere;
 }
 
 .cell {
@@ -92,6 +100,11 @@ button {
 
 .cell.target {
   background: #fff8dc;
+}
+
+.cell.target-collected {
+  background: #dbf6d1;
+  animation: goal-collected 0.3s ease-out;
 }
 
 .cell.wall {
@@ -223,6 +236,15 @@ button {
   }
   to {
     transform: rotate(0);
+  }
+}
+
+@keyframes goal-collected {
+  from {
+    transform: scale(1.2);
+  }
+  to {
+    transform: scale(1);
   }
 }
 
