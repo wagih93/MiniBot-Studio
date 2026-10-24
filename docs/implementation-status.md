@@ -9,10 +9,10 @@ A story with an open pull request is `In Review`, never `Done`.
 
 | Story | Title | Sprint | Priority | Status | Branch | Commit SHA | PR | AC status | Validation commands and results | Blockers | Next action |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| US-001 | Launch the app in Arabic | 1 | P0 | In Review | feat/US-001-launch-app-arabic | aaae8b5 | https://github.com/wagih93/MiniBot-Studio/pull/7 | 6 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Move to US-004 on a new stacked branch. |
+| US-001 | Launch the app in Arabic | 1 | P0 | In Review | feat/US-001-launch-app-arabic | 074f751 | https://github.com/wagih93/MiniBot-Studio/pull/7 | 6 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 1 stacked stories. |
 | US-002 | Provide a simple home screen | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-003 | Provide a parent settings area | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-004 | Support different screen sizes and input methods | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-004 | Support different screen sizes and input methods | 1 | P0 | In Review | feat/US-004-responsive-input-support | 8deaee1 | https://github.com/wagih93/MiniBot-Studio/pull/8 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Move to US-022 on a new stacked branch. |
 | US-005 | Render a grid-based world | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-006 | Move the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-007 | Rotate the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
