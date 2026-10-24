@@ -65,6 +65,7 @@ let selectedBlockType = null;
 let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
 let challengeState = createChallengeState(fallbackLevel);
+let isRunInProgress = false;
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -230,6 +231,13 @@ function clearSelectedBlocks() {
   }
 }
 
+function setProgramEditingEnabled(enabled) {
+  playButton.disabled = !enabled;
+  for (const button of blockButtons) {
+    button.disabled = !enabled;
+  }
+}
+
 function setSelectedBlock(button, blockType) {
   clearSelectedBlocks();
   button.dataset.selected = 'true';
@@ -255,6 +263,7 @@ function renderAvailableBlocks(level) {
   blockButtons = level.availableBlocks.map((blockType) => createBlockButton(blockType));
   blockListElement.replaceChildren(...blockButtons);
   selectedBlockType = null;
+  setProgramEditingEnabled(!isRunInProgress);
 }
 
 function renderLevelMeta(level) {
@@ -356,8 +365,8 @@ async function executeTurn(runToken, signal, direction, executionConfig) {
   return 'advanced';
 }
 
-async function runRobotSession(runToken, signal, executionConfig) {
-  if (!selectedBlockType) {
+async function runRobotSession(runToken, signal, executionConfig, instructionType) {
+  if (!instructionType) {
     setStatus('noBlockSelected');
     return;
   }
@@ -373,11 +382,11 @@ async function runRobotSession(runToken, signal, executionConfig) {
     }
 
     let stepResult = 'unsupported';
-    if (selectedBlockType === 'moveForward') {
+    if (instructionType === 'moveForward') {
       stepResult = await executeMoveForward(runToken, signal, executionConfig);
-    } else if (selectedBlockType === 'turnRight') {
+    } else if (instructionType === 'turnRight') {
       stepResult = await executeTurn(runToken, signal, 'right', executionConfig);
-    } else if (selectedBlockType === 'turnLeft') {
+    } else if (instructionType === 'turnLeft') {
       stepResult = await executeTurn(runToken, signal, 'left', executionConfig);
     } else {
       setStatus('unsupported');
@@ -436,6 +445,10 @@ function initializeLevel() {
 }
 
 function startRun() {
+  if (isRunInProgress) {
+    return;
+  }
+
   activeRunToken += 1;
   if (activeRunController) {
     activeRunController.abort();
@@ -445,8 +458,13 @@ function startRun() {
   const runController = new AbortController();
   activeRunController = runController;
   const executionConfig = getExecutionConfig(activeLevel);
+  const instructionType = selectedBlockType;
+  isRunInProgress = true;
+  setProgramEditingEnabled(false);
 
-  void runRobotSession(runToken, runController.signal, executionConfig).finally(() => {
+  void runRobotSession(runToken, runController.signal, executionConfig, instructionType).finally(() => {
+    isRunInProgress = false;
+    setProgramEditingEnabled(true);
     if (runToken === activeRunToken && activeRunController === runController) {
       activeRunController = null;
     }
@@ -459,6 +477,8 @@ function cancelActiveRun(nextStatus = null) {
     activeRunController.abort();
     activeRunController = null;
   }
+  isRunInProgress = false;
+  setProgramEditingEnabled(true);
 
   if (nextStatus) {
     setStatus(nextStatus);
