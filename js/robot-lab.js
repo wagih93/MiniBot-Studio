@@ -27,7 +27,9 @@ const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
 const runtimeSearchParams = new URLSearchParams(window.location.search);
 
-const playableLevelIds = listLevelIds().filter((levelId) => levelId !== 'broken-level');
+const playableLevelIds = listLevelIds().filter(
+  (levelId) => levelId !== 'broken-level' && !levelId.startsWith('test-')
+);
 const statusByState = arStrings.status;
 const directionSymbolByName = {
   north: '↑',
@@ -684,9 +686,58 @@ async function executeTurn(runToken, signal, direction, executionConfig) {
   return 'advanced';
 }
 
+function buildInstructionSequence(executionConfig) {
+  if (programSteps.length > 0) {
+    return programSteps.map((step) => step.blockType);
+  }
+
+  if (!selectedBlockType) {
+    return [];
+  }
+
+  return Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => selectedBlockType);
+}
+
+function validateProgramForRun(level, instructionSequence) {
+  try {
+    const validationRules = level.programValidation ?? {};
+    const allowEmptyProgram = validationRules.allowEmptyProgram === true;
+    if (!allowEmptyProgram && instructionSequence.length === 0) {
+      return 'programEmpty';
+    }
+
+    if (instructionSequence.length === 0) {
+      return null;
+    }
+
+    if (validationRules.requiresStartBlock && instructionSequence[0] !== 'start') {
+      return 'startRequired';
+    }
+
+    if (Array.isArray(validationRules.requiredBlocks)) {
+      for (const requiredBlockType of validationRules.requiredBlocks) {
+        if (!instructionSequence.includes(requiredBlockType)) {
+          return 'requiredBlockMissing';
+        }
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Program validation failed unexpectedly.', error);
+    return 'validationInternalError';
+  }
+}
+
 async function runRobotSession(runToken, signal, executionConfig, instructionSequence) {
+  const validationFailure = validateProgramForRun(activeLevel, instructionSequence);
+  if (validationFailure) {
+    setStatus(validationFailure);
+    return;
+  }
+
   if (instructionSequence.length === 0) {
-    setStatus('noBlockSelected');
+    setStatus('complete');
     return;
   }
 
@@ -702,7 +753,9 @@ async function runRobotSession(runToken, signal, executionConfig, instructionSeq
 
     const instructionType = instructionSequence[stepNumber];
     let stepResult = 'unsupported';
-    if (instructionType === 'moveForward') {
+    if (instructionType === 'start') {
+      stepResult = 'advanced';
+    } else if (instructionType === 'moveForward') {
       stepResult = await executeMoveForward(runToken, signal, executionConfig);
     } else if (instructionType === 'turnRight') {
       stepResult = await executeTurn(runToken, signal, 'right', executionConfig);
@@ -779,12 +832,7 @@ function startRun() {
   const runController = new AbortController();
   activeRunController = runController;
   const executionConfig = getExecutionConfig(activeLevel);
-  const instructionSequence =
-    programSteps.length > 0
-      ? programSteps.map((step) => step.blockType)
-      : selectedBlockType
-        ? Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => selectedBlockType)
-        : [];
+  const instructionSequence = buildInstructionSequence(executionConfig);
   isRunInProgress = true;
   setProgramEditingEnabled(false);
 

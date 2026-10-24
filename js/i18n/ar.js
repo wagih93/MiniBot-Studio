@@ -16,11 +16,13 @@ export const arStrings = {
     programHeading: 'مساحة البرنامج',
     emptyProgram: 'اسحب الأوامر إلى هنا.',
     labelsByType: {
+      start: 'ابدأ',
       moveForward: 'تقدّم خطوة',
       turnRight: 'انعطف يميناً',
       turnLeft: 'انعطف يساراً'
     },
     iconsByType: {
+      start: '🏁',
       moveForward: '⬆️',
       turnRight: '↱',
       turnLeft: '↰'
@@ -64,6 +66,10 @@ export const arStrings = {
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
     invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
     programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',
-    programRemoved: 'الحالة: تم حذف الأمر من البرنامج.'
+    programRemoved: 'الحالة: تم حذف الأمر من البرنامج.',
+    programEmpty: 'الحالة: أضف أوامر إلى البرنامج قبل التشغيل.',
+    startRequired: 'الحالة: ابدأ بكتلة ابدأ أولاً.',
+    requiredBlockMissing: 'الحالة: البرنامج يحتاج أمراً مطلوباً لهذا التحدي.',
+    validationInternalError: 'الحالة: تعذّر التحقق من البرنامج. حاول مرة أخرى.'
   }
 };
