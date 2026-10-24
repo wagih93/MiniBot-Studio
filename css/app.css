@@ -87,6 +87,7 @@ button {
 
 .cell.robot {
   background: #e7f0fb;
+  font-weight: 600;
 }
 
 .cell.target {
@@ -111,6 +112,14 @@ button {
 
 .cell.robot.moving-south {
   animation: robot-step-south 0.22s ease-out;
+}
+
+.cell.robot.rotating-right {
+  animation: robot-turn-right 0.22s ease-out;
+}
+
+.cell.robot.rotating-left {
+  animation: robot-turn-left 0.22s ease-out;
 }
 
 .block-list {
@@ -196,6 +205,24 @@ button {
   }
   to {
     transform: translateY(0);
+  }
+}
+
+@keyframes robot-turn-right {
+  from {
+    transform: rotate(-35deg);
+  }
+  to {
+    transform: rotate(0);
+  }
+}
+
+@keyframes robot-turn-left {
+  from {
+    transform: rotate(35deg);
+  }
+  to {
+    transform: rotate(0);
   }
 }
 

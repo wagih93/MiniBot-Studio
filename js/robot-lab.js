@@ -1,7 +1,7 @@
 import { arStrings } from './i18n/ar.js';
 import { getLevelById, listLevelIds } from './levels/level-registry.js';
 import { validateLevelData } from './levels/level-validator.js';
-import { createRobotState, moveForward } from './simulator/robot.js';
+import { createRobotState, moveForward, turnLeft, turnRight } from './simulator/robot.js';
 import { canMoveForward } from './simulator/world.js';
 
 const statusElement = document.querySelector('#status');
@@ -16,6 +16,12 @@ const levelIndicatorElement = document.querySelector('#level-indicator');
 
 const playableLevelIds = listLevelIds().filter((levelId) => levelId !== 'broken-level');
 const statusByState = arStrings.status;
+const directionSymbolByName = {
+  north: '↑',
+  east: '→',
+  south: '↓',
+  west: '←'
+};
 
 const fallbackLevel = {
   id: 'fallback-safe-level',
@@ -93,7 +99,7 @@ function isObstacleCell(level, row, column) {
   return level.obstacles.some((obstacle) => obstacle.row === row && obstacle.column === column);
 }
 
-function renderWorldGrid(level, robot, movementAnimation = null) {
+function renderWorldGrid(level, robot, robotAnimation = null) {
   worldGridElement.style.gridTemplateColumns = `repeat(${level.grid.columns}, minmax(36px, 1fr))`;
   const cells = [];
 
@@ -106,10 +112,16 @@ function renderWorldGrid(level, robot, movementAnimation = null) {
 
       if (isRobotCell(robot, row, column)) {
         cellElement.classList.add('robot');
-        cellElement.textContent = '🤖';
+        cellElement.dataset.direction = robot.direction;
+        cellElement.textContent = `🤖 ${directionSymbolByName[robot.direction] ?? ''}`;
 
-        if (movementAnimation && movementAnimation.row === row && movementAnimation.column === column) {
-          cellElement.classList.add(`moving-${movementAnimation.direction}`);
+        if (robotAnimation && robotAnimation.row === row && robotAnimation.column === column) {
+          if (robotAnimation.kind === 'move') {
+            cellElement.classList.add(`moving-${robotAnimation.direction}`);
+          }
+          if (robotAnimation.kind === 'turn') {
+            cellElement.classList.add(`rotating-${robotAnimation.turnDirection}`);
+          }
         }
       } else if (isGoalCell(level, row, column)) {
         cellElement.classList.add('target');
@@ -184,9 +196,31 @@ async function executeMoveForward(runToken) {
   robotState = nextRobotState;
 
   renderWorldGrid(activeLevel, robotState, {
+    kind: 'move',
     row: robotState.row,
     column: robotState.column,
     direction: robotState.direction
+  });
+  setStatus('running');
+  await delay(220);
+
+  if (runToken !== activeRunToken) {
+    return;
+  }
+
+  renderWorldGrid(activeLevel, robotState);
+  setStatus('complete');
+}
+
+async function executeTurn(runToken, direction) {
+  const nextRobotState = direction === 'right' ? turnRight(robotState) : turnLeft(robotState);
+  robotState = nextRobotState;
+
+  renderWorldGrid(activeLevel, robotState, {
+    kind: 'turn',
+    row: robotState.row,
+    column: robotState.column,
+    turnDirection: direction
   });
   setStatus('running');
   await delay(220);
@@ -207,6 +241,16 @@ async function runRobotSession(runToken) {
 
   if (selectedBlockType === 'moveForward') {
     await executeMoveForward(runToken);
+    return;
+  }
+
+  if (selectedBlockType === 'turnRight') {
+    await executeTurn(runToken, 'right');
+    return;
+  }
+
+  if (selectedBlockType === 'turnLeft') {
+    await executeTurn(runToken, 'left');
     return;
   }
 
