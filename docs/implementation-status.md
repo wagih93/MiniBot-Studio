@@ -42,7 +42,7 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-031 | Work offline | 4 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-032 | Keep saved data local | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-033 | Test the execution engine | 1 | P0 | In Review | feat/US-033-expand-engine-test-suite | c53ef1e | https://github.com/wagih93/MiniBot-Studio/pull/16 | 6 criteria verified | `npm ci; npm run test:engine; npm run lint --if-present; npm run safety:check; npm run validate:agent; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue with Sprint 2 stories (next eligible: US-002). |
-| US-034 | Handle errors gracefully | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-034 | Handle errors gracefully | 2 | P0 | In Review | feat/US-034-handle-errors-gracefully | f549324 | https://github.com/wagih93/MiniBot-Studio/pull/25 | 5 criteria verified | `npm ci; node --test tests/e2e/error-handling.test.mjs; npm test; npm run test:browser-safety; npm run lint --if-present; npm run safety:check; npm run validate:agent; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 3 stacked stories (next eligible: US-015). |
 | US-035 | Provide a free-play lab | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-036 | Control a light and play a sound | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-037 | Customize the robot | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
