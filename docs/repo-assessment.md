@@ -1,12 +1,12 @@
 # Repository assessment baseline (US-039)
 
-- **Date:** 2026-10-21
+- **Date:** 2026-10-24
 - **Branch:** `feat/US-039-repo-assessment`
 - **Scope:** inspect the repository as-is, run existing install/test/build commands, map current state to the backlog and target structure.
 
 ## 1) Actual repository snapshot
 
-### Tracked files (`git ls-files`)
+### Baseline tracked files (`git ls-tree -r --name-only origin/master`)
 
 ```text
 .github/agents/minibot-backlog-implementer.agent.md
@@ -24,28 +24,44 @@ scripts/create-story-issues.sh
 
 - Repository currently contains planning/process scaffolding only (`.github/`, `docs/`, `scripts/`).
 - Core app/runtime structure from backlog section 5.2 and setup section 3 is not present yet (`index.html`, `css/`, `js/`, `assets/`, `tests/`, `package.json` are absent).
+- Working tree remained clean before and after baseline checks (`git --no-pager status --short --branch` showed no local modifications).
 
 ## 2) Existing install/test/build command execution (real output)
 
-### Discovery and execution command
+### Commands executed
 
 ```powershell
-$pkgFiles = Get-ChildItem -Path . -Recurse -File -Filter package.json; if ($pkgFiles.Count -eq 0) { Write-Output 'No package.json files found in repository.'; Write-Output 'No install/test/build scripts are available to run.' } else { foreach ($pkg in $pkgFiles) { Write-Output ("package.json: " + $pkg.FullName); $json = Get-Content -Raw -LiteralPath $pkg.FullName | ConvertFrom-Json; if ($null -eq $json.scripts) { Write-Output '  scripts: none'; continue }; $json.scripts.PSObject.Properties | ForEach-Object { Write-Output ("  script " + $_.Name + " = " + $_.Value) } } }
+$pkgFiles = Get-ChildItem -Path . -Recurse -File -Filter package.json
+if ($pkgFiles.Count -eq 0) { 'No package.json files found in repository.' }
+
+npm ci
+npm test -- --runInBand
+npm run build --if-present
 ```
 
 ### Real output
 
 ```text
 No package.json files found in repository.
-No install/test/build scripts are available to run.
+npm ci -> npm ERR! code EUSAGE
+npm ci -> The `npm ci` command can only install with an existing package-lock.json or npm-shrinkwrap.json.
+npm ci exit code: 1
+
+npm test -- --runInBand -> npm ERR! code ENOENT
+npm test -- --runInBand -> Could not read package.json: ENOENT: no such file or directory
+npm test -- --runInBand exit code: -4058
+
+npm run build --if-present -> npm ERR! code ENOENT
+npm run build --if-present -> Could not read package.json: ENOENT: no such file or directory
+npm run build --if-present exit code: -4058
 ```
 
 ### Result
 
-- **Install:** no existing runnable command in this repository state.
-- **Test:** no existing runnable command in this repository state.
-- **Build:** no existing runnable command in this repository state.
-- **Pre-existing baseline blocker:** missing `package.json` and missing script definitions.
+- **Install:** command exists in workflow template but fails because no lockfile/project manifest exists yet.
+- **Test:** command fails because `package.json` does not exist.
+- **Build:** command fails because `package.json` does not exist.
+- **Pre-existing baseline blocker:** missing `package.json`, missing scripts, and missing lockfile.
 
 ## 3) Mapping to target repository structure
 
@@ -70,6 +86,11 @@ Target references:
 | `LICENSE` | Missing | tracked files list above | Not added yet (US-045/US-053 context). |
 | `THIRD_PARTY_NOTICES.md` | Missing | tracked files list above | Not added yet. |
 | `README.md` | Missing | tracked files list above | Not added yet. |
+
+### Deviation recording
+
+- Every structure deviation from the target tree is recorded in `docs/adr/0003-baseline-structure-deviations.md`.
+- The decision is to preserve the current scaffold and introduce missing structure only in the stories that own those changes.
 
 ## 4) JavaScript vs TypeScript decision (US-039 acceptance criterion)
 

@@ -5,7 +5,7 @@ Resumable record of story progress. Update this file on the same branch as each 
 Statuses: `Todo`, `In Progress`, `Blocked`, `In Review`, `Done`, `Deferred`.
 A story with an open pull request is `In Review`, never `Done`.
 
-**Baseline (US-039):** not yet run. Record install, test, and build results here.
+**Baseline (US-039):** completed on branch `feat/US-039-repo-assessment` with real command output captured in `docs/repo-assessment.md`.
 
 | Story | Title | Sprint | Priority | Status | Branch | Commit SHA | PR | AC status | Validation commands and results | Blockers | Next action |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -47,13 +47,13 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-036 | Control a light and play a sound | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-037 | Customize the robot | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-038 | Export and import projects | 7 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-039 | Assess the existing repository and record a baseline | 0 | P0 | Blocked | feat/US-039-repo-assessment | pending-local-commit | not created (authentication required) | 5 criteria verified on branch; no additional stories already satisfy all AC | `git --no-pager ls-files` -> 9 scaffold files only.<br>`Get-ChildItem -Recurse -Filter package.json ...` -> No package.json files found; no install/test/build scripts available. | `gh` is not authenticated in this environment, so creating a pull request is currently blocked. | Authenticate GitHub CLI, push branch, open US-039 PR. |
+| US-039 | Assess the existing repository and record a baseline | 0 | P0 | In Review | feat/US-039-repo-assessment | pending-current-commit | https://github.com/wagih93/MiniBot-Studio/pull/1 | 5 criteria verified; no additional stories already satisfy all acceptance criteria | `git --no-pager ls-tree -r --name-only origin/master` -> 9 scaffold files.<br>`Get-ChildItem -Recurse -Filter package.json` -> no package.json files.<br>`npm ci` -> failed (EUSAGE: no lockfile/project).<br>`npm test -- --runInBand` -> failed (ENOENT: missing package.json).<br>`npm run build --if-present` -> failed (ENOENT: missing package.json). | None for this story; owner merge required to mark `Done`. | Move to US-040 on stacked branch after this PR update. |
 | US-040 | Add continuous integration | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-041 | Document contribution conventions and track story status | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-042 | Validate the Copilot agent definition | 0 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-043 | Enforce a content security policy and static safety checks | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-044 | Add browser end-to-end tests for the main learning flow | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-045 | Decide MiniBot Studio's license (gate) | 0 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-045 | Decide MiniBot Studio's license (gate) | 0 | P0 | Blocked | - | - | - | Decision draft exists; owner merge not yet completed | ADR-0001 exists with recommended decision A | Owner licensing decision must be merged before unblocking Story Studio stories | Keep blocked until owner merges the licensing decision. |
 | US-046 | Vendor the pinned StykAnimate web build | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
 | US-047 | Open Story Studio from the home screen with an adult gate | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
 | US-048 | Verify Arabic and RTL in the vendored editor | 6 | P1 | Blocked | - | - | - | 0 criteria verified | - | US-045 licensing decision | - |
