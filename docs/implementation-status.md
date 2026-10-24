@@ -13,7 +13,7 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-002 | Provide a simple home screen | 2 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-003 | Provide a parent settings area | 4 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-004 | Support different screen sizes and input methods | 1 | P0 | In Review | feat/US-004-responsive-input-support | e2605ef | https://github.com/wagih93/MiniBot-Studio/pull/8 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 1 stacked stories. |
-| US-005 | Render a grid-based world | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-005 | Render a grid-based world | 1 | P0 | In Review | feat/US-005-render-grid-world | af0a70a | https://github.com/wagih93/MiniBot-Studio/pull/10 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Move to US-006 on a new stacked branch. |
 | US-006 | Move the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-007 | Rotate the robot | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-008 | Collect objects and detect goals | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
@@ -30,7 +30,7 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-019 | Implement simple conditions | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-020 | Implement sensors and events | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-021 | Enforce safe execution limits | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-022 | Define levels as data | 1 | P0 | In Review | feat/US-022-define-levels-as-data | 63e6453 | https://github.com/wagih93/MiniBot-Studio/pull/9 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Move to US-005 on a new stacked branch. |
+| US-022 | Define levels as data | 1 | P0 | In Review | feat/US-022-define-levels-as-data | cad63e3 | https://github.com/wagih93/MiniBot-Studio/pull/9 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 1 stacked stories. |
 | US-023 | Deliver the first five challenges | 3 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-024 | Provide progressive hints | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-025 | Celebrate level completion | 3 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
