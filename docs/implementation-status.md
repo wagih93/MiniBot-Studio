@@ -29,7 +29,7 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-018 | Implement repeat blocks | 5 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-019 | Implement simple conditions | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-020 | Implement sensors and events | 5 | P2 | Todo | - | - | - | 0 criteria verified | - | - | - |
-| US-021 | Enforce safe execution limits | 1 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-021 | Enforce safe execution limits | 1 | P0 | In Review | feat/US-021-enforce-safe-execution-limits | e0f8f09 | https://github.com/wagih93/MiniBot-Studio/pull/14 | 5 criteria verified | `npm ci; node --test tests/e2e/execution-limits.test.mjs; npm test; npm run test:browser-safety; npm run lint --if-present; npm run safety:check; npm run validate:agent; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 1 stacked stories (next eligible: US-009). |
 | US-022 | Define levels as data | 1 | P0 | In Review | feat/US-022-define-levels-as-data | cad63e3 | https://github.com/wagih93/MiniBot-Studio/pull/9 | 5 criteria verified | `npm ci; npm run lint --if-present; npm test; npm run safety:check; npm run validate:agent; npm run test:browser-safety; npm run build` -> all passed. | None for this story; owner merge required to mark `Done`. | Continue Sprint 1 stacked stories. |
 | US-023 | Deliver the first five challenges | 3 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-024 | Provide progressive hints | 3 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
