@@ -45,9 +45,7 @@ const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
 const defaultRuntimeConfig = createDefaultRuntimeConfig();
 
-const playableLevelIds = listLevelIds().filter(
-  (levelId) => levelId !== 'broken-level' && !levelId.startsWith('test-')
-);
+const playableLevelIds = listLevelIds();
 const statusByState = arStrings.status;
 const directionSymbolByName = {
   north: '↑',
@@ -217,7 +215,10 @@ function getExecutionConfig(level) {
 }
 
 function resolveLevel(levelId) {
-  const level = getLevelById(levelId);
+  const overrideLevel = Array.isArray(runtimeConfig.levelOverrides)
+    ? runtimeConfig.levelOverrides.find((level) => level.id === levelId)
+    : null;
+  const level = overrideLevel ?? getLevelById(levelId);
   if (!level) {
     console.warn('Requested level not found.', { levelId });
     return { level: fallbackLevel, usedFallback: true, errorType: 'missing' };

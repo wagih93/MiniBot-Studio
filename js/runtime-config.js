@@ -2,7 +2,8 @@ const defaultExecutionOverrides = Object.freeze({});
 
 const defaultRuntimeConfig = Object.freeze({
   initialLevelId: 'level-001',
-  executionOverrides: defaultExecutionOverrides
+  executionOverrides: defaultExecutionOverrides,
+  levelOverrides: Object.freeze([])
 });
 
 function parseOptionalBoundedInteger(value, min, max) {
@@ -27,6 +28,11 @@ export function createRuntimeConfig(overrides = {}) {
     ? overrides.initialLevelId
     : defaultRuntimeConfig.initialLevelId;
   const executionOverrides = overrides.executionOverrides ?? {};
+  const levelOverrides = Array.isArray(overrides.levelOverrides)
+    ? overrides.levelOverrides.filter(
+      (level) => typeof level === 'object' && level !== null && typeof level.id === 'string'
+    )
+    : defaultRuntimeConfig.levelOverrides;
 
   const maximumStepsPerRun = parseOptionalBoundedInteger(executionOverrides.maximumStepsPerRun, 1, 300);
   const selectedBlockRepeatCount = parseOptionalBoundedInteger(
@@ -47,7 +53,8 @@ export function createRuntimeConfig(overrides = {}) {
 
   return Object.freeze({
     initialLevelId,
-    executionOverrides: Object.freeze(normalizedExecutionOverrides)
+    executionOverrides: Object.freeze(normalizedExecutionOverrides),
+    levelOverrides: Object.freeze(levelOverrides)
   });
 }
 

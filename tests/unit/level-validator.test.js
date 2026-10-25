@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { level001 } from '../../js/levels/data/level-001.js';
-import { brokenLevel } from '../../js/levels/data/broken-level.js';
+import { brokenLevel } from '../fixtures/levels/broken-level.js';
 import { validateLevelData } from '../../js/levels/level-validator.js';
 
 test('level validator accepts valid level data', () => {
