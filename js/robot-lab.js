@@ -1,20 +1,10 @@
 import { arStrings } from './shared/i18n/ar.js';
 import {
-  createChallengeState,
-  getCollectedCount,
   getLevelById,
-  isGoalCollected,
   listLevelIds,
-  updateChallengeProgress,
   validateLevelData
 } from './features/levels/index.js';
-import {
-  canMoveForward,
-  createRobotState,
-  moveForward,
-  turnLeft,
-  turnRight
-} from './features/robot-simulation/index.js';
+import { createRobotState } from './features/robot-simulation/index.js';
 import {
   createLocalStorageProgramRepository,
   createLocalStorageProgressRepository
@@ -23,6 +13,13 @@ import {
   createProgramEditor,
   createProgramWorkspaceView
 } from './features/program-editing/index.js';
+import {
+  compileProgram,
+  createChallengeState,
+  getCollectedCount,
+  isGoalCollected,
+  runProgram
+} from './features/program-execution/index.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');
@@ -503,189 +500,64 @@ function updateLevelIndicator(levelId) {
   levelIndicatorElement.textContent = arStrings.levelIndicator;
 }
 
-async function executeMoveForward(runToken, signal, executionConfig) {
-  if (!canMoveForward(activeLevel, robotState)) {
-    setStatus('blocked');
-    return 'blocked';
-  }
-
-  const nextRobotState = moveForward(robotState);
-  robotState = nextRobotState;
-
-  renderWorldGrid(activeLevel, robotState, {
-    kind: 'move',
-    row: robotState.row,
-    column: robotState.column,
-    direction: robotState.direction
-  });
-  setStatus('running');
-  try {
-    await delay(executionConfig.stepDelayMs, signal);
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      return 'aborted';
-    }
-    throw error;
-  }
-
-  if (runToken !== activeRunToken || signal.aborted) {
-    return 'aborted';
-  }
-
-  const progress = updateChallengeProgress(activeLevel, challengeState, robotState);
-  renderWorldGrid(activeLevel, robotState);
-  updateCollectionSummary();
-
-  if (progress.collectedGoalKey) {
-    setStatus('collected');
-    try {
-      await delay(180, signal);
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        return 'aborted';
-      }
-      throw error;
-    }
-    if (runToken !== activeRunToken || signal.aborted) {
-      return 'aborted';
-    }
-  }
-
-  if (progress.isComplete) {
-    saveProgressLevelId(activeLevel.id);
-    syncPrimaryActions();
-    setStatus('levelComplete');
-    return 'levelComplete';
-  }
-
-  return 'advanced';
-}
-
-async function executeTurn(runToken, signal, direction, executionConfig) {
-  const nextRobotState = direction === 'right' ? turnRight(robotState) : turnLeft(robotState);
-  robotState = nextRobotState;
-
-  renderWorldGrid(activeLevel, robotState, {
-    kind: 'turn',
-    row: robotState.row,
-    column: robotState.column,
-    turnDirection: direction
-  });
-  setStatus('running');
-  try {
-    await delay(executionConfig.stepDelayMs, signal);
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      return 'aborted';
-    }
-    throw error;
-  }
-
-  if (runToken !== activeRunToken || signal.aborted) {
-    return 'aborted';
-  }
-
-  renderWorldGrid(activeLevel, robotState);
-  return 'advanced';
-}
-
 function buildInstructionSequence(executionConfig) {
-  const programSteps = programEditor.getProgramSteps();
-  if (programSteps.length > 0) {
-    return programSteps.map((step) => ({ blockType: step.blockType, stepId: step.id }));
-  }
-
-  if (!selectedBlockType) {
-    return [];
-  }
-
-  return Array.from({ length: executionConfig.repeatSelectedBlockCount }, () => ({
-    blockType: selectedBlockType,
-    stepId: null
-  }));
+  return compileProgram(
+    programEditor.getProgramSteps(),
+    selectedBlockType,
+    executionConfig.repeatSelectedBlockCount
+  );
 }
 
-function validateProgramForRun(level, instructionSequence) {
-  try {
-    const validationRules = level.programValidation ?? {};
-    const blockTypes = instructionSequence.map((step) => step.blockType);
-    const allowEmptyProgram = validationRules.allowEmptyProgram === true;
-    if (!allowEmptyProgram && blockTypes.length === 0) {
-      return 'programEmpty';
-    }
-
-    if (blockTypes.length === 0) {
-      return null;
-    }
-
-    if (validationRules.requiresStartBlock && blockTypes[0] !== 'start') {
-      return 'startRequired';
-    }
-
-    if (Array.isArray(validationRules.requiredBlocks)) {
-      for (const requiredBlockType of validationRules.requiredBlocks) {
-        if (!blockTypes.includes(requiredBlockType)) {
-          return 'requiredBlockMissing';
-        }
-      }
-    }
-
-    return null;
-  } catch (error) {
-    console.error('Program validation failed unexpectedly.', error);
-    return 'validationInternalError';
-  }
-}
-
-async function runRobotSession(runToken, signal, executionConfig, instructionSequence) {
-  const validationFailure = validateProgramForRun(activeLevel, instructionSequence);
-  if (validationFailure) {
-    setStatus(validationFailure);
+function handleProgramExecutionEvent(runToken, event) {
+  if (runToken !== activeRunToken) {
     return;
   }
 
-  if (instructionSequence.length === 0) {
-    setStatus('complete');
+  if (event.type === 'activeStepChanged') {
+    setActiveProgramStep(event.stepId ?? null);
     return;
   }
 
-  for (let stepNumber = 0; stepNumber < instructionSequence.length; stepNumber += 1) {
-    if (runToken !== activeRunToken || signal.aborted) {
-      return;
-    }
-
-    if (stepNumber >= executionConfig.maxStepsPerRun) {
-      setStatus('stepLimitExceeded');
-      return;
-    }
-
-    const instruction = instructionSequence[stepNumber];
-    const instructionType = instruction.blockType;
-    setActiveProgramStep(instruction.stepId);
-    let stepResult = 'unsupported';
-    if (instructionType === 'start') {
-      stepResult = 'advanced';
-    } else if (instructionType === 'moveForward') {
-      stepResult = await executeMoveForward(runToken, signal, executionConfig);
-    } else if (instructionType === 'turnRight') {
-      stepResult = await executeTurn(runToken, signal, 'right', executionConfig);
-    } else if (instructionType === 'turnLeft') {
-      stepResult = await executeTurn(runToken, signal, 'left', executionConfig);
-    } else {
-      setStatus('unsupported');
-      return;
-    }
-
-    if (stepResult === 'aborted') {
-      return;
-    }
-
-    if (stepResult === 'blocked' || stepResult === 'levelComplete') {
-      return;
-    }
+  if (event.type === 'robotUpdated') {
+    robotState = event.robotState;
+    renderWorldGrid(activeLevel, robotState, event.animation);
+    return;
   }
 
-  setStatus('complete');
+  if (event.type === 'challengeUpdated') {
+    challengeState = event.challengeState;
+    updateCollectionSummary();
+    return;
+  }
+
+  if (event.type === 'statusChanged') {
+    if (event.status === 'levelComplete') {
+      saveProgressLevelId(activeLevel.id);
+      syncPrimaryActions();
+    }
+    setStatus(event.status);
+  }
+}
+
+async function runRobotSession(runToken, signal, executionConfig) {
+  const instructionSequence = buildInstructionSequence(executionConfig);
+  const runResult = await runProgram({
+    level: activeLevel,
+    instructionSequence,
+    initialRobotState: robotState,
+    initialChallengeState: challengeState,
+    executionConfig,
+    delay,
+    signal,
+    onEvent: (event) => handleProgramExecutionEvent(runToken, event)
+  });
+
+  if (runToken !== activeRunToken) {
+    return;
+  }
+
+  robotState = runResult.robotState;
+  challengeState = runResult.challengeState;
 }
 
 function resetRobotPosition() {
@@ -761,11 +633,10 @@ function startRun() {
   const runController = new AbortController();
   activeRunController = runController;
   const executionConfig = getExecutionConfig(activeLevel);
-  const instructionSequence = buildInstructionSequence(executionConfig);
   isRunInProgress = true;
   setProgramEditingEnabled(false);
 
-  void runRobotSession(runToken, runController.signal, executionConfig, instructionSequence).finally(() => {
+  void runRobotSession(runToken, runController.signal, executionConfig).finally(() => {
     isRunInProgress = false;
     setActiveProgramStep(null);
     setProgramEditingEnabled(true);
