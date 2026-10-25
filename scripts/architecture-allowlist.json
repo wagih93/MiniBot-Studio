@@ -2,5 +2,6 @@
   "crossSliceInternalImport": [],
   "domainOrApplicationEffects": [],
   "sharedDependsOnSlice": [],
-  "moduleLevelMutableState": []
+  "moduleLevelMutableState": [],
+  "localStorageOutsideInfrastructure": []
 }

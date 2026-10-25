@@ -1,5 +1,5 @@
 export function createLearningProgressState() {
   return {
-    completedLevelIds: []
+    savedLevelId: null
   };
 }

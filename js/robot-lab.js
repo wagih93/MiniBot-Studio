@@ -15,6 +15,10 @@ import {
   turnLeft,
   turnRight
 } from './features/robot-simulation/index.js';
+import {
+  createLocalStorageProgramRepository,
+  createLocalStorageProgressRepository
+} from './features/learning-progress/index.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');
@@ -76,8 +80,12 @@ const defaultExecutionConfig = {
   repeatSelectedBlockCount: 1,
   stepDelayMs: 220
 };
-const progressStorageKey = 'minibot.progress.levelId';
-const programStorageKey = 'minibot.programs.v1';
+const progressRepository = createLocalStorageProgressRepository({
+  allowedLevelIds: playableLevelIds
+});
+const programRepository = createLocalStorageProgramRepository({
+  allowedLevelIds: playableLevelIds
+});
 
 let activeRunToken = 0;
 let activeRunController = null;
@@ -146,57 +154,11 @@ function getActiveLevelId() {
 }
 
 function readSavedProgressLevelId() {
-  try {
-    const savedLevelId = window.localStorage.getItem(progressStorageKey);
-    if (!savedLevelId) {
-      return null;
-    }
-    return playableLevelIds.includes(savedLevelId) ? savedLevelId : null;
-  } catch (error) {
-    console.warn('Failed to read saved progress level.', error);
-    return null;
-  }
+  return progressRepository.loadSavedLevelId();
 }
 
 function saveProgressLevelId(levelId) {
-  if (!playableLevelIds.includes(levelId)) {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(progressStorageKey, levelId);
-  } catch (error) {
-    console.warn('Failed to save progress level.', error);
-  }
-}
-
-function loadProgramStore() {
-  try {
-    const rawStore = window.localStorage.getItem(programStorageKey);
-    if (!rawStore) {
-      return {};
-    }
-
-    const parsedStore = JSON.parse(rawStore);
-    if (!parsedStore || typeof parsedStore !== 'object' || Array.isArray(parsedStore)) {
-      console.warn('Program store has unexpected shape.');
-      return null;
-    }
-    return parsedStore;
-  } catch (error) {
-    console.warn('Failed to read program store.', error);
-    return null;
-  }
-}
-
-function writeProgramStore(programStore) {
-  try {
-    window.localStorage.setItem(programStorageKey, JSON.stringify(programStore));
-    return true;
-  } catch (error) {
-    console.warn('Failed to persist program store.', error);
-    return false;
-  }
+  progressRepository.saveSavedLevelId(levelId);
 }
 
 function readBoundedIntegerQuery(name, fallback, min, max) {
@@ -514,34 +476,26 @@ function moveProgramStep(stepId, insertIndex) {
 }
 
 function saveCurrentProgramForLevel(levelId) {
-  const programStore = loadProgramStore();
-  if (programStore === null) {
-    setStatus('programLoadFailed');
-    return false;
-  }
-
-  programStore[levelId] = programSteps.map((step) => step.blockType);
-  const wasSaved = writeProgramStore(programStore);
+  const blockTypes = programSteps.map((step) => step.blockType);
+  const wasSaved = programRepository.saveProgram(levelId, blockTypes);
   if (wasSaved) {
     setStatus('programSaved');
+  } else {
+    setStatus('programLoadFailed');
   }
+
   return wasSaved;
 }
 
 function restoreProgramForLevel(levelId) {
-  const programStore = loadProgramStore();
-  if (programStore === null) {
-    return { restored: false, failed: true };
-  }
-
-  const savedProgram = programStore[levelId];
+  const { blockTypes: savedProgram, failed } = programRepository.loadProgram(levelId);
   if (!Array.isArray(savedProgram) || savedProgram.length === 0) {
-    return { restored: false, failed: false };
+    return { restored: false, failed };
   }
 
   const restoredBlocks = savedProgram.filter((blockType) => activeLevel.availableBlocks.includes(blockType));
   if (restoredBlocks.length === 0) {
-    return { restored: false, failed: false };
+    return { restored: false, failed };
   }
 
   programSteps = restoredBlocks.map((blockType) => {

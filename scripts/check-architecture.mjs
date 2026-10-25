@@ -74,6 +74,10 @@ function isDomainOrApplicationFile(filePath) {
   return /^js\/features\/[^/]+\/(domain|application)\//.test(filePath);
 }
 
+function isInfrastructureFile(filePath) {
+  return /^js\/features\/[^/]+\/infrastructure\//.test(filePath);
+}
+
 function getSliceName(filePath) {
   const match = /^js\/features\/([^/]+)\//.exec(filePath);
   return match ? match[1] : null;
@@ -116,7 +120,8 @@ async function readAllowlist() {
     crossSliceInternalImport: new Set(parsedAllowlist.crossSliceInternalImport ?? []),
     domainOrApplicationEffects: new Set(parsedAllowlist.domainOrApplicationEffects ?? []),
     sharedDependsOnSlice: new Set(parsedAllowlist.sharedDependsOnSlice ?? []),
-    moduleLevelMutableState: new Set(parsedAllowlist.moduleLevelMutableState ?? [])
+    moduleLevelMutableState: new Set(parsedAllowlist.moduleLevelMutableState ?? []),
+    localStorageOutsideInfrastructure: new Set(parsedAllowlist.localStorageOutsideInfrastructure ?? [])
   };
 }
 
@@ -132,6 +137,15 @@ for (const absoluteFilePath of files) {
 
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index];
+    if (!isInfrastructureFile(relativeFilePath) && /\blocalStorage\b/.test(line)) {
+      violations.push({
+        kind: 'localStorageOutsideInfrastructure',
+        filePath: relativeFilePath,
+        lineNumber: index + 1,
+        details: line.trim()
+      });
+    }
+
     const importMatch = line.match(/^\s*import(?:.+?\s+from\s+)?['"]([^'"]+)['"]/);
     if (!importMatch) {
       continue;
@@ -202,6 +216,9 @@ const filteredViolations = violations.filter((violation) => {
   }
   if (violation.kind === 'moduleLevelMutableState') {
     return !allowlist.moduleLevelMutableState.has(allowlistKey);
+  }
+  if (violation.kind === 'localStorageOutsideInfrastructure') {
+    return !allowlist.localStorageOutsideInfrastructure.has(allowlistKey);
   }
   return true;
 });
