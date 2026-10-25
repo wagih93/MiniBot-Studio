@@ -4,6 +4,16 @@ import { brokenLevel } from '../fixtures/levels/broken-level.js';
 import { testLevelValidation } from '../fixtures/levels/test-level-validation.js';
 
 const searchParams = new URLSearchParams(window.location.search);
+const runtimeLogEntries = [];
+window.__runtimeLogEntries = runtimeLogEntries;
+const runtimeLogger = {
+  warn(entry) {
+    runtimeLogEntries.push({ level: 'warn', entry });
+  },
+  error(entry) {
+    runtimeLogEntries.push({ level: 'error', entry });
+  }
+};
 
 const runtimeConfig = createRuntimeConfig({
   initialLevelId: searchParams.get('level') ?? undefined,
@@ -12,7 +22,8 @@ const runtimeConfig = createRuntimeConfig({
     selectedBlockRepeatCount: searchParams.get('repeat') ?? undefined,
     stepDelayMilliseconds: searchParams.get('stepDelayMs') ?? undefined
   },
-  levelOverrides: [brokenLevel, testLevelValidation]
+  levelOverrides: [brokenLevel, testLevelValidation],
+  logger: runtimeLogger
 });
 
 initializeRobotLab(runtimeConfig);

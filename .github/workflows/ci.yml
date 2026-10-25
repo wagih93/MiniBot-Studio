@@ -26,11 +26,4 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run lint --if-present
-      - run: npm test
-      - run: npm run architecture:check
-      - run: npm run language:check
-      - run: npm run safety:check
-      - run: npm run validate:agent
-      - run: npm run test:browser-safety
-      - run: npm run build
+      - run: npm run check

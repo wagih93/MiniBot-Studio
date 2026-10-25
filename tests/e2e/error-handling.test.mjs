@@ -10,11 +10,6 @@ test('Level errors show friendly Arabic retry options without exposing technical
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
-  const consoleMessages = [];
-
-  page.on('console', (message) => {
-    consoleMessages.push({ type: message.type(), text: message.text() });
-  });
 
   try {
     await page.goto(`${origin}/tests/e2e/test-entry.html?level=broken-level`, { waitUntil: 'networkidle' });
@@ -40,12 +35,16 @@ test('Level errors show friendly Arabic retry options without exposing technical
     await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('1/3'));
     const isErrorPanelHidden = await page.evaluate(() => document.querySelector('#level-error')?.hasAttribute('hidden'));
     assert.equal(isErrorPanelHidden, true);
-
-    assert.ok(consoleMessages.some((entry) => entry.type === 'warning' && entry.text.includes('Level validation failed')));
+    const runtimeLogs = await page.evaluate(() => window.__runtimeLogEntries ?? []);
+    assert.ok(
+      runtimeLogs.some((entry) =>
+        entry.level === 'warn' &&
+        entry.entry?.message === 'Level validation failed.'
+      )
+    );
   } finally {
     await context.close();
     await browser.close();
     await closeServer(server);
   }
 });
-

@@ -20,6 +20,7 @@ import {
   isCollectibleCollected,
   runProgram
 } from './features/program-execution/index.js';
+import { createConsoleLogger, reportRuntimeError } from './features/shell/index.js';
 import { createDefaultRuntimeConfig } from './runtime-config.js';
 
 const statusElement = document.querySelector('#status');
@@ -96,6 +97,8 @@ let robotState = createRobotState(fallbackLevel.robot);
 let objectiveProgress = createObjectiveProgress(fallbackLevel);
 let isRunInProgress = false;
 let runtimeConfig = defaultRuntimeConfig;
+let runtimeLogger = createConsoleLogger();
+let runtimeErrorListenersAttached = false;
 let hasInitialized = false;
 let currentRequestedLevelId = defaultRuntimeConfig.initialLevelId;
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
@@ -214,19 +217,57 @@ function getExecutionConfig(level) {
   };
 }
 
+function logRuntimeWarning(message, details) {
+  if (!runtimeLogger || typeof runtimeLogger.warn !== 'function') {
+    return;
+  }
+
+  runtimeLogger.warn({
+    code: 'runtime.warning',
+    message,
+    ...details
+  });
+}
+
+function handleUnexpectedRuntimeError(error, context) {
+  const safeMessage = error instanceof Error ? error.message : String(error ?? 'unknown-error');
+  reportRuntimeError(runtimeLogger, {
+    context,
+    message: safeMessage
+  });
+  setStatus('unexpectedError');
+}
+
+function attachRuntimeErrorListeners() {
+  if (runtimeErrorListenersAttached) {
+    return;
+  }
+
+  window.addEventListener('error', (event) => {
+    handleUnexpectedRuntimeError(event.error ?? event.message, 'window.error');
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    handleUnexpectedRuntimeError(event.reason, 'window.unhandledrejection');
+    event.preventDefault();
+  });
+
+  runtimeErrorListenersAttached = true;
+}
+
 function resolveLevel(levelId) {
   const overrideLevel = Array.isArray(runtimeConfig.levelOverrides)
     ? runtimeConfig.levelOverrides.find((level) => level.id === levelId)
     : null;
   const level = overrideLevel ?? getLevelById(levelId);
   if (!level) {
-    console.warn('Requested level not found.', { levelId });
+    logRuntimeWarning('Requested level not found.', { levelId });
     return { level: fallbackLevel, usedFallback: true, errorType: 'missing' };
   }
 
   const validation = validateLevelData(level);
   if (!validation.isValid) {
-    console.warn('Level validation failed.', {
+    logRuntimeWarning('Level validation failed.', {
       levelId,
       errors: validation.errors
     });
@@ -648,14 +689,20 @@ function startRun() {
   isRunInProgress = true;
   setProgramEditingEnabled(false);
 
-  void runRobotSession(runToken, runController.signal, executionConfig).finally(() => {
-    isRunInProgress = false;
-    setActiveProgramStep(null);
-    setProgramEditingEnabled(true);
-    if (runToken === activeRunToken && activeRunController === runController) {
-      activeRunController = null;
-    }
-  });
+  void runRobotSession(runToken, runController.signal, executionConfig)
+    .catch((error) => {
+      if (runToken === activeRunToken) {
+        handleUnexpectedRuntimeError(error, 'run.session');
+      }
+    })
+    .finally(() => {
+      isRunInProgress = false;
+      setActiveProgramStep(null);
+      setProgramEditingEnabled(true);
+      if (runToken === activeRunToken && activeRunController === runController) {
+        activeRunController = null;
+      }
+    });
 }
 
 function cancelActiveRun(nextStatus = null) {
@@ -734,7 +781,9 @@ export function initializeRobotLab(config = defaultRuntimeConfig) {
   }
 
   runtimeConfig = config;
+  runtimeLogger = runtimeConfig.logger ?? createConsoleLogger();
   currentRequestedLevelId = getInitialLevelId();
+  attachRuntimeErrorListeners();
   applyStaticLabels();
   programWorkspaceView.attachInteractions();
   initializeLevel(getInitialLevelId());

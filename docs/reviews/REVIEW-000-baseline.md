@@ -84,6 +84,19 @@ US-042 (agent picker check) and US-045 (license decision) wait on the owner. US-
 
 `npm run build` verifies files exist; it does not produce a distributable. Acceptable now; covered by US-068.
 
-## Required follow-up
+## Resolution status (updated after Sprint 2.5)
 
-The implementer agent must complete US-061 to US-068 before US-018 and later feature stories, because those stories would otherwise deepen B1.
+| Finding | Status | Resolution |
+| --- | --- | --- |
+| B1 | Closed | Resolved through US-061 to US-068 refactor stack (`#28` to `#35`), with execution/program/storage separation and architecture checks. |
+| B2 | Closed | Historical stack merged to `master`; work now continues from merged baseline. |
+| M1 | Closed | Added and expanded unit coverage across program execution, objective tracking, repositories, and editing logic (`US-062` to `US-064`). |
+| M2 | Closed | Runtime URL hooks removed from production and replaced with injected runtime config (`US-065`, PR `#32`). |
+| M3 | Closed | Test-only levels moved to `tests/fixtures`; shipped registry now includes only real levels (`US-066`, PR `#33`). |
+| M4 | Closed | Ubiquitous language refactor applied, including `objective-tracker` naming and collectible terminology (`US-067`, PR `#34`). |
+| M5 | Closed | Arabic literals removed from logic code and kept in i18n/localized level data; enforced by language check (`US-067`, PR `#34`). |
+| M6 | Closed | Objective progress now returns new state without mutating inputs (`US-062`, PR `#31`). |
+| m1 | Closed | Slice-based architecture introduced and enforced by `architecture:check` (`US-061`, PR `#28`). |
+| m2 | Closed | Repository agent definition matches long-run mode (`.github/agents/minibot-backlog-implementer.agent.md`). |
+| m3 | Closed (owner-tracked) | US-042 and US-045 remain intentionally owner-controlled, tracked in `docs/implementation-status.md` as instructed. |
+| m4 | Closed | `npm run build` now produces `dist/` and validates CSP as part of the readiness gate (`US-068`, PR `#35`). |

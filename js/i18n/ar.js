@@ -82,6 +82,7 @@ export const arStrings = {
     startRequired: 'الحالة: ابدأ بكتلة ابدأ أولاً.',
     requiredBlockMissing: 'الحالة: البرنامج يحتاج أمراً مطلوباً لهذا التحدي.',
     validationInternalError: 'الحالة: تعذّر التحقق من البرنامج. حاول مرة أخرى.',
+    unexpectedError: 'الحالة: حدث خطأ غير متوقع. أعد المحاولة.',
     programSaved: 'الحالة: تم حفظ البرنامج على هذا الجهاز.',
     programRestored: 'الحالة: تم استعادة البرنامج المحفوظ.',
     programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.'
