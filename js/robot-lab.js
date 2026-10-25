@@ -19,6 +19,10 @@ import {
   createLocalStorageProgramRepository,
   createLocalStorageProgressRepository
 } from './features/learning-progress/index.js';
+import {
+  createProgramEditor,
+  createProgramWorkspaceView
+} from './features/program-editing/index.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');
@@ -95,13 +99,23 @@ let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
 let challengeState = createChallengeState(fallbackLevel);
 let isRunInProgress = false;
-let programSteps = [];
-let nextProgramStepId = 1;
-let pendingDraggedBlockType = null;
-let pendingDraggedProgramStepId = null;
-let pendingProgramInsertIndex = null;
-let activeProgramStepId = null;
 let currentRequestedLevelId = getActiveLevelId();
+const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
+const programWorkspaceView = createProgramWorkspaceView({
+  programWorkspaceElement,
+  programListElement,
+  programDemoElement,
+  getProgramEditor: () => programEditor,
+  getBlockPresentation,
+  deleteStepLabel: arStrings.controls.deleteStep,
+  emptyProgramLabel: arStrings.blockArea.emptyProgram,
+  isRunInProgress: () => isRunInProgress,
+  isFirstLevel: () => activeLevel.id === 'level-001',
+  onInvalidDrop: () => setStatus('invalidDrop'),
+  onProgramChanged: () => setStatus('programUpdated'),
+  onProgramRemoved: () => setStatus('programRemoved'),
+  onProgramReordered: () => setStatus('programReordered')
+});
 
 function setStatus(state) {
   statusElement.dataset.state = state;
@@ -292,191 +306,60 @@ function updateCollectionSummary() {
     `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
 }
 
-function updateProgramDemo() {
-  const shouldShowDemo = activeLevel.id === 'level-001' && programSteps.length === 0;
-  programDemoElement.hidden = !shouldShowDemo;
-}
-
 function setActiveProgramStep(stepId) {
-  if (activeProgramStepId === stepId) {
+  if (programEditor.getActiveProgramStepId() === stepId) {
     return;
   }
-  activeProgramStepId = stepId;
-  renderProgramWorkspace();
+  programEditor.setActiveProgramStep(stepId);
+  programWorkspaceView.render();
 }
 
 function renderProgramWorkspace() {
-  const stepElements = [];
-
-  if (programSteps.length === 0 && pendingProgramInsertIndex === null) {
-    const emptyState = document.createElement('li');
-    emptyState.classList.add('program-empty');
-    emptyState.textContent = arStrings.blockArea.emptyProgram;
-    stepElements.push(emptyState);
-  } else {
-    for (let index = 0; index < programSteps.length; index += 1) {
-      if (pendingProgramInsertIndex === index) {
-        const placeholder = document.createElement('li');
-        placeholder.classList.add('program-placeholder');
-        placeholder.setAttribute('aria-hidden', 'true');
-        stepElements.push(placeholder);
-      }
-
-      const step = programSteps[index];
-      const presentation = getBlockPresentation(step.blockType);
-      const stepElement = document.createElement('li');
-      stepElement.classList.add('program-step');
-      stepElement.dataset.stepId = String(step.id);
-      stepElement.dataset.active = String(step.id) === String(activeProgramStepId) ? 'true' : 'false';
-      stepElement.draggable = true;
-
-      const icon = document.createElement('span');
-      icon.classList.add('program-step__icon');
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = presentation.icon;
-
-      const label = document.createElement('span');
-      label.classList.add('program-step__label');
-      label.textContent = presentation.label;
-
-      const removeButton = document.createElement('button');
-      removeButton.type = 'button';
-      removeButton.classList.add('program-step__remove');
-      removeButton.setAttribute('aria-label', `${arStrings.controls.deleteStep} ${presentation.label}`);
-      removeButton.textContent = '✕';
-      removeButton.addEventListener('click', () => {
-        removeProgramStep(step.id);
-      });
-
-      stepElement.addEventListener('dragstart', (event) => {
-        pendingDraggedProgramStepId = String(step.id);
-        pendingDraggedBlockType = null;
-        if (event.dataTransfer) {
-          event.dataTransfer.effectAllowed = 'move';
-          event.dataTransfer.setData('application/x-program-step-id', String(step.id));
-        }
-      });
-      stepElement.addEventListener('dragend', () => {
-        clearProgramInsertPreview();
-      });
-
-      stepElement.append(icon, label, removeButton);
-      stepElements.push(stepElement);
-    }
-
-    if (pendingProgramInsertIndex === programSteps.length) {
-      const placeholder = document.createElement('li');
-      placeholder.classList.add('program-placeholder');
-      placeholder.setAttribute('aria-hidden', 'true');
-      stepElements.push(placeholder);
-    }
-  }
-
-  programListElement.replaceChildren(...stepElements);
-  for (const removeButton of programListElement.querySelectorAll('.program-step__remove')) {
-    removeButton.disabled = isRunInProgress;
-  }
-  updateProgramDemo();
+  programWorkspaceView.render();
 }
 
 function resetProgramWorkspace() {
-  programSteps = [];
-  nextProgramStepId = 1;
-  pendingDraggedBlockType = null;
-  pendingDraggedProgramStepId = null;
-  pendingProgramInsertIndex = null;
-  activeProgramStepId = null;
+  programEditor.reset();
   renderProgramWorkspace();
 }
 
-function getProgramInsertIndex(clientY) {
-  const stepElements = Array.from(programListElement.querySelectorAll('.program-step'));
-  if (stepElements.length === 0) {
-    return 0;
-  }
-
-  for (let index = 0; index < stepElements.length; index += 1) {
-    const rect = stepElements[index].getBoundingClientRect();
-    if (clientY < rect.top + rect.height / 2) {
-      return index;
-    }
-  }
-
-  return stepElements.length;
-}
-
-function setProgramInsertPreview(insertIndex, draggedBlockType) {
-  if (pendingProgramInsertIndex === insertIndex && pendingDraggedBlockType === draggedBlockType) {
-    return;
-  }
-  pendingProgramInsertIndex = insertIndex;
-  pendingDraggedBlockType = draggedBlockType;
-  renderProgramWorkspace();
-}
-
-function clearProgramInsertPreview() {
-  if (
-    pendingProgramInsertIndex === null &&
-    pendingDraggedBlockType === null &&
-    pendingDraggedProgramStepId === null
-  ) {
-    return;
-  }
-  pendingProgramInsertIndex = null;
-  pendingDraggedBlockType = null;
-  pendingDraggedProgramStepId = null;
-  renderProgramWorkspace();
-}
-
-function addProgramStep(blockType, insertIndex = programSteps.length) {
-  if (!activeLevel.availableBlocks.includes(blockType)) {
+function addProgramStep(blockType, insertIndex = programEditor.getProgramSteps().length) {
+  const wasAdded = programEditor.addProgramStep(blockType, insertIndex);
+  if (!wasAdded) {
     setStatus('invalidDrop');
     return false;
   }
 
-  const normalizedInsertIndex = Math.max(0, Math.min(insertIndex, programSteps.length));
-  const newStep = { id: nextProgramStepId, blockType };
-  nextProgramStepId += 1;
-  programSteps.splice(normalizedInsertIndex, 0, newStep);
-  pendingProgramInsertIndex = null;
-  pendingDraggedBlockType = null;
-  pendingDraggedProgramStepId = null;
   renderProgramWorkspace();
   setStatus('programUpdated');
   return true;
 }
 
 function removeProgramStep(stepId) {
-  const stepIndex = programSteps.findIndex((step) => String(step.id) === String(stepId));
-  if (stepIndex < 0) {
+  const wasRemoved = programEditor.removeProgramStep(stepId);
+  if (!wasRemoved) {
     return false;
   }
 
-  programSteps.splice(stepIndex, 1);
   renderProgramWorkspace();
   setStatus('programRemoved');
   return true;
 }
 
 function moveProgramStep(stepId, insertIndex) {
-  const sourceIndex = programSteps.findIndex((step) => String(step.id) === String(stepId));
-  if (sourceIndex < 0) {
+  const wasMoved = programEditor.moveProgramStep(stepId, insertIndex);
+  if (!wasMoved) {
     setStatus('invalidDrop');
     return false;
   }
 
-  const [stepToMove] = programSteps.splice(sourceIndex, 1);
-  const normalizedInsertIndex = Math.max(0, Math.min(insertIndex, programSteps.length));
-  programSteps.splice(normalizedInsertIndex, 0, stepToMove);
-  pendingProgramInsertIndex = null;
-  pendingDraggedProgramStepId = null;
   renderProgramWorkspace();
   setStatus('programReordered');
   return true;
 }
 
 function saveCurrentProgramForLevel(levelId) {
-  const blockTypes = programSteps.map((step) => step.blockType);
+  const blockTypes = programEditor.getProgramBlockTypes();
   const wasSaved = programRepository.saveProgram(levelId, blockTypes);
   if (wasSaved) {
     setStatus('programSaved');
@@ -498,11 +381,11 @@ function restoreProgramForLevel(levelId) {
     return { restored: false, failed };
   }
 
-  programSteps = restoredBlocks.map((blockType) => {
-    const step = { id: nextProgramStepId, blockType };
-    nextProgramStepId += 1;
-    return step;
-  });
+  const wasRestored = programEditor.restoreProgram(restoredBlocks);
+  if (!wasRestored) {
+    return { restored: false, failed };
+  }
+
   renderProgramWorkspace();
   return { restored: true, failed: false };
 }
@@ -579,83 +462,30 @@ function createBlockButton(blockType) {
     }
   });
   button.addEventListener('dragstart', (event) => {
-    pendingDraggedBlockType = blockType;
-    pendingDraggedProgramStepId = null;
+    programEditor.setProgramInsertPreview(
+      programEditor.getPendingProgramInsertIndex(),
+      blockType,
+      null
+    );
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'copy';
       event.dataTransfer.setData('text/plain', blockType);
     }
   });
   button.addEventListener('dragend', () => {
-    clearProgramInsertPreview();
+    programEditor.clearProgramInsertPreview();
+    renderProgramWorkspace();
   });
   return button;
 }
 
 function renderAvailableBlocks(level) {
+  programEditor.setAvailableBlockTypes(level.availableBlocks);
   blockButtons = level.availableBlocks.map((blockType) => createBlockButton(blockType));
   blockListElement.replaceChildren(...blockButtons);
   selectedBlockType = null;
+  renderProgramWorkspace();
   setProgramEditingEnabled(!isRunInProgress);
-}
-
-function setupProgramWorkspaceInteractions() {
-  programWorkspaceElement.addEventListener('dragover', (event) => {
-    if (isRunInProgress) {
-      return;
-    }
-
-    const draggedProgramStepId =
-      event.dataTransfer?.getData('application/x-program-step-id') || pendingDraggedProgramStepId;
-    const draggedBlockType = event.dataTransfer?.getData('text/plain') || pendingDraggedBlockType;
-    if (!draggedProgramStepId && !draggedBlockType) {
-      return;
-    }
-
-    event.preventDefault();
-    const insertIndex = getProgramInsertIndex(event.clientY);
-    pendingDraggedProgramStepId = draggedProgramStepId || null;
-    setProgramInsertPreview(insertIndex, draggedBlockType || null);
-  });
-
-  programWorkspaceElement.addEventListener('dragleave', (event) => {
-    if (event.relatedTarget && programWorkspaceElement.contains(event.relatedTarget)) {
-      return;
-    }
-    clearProgramInsertPreview();
-  });
-
-  programWorkspaceElement.addEventListener('drop', (event) => {
-    event.preventDefault();
-    if (isRunInProgress) {
-      clearProgramInsertPreview();
-      return;
-    }
-
-    const droppedProgramStepId =
-      event.dataTransfer?.getData('application/x-program-step-id') || pendingDraggedProgramStepId;
-    if (droppedProgramStepId) {
-      const insertIndex = pendingProgramInsertIndex ?? programSteps.length;
-      const wasMoved = moveProgramStep(droppedProgramStepId, insertIndex);
-      if (!wasMoved) {
-        clearProgramInsertPreview();
-      }
-      return;
-    }
-
-    const droppedBlockType = event.dataTransfer?.getData('text/plain') || pendingDraggedBlockType;
-    if (!droppedBlockType) {
-      setStatus('invalidDrop');
-      clearProgramInsertPreview();
-      return;
-    }
-
-    const insertIndex = pendingProgramInsertIndex ?? programSteps.length;
-    const wasAdded = addProgramStep(droppedBlockType, insertIndex);
-    if (!wasAdded) {
-      clearProgramInsertPreview();
-    }
-  });
 }
 
 function renderLevelMeta(level) {
@@ -760,6 +590,7 @@ async function executeTurn(runToken, signal, direction, executionConfig) {
 }
 
 function buildInstructionSequence(executionConfig) {
+  const programSteps = programEditor.getProgramSteps();
   if (programSteps.length > 0) {
     return programSteps.map((step) => ({ blockType: step.blockType, stepId: step.id }));
   }
@@ -1008,6 +839,6 @@ resetButton.addEventListener('click', () => {
 });
 
 applyStaticLabels();
-setupProgramWorkspaceInteractions();
+programWorkspaceView.attachInteractions();
 initializeLevel(getActiveLevelId());
 syncPrimaryActions();
