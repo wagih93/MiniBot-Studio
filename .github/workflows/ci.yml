@@ -1,9 +1,18 @@
-﻿name: CI
+name: CI
 
 on:
   push:
     branches: [main, master]
   pull_request:
+  push:
+    branches: [master, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -17,15 +26,11 @@ jobs:
         with:
           node-version: 20
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run unit tests
-        run: npm test -- --runInBand
-
-      - name: Run lint
-        run: npm run lint --if-present
-
-      - name: Run build
-        run: npm run build --if-present
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run lint --if-present
+      - run: npm test
+      - run: npm run safety:check
+      - run: npm run validate:agent
+      - run: npm run test:browser-safety
+      - run: npm run build

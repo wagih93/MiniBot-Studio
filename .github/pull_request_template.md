@@ -3,7 +3,7 @@
 - **Story ID:** <!-- e.g. US-011 -->
 - **Backlog entry:** <!-- docs/PRODUCT_BACKLOG_STYKANIMATE.md, section and story -->
 - **Sprint:** <!-- e.g. 2 -->
-- **Base:** <!-- default branch, or the previous story's branch (say "stacked on #N") -->
+- **Base:** <!-- default branch, or the previous story's branch if stacked (say "stacked on #N") -->
 - Title format: `[US-###] <Imperative summary>`. One story per PR.
 
 ## User value

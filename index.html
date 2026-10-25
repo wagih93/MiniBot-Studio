@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    >
+    <title>MiniBot Studio - Robot Lab</title>
+    <link rel="stylesheet" href="./css/app.css">
+    <script type="module" src="./js/robot-lab.js"></script>
+  </head>
+  <body>
+    <main class="robot-lab" aria-label="مختبر الروبوت">
+      <header class="robot-lab__header">
+        <h1 id="app-heading"></h1>
+        <p id="level-indicator" class="level-indicator"></p>
+      </header>
+      <nav class="primary-actions" role="navigation" aria-label="القائمة الرئيسية">
+        <button id="start-button" type="button">
+          <span class="primary-action-icon" aria-hidden="true">▶️</span>
+          <span id="start-button-label"></span>
+        </button>
+        <button id="continue-button" type="button">
+          <span class="primary-action-icon" aria-hidden="true">📘</span>
+          <span id="continue-button-label"></span>
+        </button>
+        <button id="parents-button" type="button">
+          <span class="primary-action-icon" aria-hidden="true">👪</span>
+          <span id="parents-button-label"></span>
+        </button>
+      </nav>
+      <div class="workspace">
+        <section id="robot-world" class="panel world-panel" aria-label="عالم الروبوت">
+          <h2 id="world-heading"></h2>
+          <div id="world-grid" class="world-grid" role="img" aria-label="شبكة الروبوت"></div>
+          <p id="collection-summary" class="level-meta"></p>
+          <p id="level-hint" class="level-meta"></p>
+          <p id="success-condition" class="level-meta"></p>
+        </section>
+        <section id="block-area" class="panel block-panel" aria-label="منطقة الأوامر">
+          <h2 id="block-area-heading"></h2>
+          <div id="block-list" class="block-list" role="group" aria-label="أوامر الحركة"></div>
+          <section id="program-workspace" class="program-workspace" aria-label="مساحة البرنامج">
+            <h3 id="program-heading"></h3>
+            <div class="program-actions">
+              <button id="save-program-button" type="button"></button>
+            </div>
+            <ol id="program-list" class="program-list"></ol>
+            <p id="program-demo" class="program-demo" hidden></p>
+          </section>
+        </section>
+      </div>
+      <section class="movement-guide" aria-label="دليل الاتجاهات">
+        <h2 id="movement-heading"></h2>
+        <ul class="movement-guide__list">
+          <li>
+            <span class="direction-icon" data-direction="forward" aria-hidden="true">↑</span>
+            <span id="move-forward-label"></span>
+          </li>
+          <li>
+            <span class="direction-icon" data-direction="right" aria-hidden="true">→</span>
+            <span id="turn-right-label"></span>
+          </li>
+          <li>
+            <span class="direction-icon" data-direction="left" aria-hidden="true">←</span>
+            <span id="turn-left-label"></span>
+          </li>
+        </ul>
+      </section>
+      <section id="level-error" class="level-error" hidden>
+        <p id="level-error-message"></p>
+        <div class="level-error__actions">
+          <button id="retry-level-button" type="button"></button>
+          <button id="return-home-button" type="button"></button>
+        </div>
+      </section>
+      <p id="status" class="status" data-state="idle"></p>
+      <div class="controls" role="group" aria-label="أزرار التحكم">
+        <button id="play-button" type="button"></button>
+        <button id="stop-button" type="button"></button>
+        <button id="reset-button" type="button"></button>
+      </div>
+    </main>
+  </body>
+</html>

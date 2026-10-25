@@ -5,37 +5,70 @@
 
 ## Context
 
-MiniBot Studio is an Arabic-first educational robot programming app. The backlog includes a Story Studio feature set that is explicitly tied to the upstream StykAnimate project. The repository must preserve child safety, local-first privacy, and a clear licensing path for any third-party code.
+MiniBot Studio is a local, offline, Arabic-first educational app for a five-year-old. Story Studio needs a real animation tool, introduced gradually with adult help.
 
-The architecture guidance in the project setup recommends defaulting to a lightweight local-first implementation, while the backlog explicitly notes that Story Studio should be based on StykAnimate only after the owner records a decision in US-045.
+## Technical findings (verified from the cloned repository)
 
-## Decision
+- Static browser build with no server. `npm run web:build`, `web:verify` and `test:web` exist. A Python codec runs in the browser through WebAssembly (Pyodide). Offline after first load via a service worker (upstream `docs/WEB.md`).
+- WebGPU renderer with a labeled Canvas 2D fallback when WebGPU is unavailable (upstream `docs/renderer.md`).
+- An Arabic locale pack `src/locales/packs/ar.json` exists (about 7,000 strings); RTL support is described in upstream `docs/LOCALIZATION.md`.
+- Full professional editor with a Simple frame-strip timeline and an Advanced timeline. Not designed for a five-year-old.
+- No embedding API found. Production headers set `X-Frame-Options: DENY` and `frame-ancestors 'none'`. Only internal worker messaging was found.
+- Optional consent-based diagnostics (`docs/telemetry.md`). A community library uses a server route `/community/*` in upstream's own deployment.
+- No bundler. The web file set comes from the `web` filter in `package.json`.
 
-MiniBot Studio will adopt the owner-approved default decision A:
+## Licensing findings
 
-- License the project under GPL-3.0-or-later.
-- Permit vendoring the pinned StykAnimate upstream build under `third_party/stykanimate/` when approved by the owner.
-- Keep all upstream material unmodified and separate from the project code.
-- Continue to block Story Studio stories until the owner decision is recorded.
+- `LICENSE` is the GNU GPL version 3 text. `package.json` declares `GPL-3.0-or-later`. The README says the same.
+- Third-party parts keep their own licenses (upstream `THIRD_PARTY_NOTICES.md`): resvg MPL-2.0; earcut ISC; opentype.js MIT; Noto Sans and Inter SIL OFL 1.1; zstd-wasm MIT/BSD-2; an adaptation of sticknodes-rs MIT. Desktop releases also ship FFmpeg (GPL-3.0), Electron and Python, which MiniBot would not use.
+- Upstream asks that modified versions use a different name and logo.
+- Consequences if MiniBot Studio is distributed together with StykAnimate: the distributed combination is expected to be offered under GPL-3.0-or-later with corresponding source, license text and notices. A separate window or path does not by itself change this. For purely private family use with no distribution, these obligations are not triggered. Flag for qualified legal review if distribution to others is planned and the owner wants a different license.
 
-## Rationale
+## Options
 
-This keeps the project aligned with the backlog's safety and compliance guidance and gives the team a simple, auditable path for integrating StykAnimate without shipping unreviewed upstream code. GPL-3.0-or-later is the recommended licensing choice for a child-focused educational app that bundles third-party code and needs to remain open and traceable.
+| | A' Vendored unmodified build, separate path and window | B External link to app.stykanimate.com | C Original minimal workspace |
+|---|---|---|---|
+| License effect | Distributed combination under GPL-3.0-or-later | No bundling, but depends on a third-party site | None from upstream |
+| Offline | Yes (verify in US-049) | No (needs network first) | Yes |
+| Arabic / RTL | `ar` pack present, quality unreviewed (US-048) | Same | Fully controlled |
+| Child suitability | Needs adult help and cards | Same | Best |
+| Effort | Medium (vendoring, audits, cards) | Low | High (US-055, 13 points) |
+| Privacy | Verify no external requests (US-046) | Leaves the device | Local |
+| Maintenance | Re-pin deliberately | None | Our code |
 
-## Consequences
+## Proposed decision
 
-### Positive
+**Decision A (recommended):** license MiniBot Studio under GPL-3.0-or-later and use Option A'. Vendor an unmodified, pinned build under `third_party/stykanimate/`, open it in its own window from an adult-gated entry, share no data with it, show licenses and source links in the app (US-053), and keep Robot Lab's content security policy unchanged.
 
-- Clear compliance path for StykAnimate integration.
-- Local-first Story Studio remains possible with unmodified upstream vendoring.
-- The project can proceed with Story Studio work once the licensing decision is finalized.
+**Decision B (alternative):** keep other license terms, do not bundle upstream, and build the original minimal workspace (US-055). Option B in the table (external link) is not recommended because it breaks offline and privacy goals.
 
-### Negative
+The owner chooses by merging this ADR with the chosen decision marked.
 
-- The project must preserve GPL-compatible notices and vendor distribution requirements.
-- Story Studio work remains blocked until the owner provides the formal decision.
+## Required notices if upstream material is distributed
 
-### Follow-up
+GPL-3.0 license text; upstream copyright and third-party notices; pointer to the corresponding source at the pinned commit; statement of any modification (none are planned); renamed branding if anything is modified.
 
-- Keep `US-045` blocked until the owner signs off.
-- Add vendor notices and licensing status when the decision is approved.
+## Not verified yet
+
+- Whether `web:build` needs network access during the build.
+- Size of the built output.
+- Translation quality of the Arabic pack and how to preselect Arabic without modifying upstream code.
+- Service-worker scope and storage-key coexistence with MiniBot.
+- Behavior on a device without WebGPU.
+
+These are covered by US-046, US-048 and US-049.
+
+## Risks
+
+Legal interpretation; upstream changes after the pinned commit; an adult-grade editor for a young child; shared origin storage; large build size.
+
+## Questions for qualified legal review
+
+- Does planned distribution (GitHub releases, classroom sharing, app bundles) trigger GPL source-offer obligations for all distributed binaries and asset bundles in our intended channels?
+- Is the planned NOTICE/source-link strategy sufficient for GPL-3.0-or-later + third-party-attribution compliance when bundling an unmodified upstream web build?
+- Are there any additional trademark/branding obligations when distributing unmodified upstream assets under a new product name?
+- Are there compatibility concerns between GPL-3.0-or-later distribution and any current or planned third-party dependencies (for example Apache-2.0 dependencies such as Blockly)?
+
+## Go / no-go
+
+Option A': **go, conditional** on the owner's decision in US-045. Option B: **no-go**. Option C: **fallback** if the owner decides not to use GPL-3.0-or-later.
