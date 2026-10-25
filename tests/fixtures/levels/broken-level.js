@@ -10,7 +10,7 @@ export const brokenLevel = {
     column: 0,
     direction: 'north'
   },
-  goals: [],
+  collectibles: [],
   obstacles: [],
   availableBlocks: ['moveForward'],
   successConditions: {

@@ -4,7 +4,7 @@ import {
   turnLeft,
   turnRight
 } from '../../robot-simulation/index.js';
-import { updateChallengeProgress } from '../domain/objective-tracker.js';
+import { updateObjectiveProgress } from '../domain/objective-tracker.js';
 import { validateProgram } from '../domain/program-validation.js';
 
 function emit(onEvent, event) {
@@ -13,11 +13,11 @@ function emit(onEvent, event) {
   }
 }
 
-function cloneChallengeState(challengeState) {
+function cloneObjectiveProgress(objectiveProgress) {
   return {
-    totalGoals: challengeState.totalGoals,
-    collectedGoalKeys: new Set(challengeState.collectedGoalKeys),
-    recentlyCollectedGoalKey: challengeState.recentlyCollectedGoalKey
+    totalCollectibles: objectiveProgress.totalCollectibles,
+    collectedCollectibleKeys: new Set(objectiveProgress.collectedCollectibleKeys),
+    recentlyCollectedCollectibleKey: objectiveProgress.recentlyCollectedCollectibleKey
   };
 }
 
@@ -49,7 +49,7 @@ export async function runProgram(options) {
     level,
     instructionSequence,
     initialRobotState,
-    initialChallengeState,
+    initialObjectiveProgress,
     executionConfig,
     delay,
     signal,
@@ -62,7 +62,7 @@ export async function runProgram(options) {
     return {
       status: validationFailure,
       robotState: initialRobotState,
-      challengeState: initialChallengeState
+      objectiveProgress: initialObjectiveProgress
     };
   }
 
@@ -71,23 +71,23 @@ export async function runProgram(options) {
     return {
       status: 'complete',
       robotState: initialRobotState,
-      challengeState: initialChallengeState
+      objectiveProgress: initialObjectiveProgress
     };
   }
 
   let robotState = { ...initialRobotState };
-  let challengeState = cloneChallengeState(initialChallengeState);
+  let objectiveProgress = cloneObjectiveProgress(initialObjectiveProgress);
   const stepDelayMilliseconds = executionConfig.stepDelayMilliseconds;
   const maxStepsPerRun = executionConfig.maxStepsPerRun;
 
   for (let stepNumber = 0; stepNumber < instructionSequence.length; stepNumber += 1) {
     if (signal?.aborted) {
-      return { status: 'aborted', robotState, challengeState };
+      return { status: 'aborted', robotState, objectiveProgress };
     }
 
     if (stepNumber >= maxStepsPerRun) {
       emit(onEvent, { type: 'statusChanged', status: 'stepLimitExceeded' });
-      return { status: 'stepLimitExceeded', robotState, challengeState };
+      return { status: 'stepLimitExceeded', robotState, objectiveProgress };
     }
 
     const instruction = instructionSequence[stepNumber];
@@ -100,7 +100,7 @@ export async function runProgram(options) {
     if (instruction.blockType === 'moveForward') {
       if (!canMoveForward(level, robotState)) {
         emit(onEvent, { type: 'statusChanged', status: 'blocked' });
-        return { status: 'blocked', robotState, challengeState };
+        return { status: 'blocked', robotState, objectiveProgress };
       }
 
       robotState = moveForward(robotState);
@@ -117,25 +117,25 @@ export async function runProgram(options) {
       emit(onEvent, { type: 'statusChanged', status: 'running' });
       const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
       if (!canContinue || signal?.aborted) {
-        return { status: 'aborted', robotState, challengeState };
+        return { status: 'aborted', robotState, objectiveProgress };
       }
 
-      const progress = updateChallengeProgress(level, challengeState, robotState);
-      challengeState = progress.challengeState;
+      const progress = updateObjectiveProgress(level, objectiveProgress, robotState);
+      objectiveProgress = progress.objectiveProgress;
       emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
-      emit(onEvent, { type: 'challengeUpdated', challengeState });
+      emit(onEvent, { type: 'objectiveUpdated', objectiveProgress });
 
-      if (progress.collectedGoalKey) {
+      if (progress.collectedCollectibleKey) {
         emit(onEvent, { type: 'statusChanged', status: 'collected' });
         const canContinueAfterCollection = await waitWithAbort(delay, 180, signal);
         if (!canContinueAfterCollection || signal?.aborted) {
-          return { status: 'aborted', robotState, challengeState };
+          return { status: 'aborted', robotState, objectiveProgress };
         }
       }
 
-      if (progress.isComplete) {
+      if (progress.isObjectiveComplete) {
         emit(onEvent, { type: 'statusChanged', status: 'levelComplete' });
-        return { status: 'levelComplete', robotState, challengeState };
+        return { status: 'levelComplete', robotState, objectiveProgress };
       }
 
       continue;
@@ -157,7 +157,7 @@ export async function runProgram(options) {
       emit(onEvent, { type: 'statusChanged', status: 'running' });
       const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
       if (!canContinue || signal?.aborted) {
-        return { status: 'aborted', robotState, challengeState };
+        return { status: 'aborted', robotState, objectiveProgress };
       }
 
       emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
@@ -165,13 +165,13 @@ export async function runProgram(options) {
     }
 
     emit(onEvent, { type: 'statusChanged', status: 'unsupported' });
-    return { status: 'unsupported', robotState, challengeState };
+    return { status: 'unsupported', robotState, objectiveProgress };
   }
 
   emit(onEvent, { type: 'statusChanged', status: 'complete' });
   return {
     status: 'complete',
     robotState,
-    challengeState
+    objectiveProgress
   };
 }

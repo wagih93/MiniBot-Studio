@@ -31,10 +31,11 @@ export function validateLevelData(level) {
     errors.push('Robot direction must be one of north/east/south/west.');
   }
 
-  if (!Array.isArray(level.goals) || level.goals.length === 0) {
-    errors.push('At least one goal is required.');
-  } else if (level.goals.some((goal) => !isGridPosition(goal))) {
-    errors.push('Every goal must define non-negative integer row and column.');
+  const collectibles = Array.isArray(level.collectibles) ? level.collectibles : null;
+  if (!Array.isArray(collectibles) || collectibles.length === 0) {
+    errors.push('At least one collectible is required.');
+  } else if (collectibles.some((collectible) => !isGridPosition(collectible))) {
+    errors.push('Every collectible must define non-negative integer row and column.');
   }
 
   if (!Array.isArray(level.obstacles)) {

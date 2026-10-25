@@ -10,7 +10,7 @@ export const level002 = {
     column: 0,
     direction: 'east'
   },
-  goals: [{ row: 4, column: 4, type: 'star' }],
+  collectibles: [{ row: 4, column: 4, type: 'star' }],
   obstacles: [
     { row: 1, column: 1 },
     { row: 2, column: 1 },
@@ -19,7 +19,7 @@ export const level002 = {
   availableBlocks: ['moveForward', 'turnRight', 'turnLeft'],
   successConditions: {
     reachGoal: true,
-    collectAllGoals: true
+    collectAllCollectibles: true
   },
   hints: ['تجنّب العوائق في الوسط وجرّب الانعطاف مرتين.']
 };

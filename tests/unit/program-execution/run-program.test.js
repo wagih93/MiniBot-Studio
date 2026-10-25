@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createRobotState } from '../../../js/features/robot-simulation/index.js';
 import {
   compileProgram,
-  createChallengeState,
+  createObjectiveProgress,
   runProgram,
   validateProgram
 } from '../../../js/features/program-execution/index.js';
@@ -13,9 +13,9 @@ function createBaseLevel(overrides = {}) {
     id: 'test-level',
     grid: { rows: 4, columns: 4 },
     robot: { row: 0, column: 0, direction: 'east' },
-    goals: [],
+    collectibles: [],
     obstacles: [],
-    successConditions: { reachGoal: true, collectAllGoals: false },
+    successConditions: { reachGoal: true, collectAllCollectibles: false },
     programValidation: { allowEmptyProgram: false, requiresStartBlock: false, requiredBlocks: [] },
     ...overrides
   };
@@ -49,7 +49,7 @@ async function runWithDefaults({
     level: selectedLevel,
     instructionSequence,
     initialRobotState: createRobotState(selectedLevel.robot),
-    initialChallengeState: createChallengeState(selectedLevel),
+    initialObjectiveProgress: createObjectiveProgress(selectedLevel),
     executionConfig,
     delay: delay ?? (async () => {}),
     signal,
@@ -132,10 +132,10 @@ test('runProgram blocks move when robot would leave the grid', async () => {
   assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'north' });
 });
 
-test('runProgram emits collected status when robot reaches a goal', async () => {
+test('runProgram emits collected status when robot reaches a collectible', async () => {
   const level = createBaseLevel({
-    goals: [{ row: 0, column: 1, type: 'star' }],
-    successConditions: { reachGoal: true, collectAllGoals: false }
+    collectibles: [{ row: 0, column: 1, type: 'star' }],
+    successConditions: { reachGoal: true, collectAllCollectibles: false }
   });
 
   const { runResult, events } = await runWithDefaults({
@@ -144,17 +144,17 @@ test('runProgram emits collected status when robot reaches a goal', async () => 
   });
 
   assert.equal(runResult.status, 'complete');
-  assert.equal(runResult.challengeState.collectedGoalKeys.has('0-1'), true);
+  assert.equal(runResult.objectiveProgress.collectedCollectibleKeys.has('0-1'), true);
   assert.equal(
     events.some((event) => event.type === 'statusChanged' && event.status === 'collected'),
     true
   );
 });
 
-test('runProgram completes the level after collecting all goals', async () => {
+test('runProgram completes the level after collecting all collectibles', async () => {
   const level = createBaseLevel({
-    goals: [{ row: 0, column: 1, type: 'star' }],
-    successConditions: { reachGoal: true, collectAllGoals: true }
+    collectibles: [{ row: 0, column: 1, type: 'star' }],
+    successConditions: { reachGoal: true, collectAllCollectibles: true }
   });
 
   const { runResult } = await runWithDefaults({

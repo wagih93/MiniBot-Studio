@@ -10,12 +10,12 @@ export const testLevelValidation = {
     column: 0,
     direction: 'east'
   },
-  goals: [{ row: 0, column: 1, type: 'star' }],
+  collectibles: [{ row: 0, column: 1, type: 'star' }],
   obstacles: [{ row: 1, column: 1 }],
   availableBlocks: ['start', 'moveForward', 'turnRight'],
   successConditions: {
     reachGoal: true,
-    collectAllGoals: true
+    collectAllCollectibles: true
   },
   programValidation: {
     requiresStartBlock: true,

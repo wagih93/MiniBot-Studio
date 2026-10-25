@@ -30,11 +30,14 @@ export const arStrings = {
     }
   },
   levelMeta: {
+    levelIndicatorTemplate: 'المستوى {current}/{total}',
     hintPrefix: 'تلميح:',
     successPrefix: 'الهدف:',
     collectionPrefix: 'النجوم المجموعة:',
     defaultHint: 'اتبع المسار حتى النجمة.',
-    defaultSuccess: 'صل إلى النجمة لتنجح.'
+    defaultSuccess: 'صل إلى النجمة لتنجح.',
+    reachGoalSuccess: 'وصل إلى الهدف المحدد.',
+    fallbackLevelTitle: 'مستوى آمن'
   },
   movementGuideHeading: 'تعليمات الحركة',
   movement: {

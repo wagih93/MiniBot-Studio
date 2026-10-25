@@ -10,12 +10,12 @@ export const level001 = {
     column: 0,
     direction: 'east'
   },
-  goals: [{ row: 3, column: 3, type: 'star' }],
+  collectibles: [{ row: 3, column: 3, type: 'star' }],
   obstacles: [{ row: 0, column: 2 }],
   availableBlocks: ['start', 'moveForward', 'turnRight', 'turnLeft'],
   successConditions: {
     reachGoal: true,
-    collectAllGoals: true
+    collectAllCollectibles: true
   },
   hints: ['تحرّك خطوتين ثم انعطف يميناً للوصول إلى النجمة.']
 };

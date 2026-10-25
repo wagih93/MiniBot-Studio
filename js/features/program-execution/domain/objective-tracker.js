@@ -1,48 +1,58 @@
-function createGoalKey(row, column) {
+function createCollectibleKey(row, column) {
   return `${row}-${column}`;
 }
 
-export function createChallengeState(level) {
-  const goals = Array.isArray(level.goals) ? level.goals : [];
+function getLevelCollectibles(level) {
+  return Array.isArray(level.collectibles) ? level.collectibles : [];
+}
+
+function requiresCollectingAllCollectibles(level) {
+  return level.successConditions?.collectAllCollectibles === true ||
+    level.objective?.collectAllCollectibles === true;
+}
+
+export function createObjectiveProgress(level) {
+  const collectibles = getLevelCollectibles(level);
 
   return {
-    totalGoals: goals.length,
-    collectedGoalKeys: new Set(),
-    recentlyCollectedGoalKey: null
+    totalCollectibles: collectibles.length,
+    collectedCollectibleKeys: new Set(),
+    recentlyCollectedCollectibleKey: null
   };
 }
 
-export function getCollectedCount(challengeState) {
-  return challengeState.collectedGoalKeys.size;
+export function getCollectedCollectibleCount(objectiveProgress) {
+  return objectiveProgress.collectedCollectibleKeys.size;
 }
 
-export function isGoalCollected(challengeState, row, column) {
-  return challengeState.collectedGoalKeys.has(createGoalKey(row, column));
+export function isCollectibleCollected(objectiveProgress, row, column) {
+  return objectiveProgress.collectedCollectibleKeys.has(createCollectibleKey(row, column));
 }
 
-export function updateChallengeProgress(level, challengeState, robotState) {
-  const goals = Array.isArray(level.goals) ? level.goals : [];
-  const key = createGoalKey(robotState.row, robotState.column);
-  const hasGoal = goals.some((goal) => goal.row === robotState.row && goal.column === robotState.column);
-  const alreadyCollected = challengeState.collectedGoalKeys.has(key);
-  const collectedGoalKey = hasGoal && !alreadyCollected ? key : null;
-  const nextCollectedGoalKeys = collectedGoalKey === null
-    ? new Set(challengeState.collectedGoalKeys)
-    : new Set([...challengeState.collectedGoalKeys, collectedGoalKey]);
-  const nextChallengeState = {
-    totalGoals: challengeState.totalGoals,
-    collectedGoalKeys: nextCollectedGoalKeys,
-    recentlyCollectedGoalKey: collectedGoalKey
+export function updateObjectiveProgress(level, objectiveProgress, robotState) {
+  const collectibles = getLevelCollectibles(level);
+  const key = createCollectibleKey(robotState.row, robotState.column);
+  const hasCollectible = collectibles.some(
+    (collectible) => collectible.row === robotState.row && collectible.column === robotState.column
+  );
+  const alreadyCollected = objectiveProgress.collectedCollectibleKeys.has(key);
+  const collectedCollectibleKey = hasCollectible && !alreadyCollected ? key : null;
+  const nextCollectedCollectibleKeys = collectedCollectibleKey === null
+    ? new Set(objectiveProgress.collectedCollectibleKeys)
+    : new Set([...objectiveProgress.collectedCollectibleKeys, collectedCollectibleKey]);
+  const nextObjectiveProgress = {
+    totalCollectibles: objectiveProgress.totalCollectibles,
+    collectedCollectibleKeys: nextCollectedCollectibleKeys,
+    recentlyCollectedCollectibleKey: collectedCollectibleKey
   };
-  const collectAllGoals = level.successConditions?.collectAllGoals === true ||
-    level.objective?.collectAllGoals === true;
-  const isComplete = collectAllGoals
-    ? nextCollectedGoalKeys.size >= nextChallengeState.totalGoals
+  const requiresCollectibleObjective = requiresCollectingAllCollectibles(level);
+  const isObjectiveComplete = requiresCollectibleObjective
+    ? nextCollectedCollectibleKeys.size >= nextObjectiveProgress.totalCollectibles
     : false;
 
   return {
-    challengeState: nextChallengeState,
-    collectedGoalKey,
-    isComplete
+    objectiveProgress: nextObjectiveProgress,
+    collectedCollectibleKey,
+    isObjectiveComplete
   };
 }

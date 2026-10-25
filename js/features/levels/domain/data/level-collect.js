@@ -10,12 +10,12 @@ export const levelCollect = {
     column: 0,
     direction: 'east'
   },
-  goals: [{ row: 0, column: 1, type: 'star' }],
+  collectibles: [{ row: 0, column: 1, type: 'star' }],
   obstacles: [{ row: 0, column: 2 }],
   availableBlocks: ['moveForward'],
   successConditions: {
     reachGoal: true,
-    collectAllGoals: true
+    collectAllCollectibles: true
   },
   hints: ['تقدّم خطوة واحدة لجمع النجمة.']
 };

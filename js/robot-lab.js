@@ -15,9 +15,9 @@ import {
 } from './features/program-editing/index.js';
 import {
   compileProgram,
-  createChallengeState,
-  getCollectedCount,
-  isGoalCollected,
+  createObjectiveProgress,
+  getCollectedCollectibleCount,
+  isCollectibleCollected,
   runProgram
 } from './features/program-execution/index.js';
 import { createDefaultRuntimeConfig } from './runtime-config.js';
@@ -41,7 +41,7 @@ const saveProgramButton = document.querySelector('#save-program-button');
 const worldGridElement = document.querySelector('#world-grid');
 const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
-const successConditionElement = document.querySelector('#success-condition');
+const objectiveConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
 const defaultRuntimeConfig = createDefaultRuntimeConfig();
 
@@ -56,7 +56,7 @@ const directionSymbolByName = {
 
 const fallbackLevel = {
   id: 'fallback-safe-level',
-  title: 'مستوى آمن',
+  title: arStrings.levelMeta.fallbackLevelTitle,
   grid: {
     rows: 3,
     columns: 3
@@ -66,12 +66,12 @@ const fallbackLevel = {
     column: 0,
     direction: 'east'
   },
-  goals: [{ row: 2, column: 2, type: 'star' }],
+  collectibles: [{ row: 2, column: 2, type: 'star' }],
   obstacles: [],
   availableBlocks: ['moveForward', 'turnRight', 'turnLeft'],
   successConditions: {
     reachGoal: true,
-    collectAllGoals: true
+    collectAllCollectibles: true
   },
   hints: [arStrings.levelMeta.defaultHint]
 };
@@ -93,7 +93,7 @@ let blockButtons = [];
 let selectedBlockType = null;
 let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
-let challengeState = createChallengeState(fallbackLevel);
+let objectiveProgress = createObjectiveProgress(fallbackLevel);
 let isRunInProgress = false;
 let runtimeConfig = defaultRuntimeConfig;
 let hasInitialized = false;
@@ -153,11 +153,11 @@ function delay(milliseconds, signal) {
 }
 
 function describeSuccessCondition(level) {
-  const needsAllGoals = Boolean(level.successConditions.collectAllGoals);
-  if (needsAllGoals) {
+  const needsAllCollectibles = Boolean(level.successConditions.collectAllCollectibles);
+  if (needsAllCollectibles) {
     return arStrings.levelMeta.defaultSuccess;
   }
-  return `${arStrings.levelMeta.successPrefix} وصل إلى الهدف المحدد.`;
+  return `${arStrings.levelMeta.successPrefix} ${arStrings.levelMeta.reachGoalSuccess}`;
 }
 
 function readSavedProgressLevelId() {
@@ -251,8 +251,9 @@ function isRobotCell(robot, row, column) {
   return robot.row === row && robot.column === column;
 }
 
-function isGoalCell(level, row, column) {
-  return level.goals.some((goal) => goal.row === row && goal.column === column);
+function isCollectibleCell(level, row, column) {
+  const collectibles = Array.isArray(level.collectibles) ? level.collectibles : [];
+  return collectibles.some((collectible) => collectible.row === row && collectible.column === column);
 }
 
 function isObstacleCell(level, row, column) {
@@ -290,8 +291,8 @@ function renderWorldGrid(level, robot, robotAnimation = null) {
             cellElement.classList.add(`rotating-${robotAnimation.turnDirection}`);
           }
         }
-      } else if (isGoalCell(level, row, column)) {
-        const collected = isGoalCollected(challengeState, row, column);
+      } else if (isCollectibleCell(level, row, column)) {
+        const collected = isCollectibleCollected(objectiveProgress, row, column);
         cellElement.classList.add(collected ? 'target-collected' : 'target');
         cellElement.textContent = collected ? '✨' : '⭐';
       } else if (isObstacleCell(level, row, column)) {
@@ -307,9 +308,9 @@ function renderWorldGrid(level, robot, robotAnimation = null) {
 }
 
 function updateCollectionSummary() {
-  const collectedCount = getCollectedCount(challengeState);
+  const collectedCount = getCollectedCollectibleCount(objectiveProgress);
   collectionSummaryElement.textContent =
-    `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${challengeState.totalGoals}`;
+    `${arStrings.levelMeta.collectionPrefix} ${collectedCount}/${objectiveProgress.totalCollectibles}`;
 }
 
 function setActiveProgramStep(stepId) {
@@ -497,13 +498,15 @@ function renderAvailableBlocks(level) {
 function renderLevelMeta(level) {
   const firstHint = level.hints[0] ?? arStrings.levelMeta.defaultHint;
   levelHintElement.textContent = `${arStrings.levelMeta.hintPrefix} ${firstHint}`;
-  successConditionElement.textContent = describeSuccessCondition(level);
+  objectiveConditionElement.textContent = describeSuccessCondition(level);
 }
 
 function updateLevelIndicator(levelId) {
   const levelIndex = playableLevelIds.indexOf(levelId);
   if (levelIndex >= 0) {
-    levelIndicatorElement.textContent = `المستوى ${levelIndex + 1}/${playableLevelIds.length}`;
+    levelIndicatorElement.textContent = arStrings.levelMeta.levelIndicatorTemplate
+      .replace('{current}', String(levelIndex + 1))
+      .replace('{total}', String(playableLevelIds.length));
     return;
   }
   levelIndicatorElement.textContent = arStrings.levelIndicator;
@@ -533,8 +536,8 @@ function handleProgramExecutionEvent(runToken, event) {
     return;
   }
 
-  if (event.type === 'challengeUpdated') {
-    challengeState = event.challengeState;
+  if (event.type === 'objectiveUpdated') {
+    objectiveProgress = event.objectiveProgress;
     updateCollectionSummary();
     return;
   }
@@ -554,7 +557,7 @@ async function runRobotSession(runToken, signal, executionConfig) {
     level: activeLevel,
     instructionSequence,
     initialRobotState: robotState,
-    initialChallengeState: challengeState,
+    initialObjectiveProgress: objectiveProgress,
     executionConfig,
     delay,
     signal,
@@ -566,12 +569,12 @@ async function runRobotSession(runToken, signal, executionConfig) {
   }
 
   robotState = runResult.robotState;
-  challengeState = runResult.challengeState;
+  objectiveProgress = runResult.objectiveProgress;
 }
 
 function resetRobotPosition() {
   robotState = createRobotState(activeLevel.robot);
-  challengeState = createChallengeState(activeLevel);
+  objectiveProgress = createObjectiveProgress(activeLevel);
   renderWorldGrid(activeLevel, robotState);
   updateCollectionSummary();
 }
@@ -603,7 +606,7 @@ function initializeLevel(levelId) {
   const { level, usedFallback } = resolveLevel(levelId);
   activeLevel = level;
   robotState = createRobotState(level.robot);
-  challengeState = createChallengeState(level);
+  objectiveProgress = createObjectiveProgress(level);
   resetProgramWorkspace();
 
   updateLevelIndicator(level.id);
