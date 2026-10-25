@@ -12,7 +12,7 @@ test('Block toolbox shows only level-allowed blocks', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-collect`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-collect`, { waitUntil: 'networkidle' });
 
     const blockIds = await page.evaluate(() =>
       Array.from(document.querySelectorAll('#block-list .block-item')).map((item) => item.id)
@@ -35,7 +35,7 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const blockSnapshot = await page.evaluate(() =>
       Array.from(document.querySelectorAll('#block-list .block-item')).map((item) => {
@@ -70,3 +70,4 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
     await closeServer(server);
   }
 });
+

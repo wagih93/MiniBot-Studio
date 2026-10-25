@@ -24,7 +24,7 @@ function createBaseLevel(overrides = {}) {
 function createExecutionConfig(overrides = {}) {
   return {
     maxStepsPerRun: 12,
-    stepDelayMs: 0,
+    stepDelayMilliseconds: 0,
     repeatSelectedBlockCount: 1,
     ...overrides
   };
@@ -191,7 +191,7 @@ test('runProgram returns aborted when cancellation happens in the middle of the 
 
   const { runResult } = await runWithDefaults({
     instructionSequence: [{ blockType: 'moveForward', stepId: 61 }],
-    executionConfig: createExecutionConfig({ stepDelayMs: 1 }),
+    executionConfig: createExecutionConfig({ stepDelayMilliseconds: 1 }),
     signal: controller.signal,
     delay
   });

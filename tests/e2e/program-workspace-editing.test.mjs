@@ -55,7 +55,7 @@ test('Program blocks can be reordered and deleted without removing adjacent bloc
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     await addBlockToWorkspace(page, 'moveForward');
     await addBlockToWorkspace(page, 'turnRight');
@@ -130,7 +130,7 @@ test('Workspace display order matches execution order', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     await addBlockToWorkspace(page, 'moveForward');
     await addBlockToWorkspace(page, 'turnRight');
@@ -191,3 +191,4 @@ test('Workspace display order matches execution order', async () => {
     await closeServer(server);
   }
 });
+

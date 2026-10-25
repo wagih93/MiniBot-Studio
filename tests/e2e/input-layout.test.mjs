@@ -12,7 +12,7 @@ test('Robot world, block area, and controls remain visible and support mouse and
   try {
     const mouseContext = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const mousePage = await mouseContext.newPage();
-    await mousePage.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await mousePage.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const visibility = await mousePage.evaluate(() => {
       const requiredSelectors = ['#robot-world', '#block-area', '.controls'];
@@ -57,7 +57,7 @@ test('Robot world, block area, and controls remain visible and support mouse and
       isMobile: true
     });
     const touchPage = await touchContext.newPage();
-    await touchPage.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await touchPage.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
     await touchPage.tap('#block-moveForward');
     await touchPage.tap('#play-button');
     await touchPage.waitForSelector('#status[data-state="complete"]');
@@ -74,3 +74,4 @@ test('Robot world, block area, and controls remain visible and support mouse and
     await closeServer(server);
   }
 });
+

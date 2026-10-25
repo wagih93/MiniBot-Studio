@@ -12,7 +12,7 @@ test('Grid world renders from level data with consistent and bounded cells', asy
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const defaultMetrics = await page.evaluate(() => {
       const grid = document.querySelector('#world-grid');
@@ -50,7 +50,7 @@ test('Grid world renders from level data with consistent and bounded cells', asy
     assert.ok(defaultMetrics.firstCellWidth > 0);
     assert.ok(defaultMetrics.firstCellHeight > 0);
 
-    await page.goto(`${origin}/index.html?level=level-002`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002`, { waitUntil: 'networkidle' });
     const secondLevelCellCount = await page.locator('#world-grid .cell').count();
     assert.equal(secondLevelCellCount, 25);
   } finally {
@@ -59,3 +59,4 @@ test('Grid world renders from level data with consistent and bounded cells', asy
     await closeServer(server);
   }
 });
+

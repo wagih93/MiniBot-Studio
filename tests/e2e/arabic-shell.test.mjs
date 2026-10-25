@@ -20,7 +20,7 @@ test('Arabic shell uses RTL and stays readable across supported viewports', asyn
       const context = await browser.newContext({ viewport });
       const page = await context.newPage();
 
-      await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+      await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
       const metadata = await page.evaluate(() => {
         const directionIcons = Array.from(document.querySelectorAll('.direction-icon')).map((iconElement) => ({
@@ -76,3 +76,4 @@ test('Arabic shell uses RTL and stays readable across supported viewports', asyn
     await closeServer(server);
   }
 });
+

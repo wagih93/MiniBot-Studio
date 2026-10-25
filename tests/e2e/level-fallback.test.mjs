@@ -12,7 +12,7 @@ test('Invalid level data triggers safe fallback instead of crash', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=broken-level`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=broken-level`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#status[data-state="fallback"]');
 
     const fallbackData = await page.evaluate(() => ({
@@ -30,3 +30,4 @@ test('Invalid level data triggers safe fallback instead of crash', async () => {
     await closeServer(server);
   }
 });
+

@@ -12,7 +12,7 @@ test('Turn commands rotate robot orientation without changing position', async (
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     await page.click('#block-turnRight');
     await page.click('#play-button');
@@ -49,3 +49,4 @@ test('Turn commands rotate robot orientation without changing position', async (
     await closeServer(server);
   }
 });
+

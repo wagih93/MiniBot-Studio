@@ -47,25 +47,25 @@ test('Program validation blocks invalid sequences with clear Arabic messages', a
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=test-level-validation`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=test-level-validation`, { waitUntil: 'networkidle' });
 
     await page.click('#play-button');
     const emptyStatus = await page.locator('#status').textContent();
     assert.match(emptyStatus ?? '', /أضف أوامر/);
 
-    await page.goto(`${origin}/index.html?level=test-level-validation`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=test-level-validation`, { waitUntil: 'networkidle' });
     await addBlockToWorkspace(page, 'moveForward');
     await page.click('#play-button');
     const missingStartStatus = await page.locator('#status').textContent();
     assert.match(missingStartStatus ?? '', /ابدأ بكتلة ابدأ/);
 
-    await page.goto(`${origin}/index.html?level=test-level-validation`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=test-level-validation`, { waitUntil: 'networkidle' });
     await addBlockToWorkspace(page, 'start');
     await page.click('#play-button');
     const missingRequiredStatus = await page.locator('#status').textContent();
     assert.match(missingRequiredStatus ?? '', /أمراً مطلوباً/);
 
-    await page.goto(`${origin}/index.html?level=test-level-validation`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=test-level-validation`, { waitUntil: 'networkidle' });
     await addBlockToWorkspace(page, 'start');
     await addBlockToWorkspace(page, 'moveForward');
     await page.click('#play-button');
@@ -76,3 +76,4 @@ test('Program validation blocks invalid sequences with clear Arabic messages', a
     await closeServer(server);
   }
 });
+

@@ -20,6 +20,7 @@ import {
   isGoalCollected,
   runProgram
 } from './features/program-execution/index.js';
+import { createDefaultRuntimeConfig } from './runtime-config.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');
@@ -42,7 +43,7 @@ const collectionSummaryElement = document.querySelector('#collection-summary');
 const levelHintElement = document.querySelector('#level-hint');
 const successConditionElement = document.querySelector('#success-condition');
 const levelIndicatorElement = document.querySelector('#level-indicator');
-const runtimeSearchParams = new URLSearchParams(window.location.search);
+const defaultRuntimeConfig = createDefaultRuntimeConfig();
 
 const playableLevelIds = listLevelIds().filter(
   (levelId) => levelId !== 'broken-level' && !levelId.startsWith('test-')
@@ -79,7 +80,7 @@ const fallbackLevel = {
 const defaultExecutionConfig = {
   maxStepsPerRun: 12,
   repeatSelectedBlockCount: 1,
-  stepDelayMs: 220
+  stepDelayMilliseconds: 220
 };
 const progressRepository = createLocalStorageProgressRepository({
   allowedLevelIds: playableLevelIds
@@ -96,7 +97,9 @@ let activeLevel = fallbackLevel;
 let robotState = createRobotState(fallbackLevel.robot);
 let challengeState = createChallengeState(fallbackLevel);
 let isRunInProgress = false;
-let currentRequestedLevelId = getActiveLevelId();
+let runtimeConfig = defaultRuntimeConfig;
+let hasInitialized = false;
+let currentRequestedLevelId = defaultRuntimeConfig.initialLevelId;
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const programWorkspaceView = createProgramWorkspaceView({
   programWorkspaceElement,
@@ -159,11 +162,6 @@ function describeSuccessCondition(level) {
   return `${arStrings.levelMeta.successPrefix} وصل إلى الهدف المحدد.`;
 }
 
-function getActiveLevelId() {
-  const requestedLevelId = runtimeSearchParams.get('level');
-  return requestedLevelId && requestedLevelId.length > 0 ? requestedLevelId : 'level-001';
-}
-
 function readSavedProgressLevelId() {
   return progressRepository.loadSavedLevelId();
 }
@@ -172,13 +170,12 @@ function saveProgressLevelId(levelId) {
   progressRepository.saveSavedLevelId(levelId);
 }
 
-function readBoundedIntegerQuery(name, fallback, min, max) {
-  const rawValue = runtimeSearchParams.get(name);
-  if (rawValue === null) {
+function readBoundedIntegerOverride(rawValue, fallback, min, max) {
+  if (rawValue === null || rawValue === undefined || rawValue === '') {
     return fallback;
   }
 
-  const parsedValue = Number.parseInt(rawValue, 10);
+  const parsedValue = Number.parseInt(String(rawValue), 10);
   if (!Number.isInteger(parsedValue)) {
     return fallback;
   }
@@ -195,16 +192,27 @@ function getExecutionConfig(level) {
   const maxStepsFallback = Number.isInteger(configuredMaxSteps) && configuredMaxSteps > 0
     ? configuredMaxSteps
     : defaultExecutionConfig.maxStepsPerRun;
+  const executionOverrides = runtimeConfig.executionOverrides ?? {};
 
   return {
-    maxStepsPerRun: readBoundedIntegerQuery('maxSteps', maxStepsFallback, 1, 300),
-    repeatSelectedBlockCount: readBoundedIntegerQuery(
-      'repeat',
+    maxStepsPerRun: readBoundedIntegerOverride(
+      executionOverrides.maximumStepsPerRun,
+      maxStepsFallback,
+      1,
+      300
+    ),
+    repeatSelectedBlockCount: readBoundedIntegerOverride(
+      executionOverrides.selectedBlockRepeatCount,
       defaultExecutionConfig.repeatSelectedBlockCount,
       1,
       300
     ),
-    stepDelayMs: readBoundedIntegerQuery('stepDelayMs', defaultExecutionConfig.stepDelayMs, 0, 500)
+    stepDelayMilliseconds: readBoundedIntegerOverride(
+      executionOverrides.stepDelayMilliseconds,
+      defaultExecutionConfig.stepDelayMilliseconds,
+      0,
+      500
+    )
   };
 }
 
@@ -709,7 +717,23 @@ resetButton.addEventListener('click', () => {
   setStatus('reset');
 });
 
-applyStaticLabels();
-programWorkspaceView.attachInteractions();
-initializeLevel(getActiveLevelId());
-syncPrimaryActions();
+function getInitialLevelId() {
+  const configuredLevelId = runtimeConfig.initialLevelId;
+  return typeof configuredLevelId === 'string' && configuredLevelId.length > 0
+    ? configuredLevelId
+    : defaultRuntimeConfig.initialLevelId;
+}
+
+export function initializeRobotLab(config = defaultRuntimeConfig) {
+  if (hasInitialized) {
+    return;
+  }
+
+  runtimeConfig = config;
+  currentRequestedLevelId = getInitialLevelId();
+  applyStaticLabels();
+  programWorkspaceView.attachInteractions();
+  initializeLevel(getInitialLevelId());
+  syncPrimaryActions();
+  hasInitialized = true;
+}

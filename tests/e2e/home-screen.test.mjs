@@ -12,7 +12,7 @@ test('Home options show icons, Arabic labels, and child-friendly targets without
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const homeSnapshot = await page.evaluate(() => {
       const selectors = ['#start-button', '#continue-button', '#parents-button'];
@@ -59,7 +59,7 @@ test('Selecting Play opens the first available level', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-002`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002`, { waitUntil: 'networkidle' });
 
     const beforePlay = await page.evaluate(() => ({
       cellCount: document.querySelectorAll('#world-grid .cell').length,
@@ -98,7 +98,7 @@ test('Continue is shown when progress exists and opens the saved level', async (
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const continueVisible = await page.evaluate(() => {
       const button = document.querySelector('#continue-button');
@@ -122,3 +122,4 @@ test('Continue is shown when progress exists and opens the saved level', async (
     await closeServer(server);
   }
 });
+

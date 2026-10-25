@@ -12,7 +12,7 @@ test('Dragging toolbox blocks inserts them into the program workspace with visib
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const previewCount = await page.evaluate(() => {
       const workspace = document.querySelector('#program-workspace');
@@ -155,7 +155,7 @@ test('Invalid drops are rejected and touch input can add blocks to the workspace
   const mousePage = await mouseContext.newPage();
 
   try {
-    await mousePage.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await mousePage.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const invalidDropStatus = await mousePage.evaluate(() => {
       const workspace = document.querySelector('#program-workspace');
@@ -183,7 +183,7 @@ test('Invalid drops are rejected and touch input can add blocks to the workspace
   const touchPage = await touchContext.newPage();
 
   try {
-    await touchPage.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await touchPage.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
     await touchPage.tap('#block-turnRight');
 
     const touchSnapshot = await touchPage.evaluate(() => ({
@@ -199,3 +199,4 @@ test('Invalid drops are rejected and touch input can add blocks to the workspace
     await closeServer(server);
   }
 });
+

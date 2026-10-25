@@ -17,7 +17,7 @@ test('Level errors show friendly Arabic retry options without exposing technical
   });
 
   try {
-    await page.goto(`${origin}/index.html?level=broken-level`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=broken-level`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#level-error:not([hidden])');
 
     const errorSnapshot = await page.evaluate(() => ({
@@ -48,3 +48,4 @@ test('Level errors show friendly Arabic retry options without exposing technical
     await closeServer(server);
   }
 });
+

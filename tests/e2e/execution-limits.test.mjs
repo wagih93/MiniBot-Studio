@@ -12,7 +12,7 @@ test('Execution limits stop long runs safely and still allow reset', async () =>
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-002&repeat=10&maxSteps=3&stepDelayMs=1`, {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002&repeat=10&maxSteps=3&stepDelayMs=1`, {
       waitUntil: 'networkidle'
     });
 
@@ -56,7 +56,7 @@ test('Stop and reset cancel pending execution timers', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-002&repeat=10&maxSteps=20&stepDelayMs=80`, {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002&repeat=10&maxSteps=20&stepDelayMs=80`, {
       waitUntil: 'networkidle'
     });
 
@@ -95,6 +95,37 @@ test('Stop and reset cancel pending execution timers', async () => {
 
     assert.equal(postResetState.robotColumn, '0');
     assert.equal(postResetState.status, 'reset');
+  } finally {
+    await context.close();
+    await browser.close();
+    await closeServer(server);
+  }
+});
+
+test('Production entry ignores query parameter execution hooks', async () => {
+  const server = createStaticServer();
+  const port = await listenOnRandomPort(server);
+  const origin = `http://127.0.0.1:${port}`;
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${origin}/index.html?maxSteps=1&repeat=10&stepDelayMs=1`, {
+      waitUntil: 'networkidle'
+    });
+
+    await page.click('#block-moveForward');
+    await page.click('#play-button');
+    await page.waitForSelector('#status[data-state="complete"]');
+
+    const productionSnapshot = await page.evaluate(() => ({
+      statusText: document.querySelector('#status')?.textContent?.trim() ?? '',
+      robotColumn: document.querySelector('#world-grid .robot')?.getAttribute('data-column') ?? ''
+    }));
+
+    assert.doesNotMatch(productionSnapshot.statusText, /الحد الآمن للخطوات/);
+    assert.equal(productionSnapshot.robotColumn, '1');
   } finally {
     await context.close();
     await browser.close();

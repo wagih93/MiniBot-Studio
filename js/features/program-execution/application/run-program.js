@@ -77,7 +77,7 @@ export async function runProgram(options) {
 
   let robotState = { ...initialRobotState };
   let challengeState = cloneChallengeState(initialChallengeState);
-  const stepDelayMs = executionConfig.stepDelayMs;
+  const stepDelayMilliseconds = executionConfig.stepDelayMilliseconds;
   const maxStepsPerRun = executionConfig.maxStepsPerRun;
 
   for (let stepNumber = 0; stepNumber < instructionSequence.length; stepNumber += 1) {
@@ -115,7 +115,7 @@ export async function runProgram(options) {
         }
       });
       emit(onEvent, { type: 'statusChanged', status: 'running' });
-      const canContinue = await waitWithAbort(delay, stepDelayMs, signal);
+      const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
       if (!canContinue || signal?.aborted) {
         return { status: 'aborted', robotState, challengeState };
       }
@@ -155,7 +155,7 @@ export async function runProgram(options) {
         }
       });
       emit(onEvent, { type: 'statusChanged', status: 'running' });
-      const canContinue = await waitWithAbort(delay, stepDelayMs, signal);
+      const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
       if (!canContinue || signal?.aborted) {
         return { status: 'aborted', robotState, challengeState };
       }

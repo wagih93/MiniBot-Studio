@@ -12,7 +12,7 @@ test('Play starts execution and keeps a single active run', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-002&repeat=3&stepDelayMs=80&maxSteps=20`, {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002&repeat=3&stepDelayMs=80&maxSteps=20`, {
       waitUntil: 'networkidle'
     });
 
@@ -56,7 +56,7 @@ test('Stop cancels pending movement and future actions', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-002&repeat=10&stepDelayMs=80&maxSteps=20`, {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002&repeat=10&stepDelayMs=80&maxSteps=20`, {
       waitUntil: 'networkidle'
     });
 
@@ -95,7 +95,7 @@ test('Reset restores robot position and collectibles to initial level state', as
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-collect`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-collect`, { waitUntil: 'networkidle' });
 
     await page.click('#block-moveForward');
     await page.click('#play-button');
@@ -119,3 +119,4 @@ test('Reset restores robot position and collectibles to initial level state', as
     await closeServer(server);
   }
 });
+

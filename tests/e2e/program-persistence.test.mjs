@@ -47,7 +47,7 @@ test('Programs can be saved locally and restored after reload', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html?level=level-001`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001`, { waitUntil: 'networkidle' });
     await page.waitForSelector('#block-start');
     await addBlockToWorkspace(page, 'start');
     await addBlockToWorkspace(page, 'moveForward');
@@ -88,7 +88,7 @@ test('Corrupt saved programs are handled gracefully without crashing', async () 
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/index.html`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const healthSnapshot = await page.evaluate(() => ({
       status: document.querySelector('#status')?.textContent?.trim() ?? '',
@@ -105,3 +105,4 @@ test('Corrupt saved programs are handled gracefully without crashing', async () 
     await closeServer(server);
   }
 });
+
