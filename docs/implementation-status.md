@@ -1,4 +1,4 @@
-﻿# Implementation Status
+# Implementation Status
 
 Resumable record of story progress. Update this file on the same branch as each story.
 
@@ -69,3 +69,12 @@ A story with an open pull request is `In Review`, never `Done`.
 | US-058 | Document setup, architecture, and conventions | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-059 | Write the parent and teacher guide | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
 | US-060 | Verify and prepare the release | 7 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-061 | Introduce the vertical-slice structure and an architecture check | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-062 | Extract the execution engine as a pure, unit-tested slice | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-063 | Extract the program-editing model | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-064 | Introduce repository ports and adapters | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-065 | Remove test hooks from production code | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-066 | Move test fixtures out of shipped code | 2.5 | P0 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-067 | Apply the ubiquitous language and enforce it | 2.5 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-068 | Add the production-readiness gate | 2.5 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |
+| US-069 | Select the Story Studio tool | 6 | P1 | Todo | - | - | - | 0 criteria verified | - | - | - |

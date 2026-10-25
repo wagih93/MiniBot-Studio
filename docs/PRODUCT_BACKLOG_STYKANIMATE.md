@@ -8,7 +8,7 @@
 **Target technology:** HTML5, CSS, vanilla JavaScript; Blockly for the
 visual block editor; StykAnimate (GPL-3.0-or-later) for Story Studio,
 subject to the licensing gate US-045\
-**Status:** Implementation-ready backlog (60 stories)
+**Status:** Implementation-ready backlog (69 stories)
 
 > **What changed from v1.1.** Stories US-001 to US-038 are kept as
 > written. Version 2.0 adds: engineering foundation and process (Epic
@@ -346,7 +346,7 @@ up; GitHub retargets the next pull request when a merged base branch is
 deleted. Status for every story lives in `docs/implementation-status.md`,
 which the agent commits after every story as a checkpoint.
 
-### 5.7 Autonomous runs
+### 5.7 Autonomous runs and review
 
 The agent runs without asking questions. Where the backlog contains a
 step only a human can do (visual judgment of the Arabic layout, native
@@ -355,8 +355,10 @@ the agent in the picker, the license decision in US-045), the agent
 automates what it can, adds an unchecked "Human verification" item to
 the pull request, sets the story to `In Review`, and continues. Such a
 story becomes `Done` only after a human completes the check and the pull
-request is merged. Default decisions for ambiguous choices are listed in
-the agent file and recorded in each pull request.
+request is merged. After each sprint, the `minibot-code-reviewer` agent
+reviews the work and writes `docs/reviews/REVIEW-###.md`; Blocker and
+Major findings become fix tasks that the implementer completes before
+new feature stories.
 
 ------------------------------------------------------------------------
 
@@ -384,6 +386,11 @@ setup or test commands change.
     pull request is `In Review`, not `Done`.
 15. No upstream StykAnimate code or assets are used unless US-045 is
     recorded and the use matches it.
+
+16. A review by the reviewer agent exists in `docs/reviews/` with no
+    open Blocker or Major finding.
+17. `npm run architecture:check` passes, and new domain and application
+    code has unit tests that need no browser.
 
 ------------------------------------------------------------------------
 
@@ -1167,6 +1174,11 @@ gradually with adult help. It is built on **StykAnimate**, an
 open-source stick-figure animation app. Verified facts about the
 upstream project are in section 5.5.
 
+**Tool selection (US-069):** StykAnimate is a suggestion, not a fixed
+decision. Stories US-046 to US-054 are written for StykAnimate and are
+rewritten if US-069 selects another tool (for example Piskel, which is
+Apache-2.0).
+
 **Licensing gate:** StykAnimate is GPL-3.0-or-later. Nothing from
 upstream may be bundled until US-045 records the owner's licensing
 decision. Stories US-046 to US-054 stay `Blocked` until then. If the
@@ -1466,6 +1478,195 @@ what is shipped.
 
 ------------------------------------------------------------------------
 
+# 19A. Epic M --- Architecture and Production Readiness
+
+Added after the first implementation run and review
+(`docs/reviews/REVIEW-000-baseline.md`). These stories refactor the
+working behavior into vertical slices without changing it, then add the
+quality gates needed for a production-ready app. Follow
+`docs/ARCHITECTURE_GUIDELINES.md` and `docs/UBIQUITOUS_LANGUAGE.md`.
+They run in Sprint 2.5, before any new feature story.
+
+## US-061 --- Introduce the vertical-slice structure and an architecture check
+
+**Priority:** P0 · **Estimate:** 5 points
+
+**User story:** As a developer, I want the code organized by feature with
+enforced boundaries so that features can change independently.
+
+### Acceptance criteria
+
+-   The folders in `docs/ARCHITECTURE_GUIDELINES.md` section 1 exist:
+    `js/app.js` (composition root), `js/shared/`, and `js/features/`
+    slices `robot-simulation`, `program-editing`, `program-execution`,
+    `levels`, `learning-progress`, `shell`, each with a public
+    `index.js`.
+-   Existing simulator and level code is moved into its slices with
+    history preserved where possible; imports are updated.
+-   `scripts/check-architecture.mjs` and `npm run architecture:check`
+    fail when a slice imports another slice's internal file, when
+    domain or application code touches DOM, storage, timers or console,
+    when `shared` imports a slice, or when module-level mutable state
+    appears outside the composition root. The allowlist starts empty.
+-   The check runs in CI, and a deliberate violation makes it fail
+    (verified once, then reverted).
+-   All existing unit and browser tests pass unchanged.
+
+## US-062 --- Extract the execution engine as a pure, unit-tested slice
+
+**Priority:** P0 · **Estimate:** 5 points
+
+**User story:** As a developer, I want program validation and execution
+separated from the user interface so that the rules are testable in
+milliseconds.
+
+### Acceptance criteria
+
+-   `program-execution` exposes `validateProgram`, `compileProgram`, and
+    `runProgram`. They take injected `Delay`, `ExecutionLimits` and an
+    `AbortSignal`, and report progress as events or a returned trace.
+-   The code has no DOM, storage, timer or console access, and does not
+    mutate its arguments (this includes the objective tracker that
+    replaces `updateChallengeProgress`).
+-   Unit tests (no browser) cover: moving, turning, blocked by obstacle
+    and grid edge, collecting, objective completion, step limit
+    exceeded, abort in the middle of a run, empty program, invalid
+    program.
+-   `js/robot-lab.js` no longer contains execution or validation logic.
+-   Existing browser tests pass unchanged.
+
+## US-063 --- Extract the program-editing model
+
+**Priority:** P0 · **Estimate:** 5 points
+
+**User story:** As a developer, I want the rules for editing a program
+separated from drag and drop so that they are testable and reusable.
+
+### Acceptance criteria
+
+-   `program-editing` has a pure `ProgramEditor` model with add, remove,
+    move and clear operations that return a new program and enforce the
+    level's available blocks.
+-   Drag and drop and rendering live in `ui/` and call the model.
+-   Unit tests cover insert positions, reorder, delete, unavailable
+    block types, and unique step ids.
+-   No module-level state remains for the program or pending drags.
+-   Existing browser tests pass unchanged.
+
+## US-064 --- Introduce repository ports and adapters
+
+**Priority:** P0 · **Estimate:** 3 points
+
+**User story:** As a developer, I want storage behind small interfaces
+so that persistence can be tested and replaced.
+
+### Acceptance criteria
+
+-   `ProgressRepository` and `ProgramRepository` ports are declared in
+    `learning-progress`, with a `localStorage` adapter and an in-memory
+    fake.
+-   One contract test suite runs against both adapters.
+-   Corrupt data, an unknown version, or unavailable storage returns a
+    safe default and does not throw.
+-   Nothing outside the adapter uses `localStorage` (checked by the
+    architecture check).
+-   Existing browser tests pass unchanged.
+
+## US-065 --- Remove test hooks from production code
+
+**Priority:** P0 · **Estimate:** 3 points
+
+**User story:** As a parent, I want the app's behavior to be impossible
+to change through the web address.
+
+### Acceptance criteria
+
+-   A `RuntimeConfig` object is created in the composition root and
+    injected. Production code never reads URL parameters for behavior.
+-   Tests use a separate test entry point under `tests/` that supplies
+    their own `RuntimeConfig`.
+-   A test proves that adding `?maxSteps=1` or similar to the production
+    page has no effect.
+-   The build output contains none of the former query parameter names.
+-   Existing browser tests are migrated to the test entry point and pass.
+
+## US-066 --- Move test fixtures out of shipped code
+
+**Priority:** P0 · **Estimate:** 2 points
+
+**User story:** As a developer, I want only real levels in the shipped
+app so that test data is never served to a child.
+
+### Acceptance criteria
+
+-   `broken-level.js`, `test-level-validation.js` and similar fixtures
+    live under `tests/fixtures/`.
+-   The level registry loads only real levels.
+-   The build and `dist/` output exclude `tests/`.
+-   Unit tests for the level validator still pass using the fixtures.
+
+## US-067 --- Apply the ubiquitous language and enforce it
+
+**Priority:** P1 · **Estimate:** 3 points
+
+**User story:** As a team member, I want one name per concept so that
+code, tests, stories, and screens use the same words.
+
+### Acceptance criteria
+
+-   Code identifiers and file names follow `docs/UBIQUITOUS_LANGUAGE.md`
+    (for example `challenge-manager.js` becomes an objective tracker;
+    collectibles are not called goals).
+-   `scripts/check-language.mjs` and `npm run language:check` fail on
+    banned synonyms used as identifiers and on Arabic literals in logic
+    files outside `js/shared/i18n` and localized level content.
+-   Level titles and hints are keyed or loaded as localized content, not
+    inline in logic.
+-   The check runs in CI.
+
+## US-068 --- Add the production-readiness gate
+
+**Priority:** P1 · **Estimate:** 5 points
+
+**User story:** As the owner, I want one command and one CI job that
+prove the app is ready to ship.
+
+### Acceptance criteria
+
+-   `npm run check` runs lint (if configured), unit tests, architecture
+    check, language check, safety check, browser tests and build. CI runs
+    the same command.
+-   `npm run build` produces a `dist/` folder containing only shipped
+    files; the CSP is verified against `dist/`.
+-   An unexpected exception shows a friendly Arabic message to the child
+    and is reported through a logger port; no raw stack trace appears in
+    the UI.
+-   `npm audit --omit=dev` output is recorded in the PR.
+-   README documents setup, commands, structure, conventions, and the
+    review process; `docs/` explains recommended branch protection.
+
+## US-069 --- Select the Story Studio tool
+
+**Priority:** P1 · **Estimate:** 3 points
+
+**User story:** As the product owner, I want a verified choice of
+animation tool so that Story Studio uses the best free, safe option.
+
+### Acceptance criteria
+
+-   `docs/adr/0004-story-studio-tool-selection.md` compares at least:
+    StykAnimate (GPL-3.0-or-later), Piskel (Apache-2.0), and an original
+    minimal workspace, using pinned upstream commits and evidence from
+    the code (license file, build steps, offline behavior, Arabic and
+    RTL support, embedding options, size, suitability for a five-year-old).
+-   Legal-interpretation questions are listed for qualified review.
+-   The ADR recommends one option. The owner decides by merging it.
+-   If the chosen tool is not StykAnimate, a docs-only PR rewrites
+    US-046 to US-054 for that tool before any of them is implemented.
+-   No third-party code or assets are added by this story.
+
+------------------------------------------------------------------------
+
 # 20. Delivery Plan
 
 All 60 stories are scheduled. P0 stories finish by the end of Sprint 4,
@@ -1507,6 +1708,22 @@ decision in US-045.
 | US-029 | US-009 | US-059 | US-003 |
 | US-030 | US-013 | US-060 | all P0 stories |
 
+### 20.1b Dependencies of Epic M
+
+| Story | Depends on |
+| --- | --- |
+| US-061 | US-043 |
+| US-062 | US-061 |
+| US-063 | US-061 |
+| US-064 | US-061 |
+| US-065 | US-062, US-063, US-064 |
+| US-066 | US-061 |
+| US-067 | US-062, US-063, US-064 |
+| US-068 | US-065, US-066, US-067 |
+| US-069 | US-039 |
+
+New feature stories (US-018 onward) depend on US-068.
+
 ## 20.2 Sprints
 
 ### Sprint 0 --- Engineering foundation and decisions
@@ -1534,6 +1751,17 @@ US-017, US-034.\
 **Exit criteria:** Drag, reorder, delete, run, highlight, stop, and
 reset work with touch and mouse; errors are friendly and in Arabic.
 
+### Sprint 2.5 --- Architecture stabilization (before any new feature)
+
+**Stories:** US-061, US-064, US-063, US-062, US-065, US-066, US-067,
+US-068.\
+**Goal:** The working Robot Lab is reorganized into vertical slices with
+enforced boundaries, a pure tested engine, no test hooks in production,
+one vocabulary, and a single production-readiness command.\
+**Exit criteria:** No behavior change (all existing tests pass);
+`robot-lab.js` is gone or reduced to wiring; `npm run check` is green in
+CI; the reviewer agent's report has no Blocker or Major finding.
+
 ### Sprint 3 --- Initial levels and progress
 
 **Stories:** US-023, US-025, US-024, US-015, US-026, US-044.\
@@ -1559,7 +1787,7 @@ has no critical issues.
 
 ### Sprint 6 --- Story Studio
 
-**Stories:** US-046, US-048, US-049, US-047, US-050, US-053, US-054,
+**Stories:** US-069 first, then US-046, US-048, US-049, US-047, US-050, US-053, US-054,
 US-052, US-051. (US-055 instead, only if US-045 decided B.)\
 **Goal:** The vendored animation tool opens offline from MiniBot with
 adult-assisted Arabic guidance and correct notices.\
@@ -1582,10 +1810,12 @@ story is `Done` or `Deferred` with a reason.
 2.  Each story: branch from the previous story's branch, implement,
     test, commit, push, open its own pull request, and commit the
     status-file update. Then continue immediately with the next story.
-3.  The backlog is **clean** when every story is `Done` or `Deferred`
+3.  After each sprint, the reviewer agent reviews. Blocker and Major
+    findings are fixed before new feature stories.
+4.  The backlog is **clean** when every story is `Done` or `Deferred`
     with a recorded reason, no story is `Blocked` without a recorded
     human decision, and CI is green on the default branch.
-4.  A run may end early at a tool or context limit. The status file lets
+5.  A run may end early at a tool or context limit. The status file lets
     the next run resume at the next eligible story.
 
 ------------------------------------------------------------------------

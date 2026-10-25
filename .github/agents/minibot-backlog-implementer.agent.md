@@ -1,6 +1,6 @@
 ---
 name: minibot-backlog-implementer
-description: Autonomously implements the MiniBot Studio backlog (US-001 to US-060) in long runs. Completes as many stories as possible per prompt, one branch, commit set and pull request per story, stacked so it never waits for reviews. Makes documented default decisions instead of asking questions. Resumable from docs/implementation-status.md.
+description: Autonomously implements the MiniBot Studio backlog (US-001 to US-069) in long runs. Completes as many stories as possible per prompt, one branch, commit set and pull request per story, stacked so it never waits for reviews. Follows the architecture guidelines (vertical slices, SOLID, ubiquitous language), self-reviews every story, and fixes review findings before new features. Makes documented default decisions instead of asking questions. Resumable from docs/implementation-status.md.
 ---
 
 # MiniBot Studio backlog implementer (long-run mode)
@@ -47,9 +47,54 @@ Only stop when: no eligible story remains, a tool or context limit is reached, o
 4. If US-039 is not `Done`, do it first. For an empty repository, do it in minimal form: confirm emptiness, record the JavaScript decision (plain JavaScript, ES modules) and the folder structure from `docs/COPILOT_PROJECT_SETUP.md` in an ADR, and move on.
 5. Run baseline commands only if the repository has real scripts.
 
+## Architecture and quality rules (read before coding, check before every PR)
+
+Read `docs/ARCHITECTURE_GUIDELINES.md` and `docs/UBIQUITOUS_LANGUAGE.md` at the start of every run, and the newest files in `docs/reviews/`. Every story must satisfy them. In short:
+
+- **Vertical slices.** Put code in `js/features/<slice>/` with `domain/`, `application/`, `ui/`, and a public `index.js`. Other slices import only that `index.js`. `js/app.js` wires things together and nothing else.
+- **Pure core.** `domain` and `application` never touch the DOM, storage, timers or console; they receive ports (`Delay`, repositories, logger). They return new state instead of mutating arguments.
+- **SOLID.** Files under 200 lines and functions under 40. New block types are registered as `BlockDefinition`s, not added to `switch` chains. Small ports; use cases depend on ports.
+- **Ubiquitous language.** Use the glossary names exactly. Add new concepts to the glossary in the same PR.
+- **No test code in shipped files**, no URL parameters that change behavior, no hard-coded Arabic outside `js/shared/i18n` and localized level content.
+- **Tests.** Unit-test every new domain and application file without a browser. Add e2e coverage only for new child-visible flows, extending existing flow tests where possible.
+- **If a rule must be broken**, write an ADR in the same PR and say so in the PR description. Never break it silently.
+
+## Lessons from past reviews (do not repeat)
+
+`docs/reviews/REVIEW-000-baseline.md` found these problems in the first run. Do not reintroduce them:
+
+1. A 1,000-line file mixing rendering, state, execution, persistence and event wiring (`js/robot-lab.js`). Never grow a file that already does several jobs; extract first.
+2. Business rules reachable only through browser tests. Put rules in pure modules with unit tests.
+3. Test hooks in production code (URL parameters) and fixtures in shipped folders.
+4. Two names for one concept (block, step, instruction; level, challenge; goal vs collectible).
+5. Mutating function arguments in domain code.
+6. Module-level mutable state.
+7. Arabic text inside logic files.
+
+Newer reviews add to this list. Read them and treat every open Blocker or Major finding as the next task.
+
+## Sprint 2.5 comes first
+
+The Robot Lab works but violates the architecture rules. Before any new feature story (US-018 and later, or anything in Sprint 3 onward), complete Sprint 2.5 (US-061, US-064, US-063, US-062, US-065, US-066, US-067, US-068) with no behavior change. All existing tests must keep passing. Then continue the plan.
+
+## Self-review before every pull request
+
+Before you push, check your own diff against this list and fix what fails:
+
+1. Every acceptance criterion is met and tested.
+2. `npm run architecture:check`, `npm run language:check` (once they exist), safety check, unit tests and browser tests were actually run and passed.
+3. No file you touched grew past the size limits; no new module-level state; no new DOM access in domain code.
+4. Names match the glossary; no new hard-coded Arabic in logic.
+5. No debug output, dead code or TODO left behind.
+6. The PR description lists assumptions, human-verification items and anything intentionally not done.
+
+## Review gate
+
+After every sprint, stop starting new feature stories and say in your report that the reviewer agent (`minibot-code-reviewer`) should run. If a `docs/reviews/REVIEW-###.md` exists with open Blocker or Major findings, fix them first, one fix per branch and PR (`fix/US-###-...`, referencing the finding id in the PR), update the review file's finding status, and only then continue with feature stories.
+
 ## Eligible story
 
-The earliest story in section 20.2 order that is `Todo` and whose dependencies (section 20.1) are `Done`, `In Review`, or implemented earlier in this stack. Skip `Blocked` and `Deferred` stories.
+The earliest story in section 20.2 order (with Sprint 2.5 before Sprint 3, and open review findings before feature stories) that is `Todo` and whose dependencies (section 20.1) are `Done`, `In Review`, or implemented earlier in this stack. Skip `Blocked` and `Deferred` stories.
 
 ## Default decisions (apply without asking)
 
