@@ -1,0 +1,6 @@
+{
+  "crossSliceInternalImport": [],
+  "domainOrApplicationEffects": [],
+  "sharedDependsOnSlice": [],
+  "moduleLevelMutableState": []
+}

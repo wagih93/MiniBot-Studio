@@ -1,14 +1,20 @@
-import { arStrings } from './i18n/ar.js';
+import { arStrings } from './shared/i18n/ar.js';
 import {
   createChallengeState,
   getCollectedCount,
+  getLevelById,
   isGoalCollected,
-  updateChallengeProgress
-} from './levels/challenge-manager.js';
-import { getLevelById, listLevelIds } from './levels/level-registry.js';
-import { validateLevelData } from './levels/level-validator.js';
-import { createRobotState, moveForward, turnLeft, turnRight } from './simulator/robot.js';
-import { canMoveForward } from './simulator/world.js';
+  listLevelIds,
+  updateChallengeProgress,
+  validateLevelData
+} from './features/levels/index.js';
+import {
+  canMoveForward,
+  createRobotState,
+  moveForward,
+  turnLeft,
+  turnRight
+} from './features/robot-simulation/index.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');

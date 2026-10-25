@@ -10,6 +10,7 @@
     "test": "node --test tests/unit/**/*.test.js",
     "test:engine": "npm test && npm run test:browser-safety",
     "build": "node ./scripts/build.mjs",
+    "architecture:check": "node ./scripts/check-architecture.mjs",
     "safety:check": "node ./scripts/check-static-safety.mjs",
     "test:browser-safety": "node --test --test-concurrency=1 tests/e2e/*.test.mjs",
     "validate:agent": "node ./scripts/validate-agent-frontmatter.mjs"
