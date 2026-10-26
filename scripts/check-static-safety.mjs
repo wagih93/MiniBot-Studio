@@ -1,9 +1,9 @@
 import { readFile, readdir } from 'node:fs/promises';
-import { extname, join, relative } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
 
-const scanRoots = ['index.html', 'js'];
+const scanRoots = [resolve('index.html'), resolve('js')];
 const scannedExtensions = new Set(['.html', '.js', '.mjs']);
-const allowlistPath = 'scripts/safety-allowlist.json';
+const allowlistPath = resolve('scripts', 'safety-allowlist.json');
 
 const checks = [
   { id: 'eval', regex: /\beval\s*\(/ },
@@ -50,13 +50,17 @@ async function resolveScanTargets() {
   return targets;
 }
 
+function toPosixPath(filePath) {
+  return filePath.replace(/\\/g, '/');
+}
+
 async function findViolations() {
   const allowlist = await readAllowlist();
   const files = await resolveScanTargets();
   const violations = [];
 
   for (const filePath of files) {
-    const normalizedPath = relative(process.cwd(), filePath).replace(/\\/g, '/');
+    const normalizedPath = toPosixPath(relative(process.cwd(), filePath));
     const content = await readFile(filePath, 'utf8');
     const lines = content.split(/\r?\n/);
 

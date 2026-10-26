@@ -20,14 +20,18 @@ export const arStrings = {
       start: 'ابدأ',
       moveForward: 'تقدّم خطوة',
       turnRight: 'انعطف يميناً',
-      turnLeft: 'انعطف يساراً'
+      turnLeft: 'انعطف يساراً',
+      repeat: 'كرر'
     },
     iconsByType: {
       start: '🏁',
       moveForward: '⬆️',
       turnRight: '↱',
-      turnLeft: '↰'
-    }
+      turnLeft: '↰',
+      repeat: '🔁'
+    },
+    repeatCountTemplate: 'كرر {count} مرات',
+    repeatBodyEmpty: 'اسحب أوامر هنا.'
   },
   levelMeta: {
     levelIndicatorTemplate: 'المستوى {current}/{total}',
@@ -85,6 +89,7 @@ export const arStrings = {
     unexpectedError: 'الحالة: حدث خطأ غير متوقع. أعد المحاولة.',
     programSaved: 'الحالة: تم حفظ البرنامج على هذا الجهاز.',
     programRestored: 'الحالة: تم استعادة البرنامج المحفوظ.',
-    programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.'
+    programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.',
+    invalidRepeatCount: 'الحالة: عدد التكرار يجب أن يكون بين 1 و10.'
   }
 };

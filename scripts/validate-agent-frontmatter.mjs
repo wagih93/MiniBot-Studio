@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-const agentFilePath = '.github/agents/minibot-backlog-implementer.agent.md';
+const agentFilePath = resolve('.github', 'agents', 'minibot-backlog-implementer.agent.md');
 
 function parseFrontmatter(content) {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);

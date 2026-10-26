@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { level001 } from '../../js/levels/data/level-001.js';
-import { createRobotState, moveForward } from '../../js/simulator/robot.js';
-import { canMoveForward } from '../../js/simulator/world.js';
+import { level001 } from '../../js/features/levels/domain/data/level-001.js';
+import { createRobotState, moveForward } from '../../js/features/robot-simulation/index.js';
+import { canMoveForward } from '../../js/features/robot-simulation/index.js';
 
 test('move forward advances one cell when the path is open', () => {
   const robotState = createRobotState(level001.robot);
