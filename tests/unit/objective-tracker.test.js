@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { levelCollect } from '../../js/levels/data/level-collect.js';
+import { levelCollect } from '../../js/features/levels/domain/data/level-collect.js';
 import {
   createObjectiveProgress,
   getCollectedCollectibleCount,
   updateObjectiveProgress
-} from '../../js/levels/objective-tracker.js';
+} from '../../js/features/program-execution/index.js';
 
 test('objective tracker collects collectibles and marks completion', () => {
   const objectiveProgress = createObjectiveProgress(levelCollect);

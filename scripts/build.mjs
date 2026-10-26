@@ -52,6 +52,13 @@ async function validateDistContents() {
   if (jsEntries.some((entry) => String(entry).includes('tests'))) {
     failBuild('Build failed. dist/js contains test files.');
   }
+
+  const legacyDirs = ['simulator', 'levels', 'i18n'];
+  for (const legacyDir of legacyDirs) {
+    if (jsEntries.some((entry) => String(entry).startsWith(legacyDir) || String(entry).includes(`/${legacyDir}/`))) {
+      failBuild(`Build failed. dist/js still contains legacy directory: ${legacyDir}`);
+    }
+  }
 }
 
 async function validateDistCsp() {
