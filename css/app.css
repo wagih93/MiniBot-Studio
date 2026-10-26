@@ -97,6 +97,20 @@ button {
   overflow-wrap: anywhere;
 }
 
+.hint-button {
+  justify-self: start;
+  background: #f2f7fd;
+  color: #1f4a78;
+  border-color: #7ea6d1;
+  min-inline-size: 120px;
+  min-block-size: 40px;
+  padding: 8px 12px;
+}
+
+.hint-button:hover {
+  background: #e5f0fb;
+}
+
 .cell {
   display: grid;
   place-items: center;

@@ -26,7 +26,7 @@ function makeShellView(overrides = {}) {
   const elements = {
     startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
-    retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(),
+    retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -36,7 +36,7 @@ function makeShellView(overrides = {}) {
     primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل' },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
-    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ' },
+    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ' },
     levelCompletion: { message: 'ممتاز', finalLevelMessage: 'أكملت الجميع' },
     movementGuideHeading: 'الحركة',
     movement: { forward: 'أمام', right: 'يمين', left: 'يسار' }
@@ -56,6 +56,7 @@ function makeShellView(overrides = {}) {
     onStart: overrides.onStart ?? (() => {}),
     onContinue: overrides.onContinue ?? (() => {}),
     onParents: overrides.onParents ?? (() => {}),
+    onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
     onSaveProgram: overrides.onSaveProgram ?? (() => {}),

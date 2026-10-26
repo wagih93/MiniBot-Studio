@@ -8,6 +8,7 @@ export function createShellView({
   onStart,
   onContinue,
   onParents,
+  onHint,
   onRetry,
   onReturnHome,
   onSaveProgram,
@@ -16,7 +17,7 @@ export function createShellView({
   const {
     startButton, continueButton, parentsButton,
     playButton, stopButton, resetButton, nextLevelButton,
-    retryLevelButton, returnHomeButton, saveProgramButton,
+    retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
   } = elements;
@@ -28,6 +29,7 @@ export function createShellView({
     document.querySelector('#continue-button-label').textContent = labels.primaryActions.continue;
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
     document.querySelector('#world-heading').textContent = labels.world.heading;
+    hintButton.textContent = labels.controls.hint;
     document.querySelector('#block-area-heading').textContent = labels.blockArea.heading;
     document.querySelector('#program-heading').textContent = labels.blockArea.programHeading;
     document.querySelector('#program-demo').textContent = labels.blockArea.firstLevelDemo;
@@ -94,6 +96,7 @@ export function createShellView({
     stopButton.addEventListener('click', onStop);
     resetButton.addEventListener('click', onReset);
     nextLevelButton.addEventListener('click', onNextLevel);
+    hintButton.addEventListener('click', onHint);
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);

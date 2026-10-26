@@ -57,7 +57,7 @@ const workspaceView = createProgramWorkspaceView({
   onRemoveFromBody: (rid, bid) => { if (programEditor.removeBodyStep(rid, bid)) { workspaceView.render(); statusView.setStatus('programRemoved'); } }
 });
 const metaView = createLevelMetaView({
-  levelHintElement: qs('#level-hint'), objectiveConditionElement: qs('#success-condition'),
+  levelHintElement: qs('#level-hint'), hintButtonElement: qs('#hint-button'), objectiveConditionElement: qs('#success-condition'),
   collectionSummaryElement: qs('#collection-summary'), levelIndicatorElement: qs('#level-indicator'),
   labels: arStrings.levelMeta, playableLevelIds, getCollectedCollectibleCount
 });
@@ -67,6 +67,7 @@ const shellView = createShellView({
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
+    hintButton: qs('#hint-button'),
     levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message'),
     levelCompletionElement: qs('#level-completion'), levelCompletionMessageElement: qs('#level-completion-message')
   },
@@ -82,6 +83,10 @@ const shellView = createShellView({
     cancelActiveRun(); initializeLevel(savedId);
   },
   onParents: () => statusView.setStatus('parentsAreaPending'),
+  onHint: () => {
+    const hintResult = metaView.showNextHint({ speakHint: speakHintIfEnabled });
+    statusView.setStatus(hintResult.wasSpoken ? 'hintSpoken' : 'hintShown');
+  },
   onRetry: () => { cancelActiveRun(); initializeLevel(currentRequestedLevelId); },
   onReturnHome: () => { cancelActiveRun(); initializeLevel(playableLevelIds[0] ?? 'level-001'); },
   onNextLevel: () => {
@@ -124,6 +129,27 @@ function getNextLevelId(levelId) {
   }
 
   return playableLevelIds[currentIndex + 1];
+}
+
+function speakHintIfEnabled(hintText) {
+  if (runtimeConfig.hintSpeechEnabled !== true) {
+    return false;
+  }
+
+  const speechApi = globalThis.speechSynthesis;
+  const SpeechUtterance = globalThis.SpeechSynthesisUtterance;
+  if (!speechApi || typeof speechApi.speak !== 'function' || typeof SpeechUtterance !== 'function') {
+    return false;
+  }
+
+  if (typeof speechApi.cancel === 'function') {
+    speechApi.cancel();
+  }
+
+  const utterance = new SpeechUtterance(hintText);
+  utterance.lang = 'ar';
+  speechApi.speak(utterance);
+  return true;
 }
 
 function getExecConfig(level) {

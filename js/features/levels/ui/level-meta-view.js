@@ -1,5 +1,6 @@
 export function createLevelMetaView({
   levelHintElement,
+  hintButtonElement,
   objectiveConditionElement,
   collectionSummaryElement,
   levelIndicatorElement,
@@ -7,13 +8,54 @@ export function createLevelMetaView({
   playableLevelIds,
   getCollectedCollectibleCount
 }) {
+  let currentHintSteps = [labels.defaultHint];
+  let currentHintIndex = 0;
+
+  function setHintText(hintText) {
+    levelHintElement.textContent = `${labels.hintPrefix} ${hintText}`;
+  }
+
+  function setHintControlState() {
+    const hasHintSteps = currentHintSteps.length > 0;
+    hintButtonElement.hidden = !hasHintSteps;
+    hintButtonElement.disabled = !hasHintSteps;
+  }
+
   function render(level) {
-    const firstHint = level.hints[0] ?? labels.defaultHint;
-    levelHintElement.textContent = `${labels.hintPrefix} ${firstHint}`;
+    const levelHints = Array.isArray(level.hints)
+      ? level.hints.filter((hint) => typeof hint === 'string' && hint.length > 0)
+      : [];
+
+    currentHintSteps = levelHints.length > 0 ? levelHints : [labels.defaultHint];
+    currentHintIndex = 0;
+    setHintText(currentHintSteps[currentHintIndex]);
+    setHintControlState();
+
     const needsAll = Boolean(level.successConditions.collectAllCollectibles);
     objectiveConditionElement.textContent = needsAll
       ? labels.defaultSuccess
       : `${labels.successPrefix} ${labels.reachGoalSuccess}`;
+  }
+
+  function showNextHint({ speakHint } = {}) {
+    if (currentHintSteps.length === 0) {
+      setHintText(labels.defaultHint);
+      return { hintText: labels.defaultHint, wasSpoken: false, hasMore: false };
+    }
+
+    if (currentHintIndex < currentHintSteps.length - 1) {
+      currentHintIndex += 1;
+    }
+
+    const hintText = currentHintSteps[currentHintIndex];
+    setHintText(hintText);
+    const wasSpoken = typeof speakHint === 'function' ? speakHint(hintText) === true : false;
+
+    return {
+      hintText,
+      wasSpoken,
+      hasMore: currentHintIndex < currentHintSteps.length - 1
+    };
   }
 
   function updateLevelIndicator(levelId) {
@@ -28,6 +70,5 @@ export function createLevelMetaView({
     collectionSummaryElement.textContent = `${labels.collectionPrefix} ${count}/${objectiveProgress.totalCollectibles}`;
   }
 
-  return { render, updateLevelIndicator, updateCollectionSummary };
+  return { render, showNextHint, updateLevelIndicator, updateCollectionSummary };
 }
-

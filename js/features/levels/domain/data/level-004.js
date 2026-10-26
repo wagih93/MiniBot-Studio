@@ -21,5 +21,8 @@ export const level004 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
-  hints: ['خطّط طريقك حول الجدار للوصول إلى النجمة.']
+  hints: [
+    'الطريق المباشر إلى النجمة مغلق بجدار.',
+    'ابدأ بالنزول ثم اتجه يميناً لتجاوز الجدار.'
+  ]
 };
