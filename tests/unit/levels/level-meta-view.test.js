@@ -15,7 +15,7 @@ const labels = {
   defaultSuccess: 'صل إلى النجمة لتنجح.',
   reachGoalSuccess: 'وصل إلى الهدف المحدد.'
 };
-const playableLevelIds = ['level-001', 'level-002', 'level-collect'];
+const playableLevelIds = ['level-001', 'level-002', 'level-003', 'level-004', 'level-005'];
 
 function makeView() {
   const levelHintElement = makeElement();
@@ -45,13 +45,13 @@ test('createLevelMetaView render uses defaultHint when hints is empty', () => {
 test('createLevelMetaView updateLevelIndicator shows correct current/total', () => {
   const { view, levelIndicatorElement } = makeView();
   view.updateLevelIndicator('level-002');
-  assert.equal(levelIndicatorElement.textContent, 'المستوى 2/3');
+  assert.equal(levelIndicatorElement.textContent, 'المستوى 2/5');
 });
 
 test('createLevelMetaView updateLevelIndicator defaults to 1 for unknown level', () => {
   const { view, levelIndicatorElement } = makeView();
   view.updateLevelIndicator('unknown-level');
-  assert.equal(levelIndicatorElement.textContent, 'المستوى 1/3');
+  assert.equal(levelIndicatorElement.textContent, 'المستوى 1/5');
 });
 
 test('createLevelMetaView updateCollectionSummary shows collected count', () => {

@@ -32,7 +32,7 @@ test('Level errors show friendly Arabic retry options without exposing technical
     await page.waitForSelector('#status[data-state="fallback"]');
 
     await page.click('#return-home-button');
-    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('1/3'));
+    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('1/5'));
     const isErrorPanelHidden = await page.evaluate(() => document.querySelector('#level-error')?.hasAttribute('hidden'));
     assert.equal(isErrorPanelHidden, true);
     const runtimeLogs = await page.evaluate(() => window.__runtimeLogEntries ?? []);

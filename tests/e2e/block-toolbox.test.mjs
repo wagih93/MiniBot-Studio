@@ -12,7 +12,7 @@ test('Block toolbox shows only level-allowed blocks', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-collect`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-002`, { waitUntil: 'networkidle' });
 
     const blockIds = await page.evaluate(() =>
       Array.from(document.querySelectorAll('#block-list .block-item')).map((item) => item.id)
@@ -55,6 +55,9 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
 
     assert.equal(blockSnapshot.length, 4);
     assert.ok(blockSnapshot.some((block) => block.id === 'block-start'));
+    assert.ok(blockSnapshot.some((block) => block.id === 'block-moveForward'));
+    assert.ok(blockSnapshot.some((block) => block.id === 'block-turnRight'));
+    assert.ok(blockSnapshot.some((block) => block.id === 'block-turnLeft'));
     assert.ok(blockSnapshot.every((block) => block.label.length > 0));
     assert.ok(blockSnapshot.every((block) => block.icon.length > 0));
     assert.ok(blockSnapshot.every((block) => block.width >= 110));
@@ -70,4 +73,3 @@ test('Toolbox blocks include icons, Arabic labels, and touch-friendly non-color 
     await closeServer(server);
   }
 });
-

@@ -7,7 +7,7 @@ import {
   createLocalStorageProgressRepository
 } from '../../../js/features/learning-progress/index.js';
 
-const allowedLevelIds = ['level-001', 'level-002', 'level-collect'];
+const allowedLevelIds = ['level-001', 'level-002', 'level-003', 'level-004', 'level-005'];
 
 runProgressRepositoryContract('in-memory adapter', (options = {}) =>
   createInMemoryProgressRepository({

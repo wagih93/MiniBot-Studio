@@ -47,7 +47,7 @@ test('Turning blocks are available, rotate by 90 degrees, and combine with movem
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-003`, { waitUntil: 'networkidle' });
 
     const toolboxBlockIds = await page.evaluate(() =>
       Array.from(document.querySelectorAll('#block-list .block-item')).map((item) => item.id)
@@ -74,7 +74,7 @@ test('Turning blocks are available, rotate by 90 degrees, and combine with movem
     );
     assert.match(turnLeftSnapshot.text, /↑/);
 
-    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001&stepDelayMs=120`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-003&stepDelayMs=120`, { waitUntil: 'networkidle' });
     await addBlockToWorkspace(page, 'turnRight');
     await addBlockToWorkspace(page, 'turnRight');
     await addBlockToWorkspace(page, 'turnRight');
@@ -100,11 +100,14 @@ test('Turning blocks are available, rotate by 90 degrees, and combine with movem
     );
     assert.match(repeatedTurnsSnapshot.text, /↑/);
 
-    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001&stepDelayMs=120`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-003&stepDelayMs=120`, { waitUntil: 'networkidle' });
     await addBlockToWorkspace(page, 'turnRight');
     await addBlockToWorkspace(page, 'moveForward');
     await page.click('#play-button');
-    await page.waitForSelector('#status[data-state="complete"]');
+    await page.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
 
     const mixedSnapshot = await page.evaluate(() => {
       const robot = document.querySelector('#world-grid .robot');
@@ -126,4 +129,3 @@ test('Turning blocks are available, rotate by 90 degrees, and combine with movem
     await closeServer(server);
   }
 });
-

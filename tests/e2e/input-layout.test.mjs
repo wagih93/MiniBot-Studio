@@ -46,7 +46,10 @@ test('Robot world, block area, and controls remain visible and support mouse and
 
     await mousePage.click('#block-moveForward');
     await mousePage.click('#play-button');
-    await mousePage.waitForSelector('#status[data-state="complete"]');
+    await mousePage.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
     await mousePage.waitForSelector('#block-moveForward[data-selected="true"]');
 
     await mouseContext.close();
@@ -60,7 +63,10 @@ test('Robot world, block area, and controls remain visible and support mouse and
     await touchPage.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
     await touchPage.tap('#block-moveForward');
     await touchPage.tap('#play-button');
-    await touchPage.waitForSelector('#status[data-state="complete"]');
+    await touchPage.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
     await touchPage.tap('#stop-button');
     await touchPage.waitForSelector('#status[data-state="stopped"]');
     await touchPage.tap('#block-turnRight');
@@ -74,4 +80,3 @@ test('Robot world, block area, and controls remain visible and support mouse and
     await closeServer(server);
   }
 });
-

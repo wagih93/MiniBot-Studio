@@ -47,7 +47,7 @@ test('Program execution highlights each step in order and clears highlight on fi
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/tests/e2e/test-entry.html?stepDelayMs=120`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-005&stepDelayMs=120`, { waitUntil: 'networkidle' });
 
     await addBlockToWorkspace(page, 'moveForward');
     await addBlockToWorkspace(page, 'turnRight');
@@ -90,7 +90,7 @@ test('Stopping execution clears active-step highlighting', async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/tests/e2e/test-entry.html?stepDelayMs=220`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-005&stepDelayMs=220`, { waitUntil: 'networkidle' });
 
     await addBlockToWorkspace(page, 'moveForward');
     await addBlockToWorkspace(page, 'turnRight');
@@ -114,4 +114,3 @@ test('Stopping execution clears active-step highlighting', async () => {
     await closeServer(server);
   }
 });
-
