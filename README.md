@@ -20,6 +20,7 @@ npx playwright install --with-deps chromium
 
 | Command | Purpose |
 | --- | --- |
+| `npm start` | Serve the app locally at `http://127.0.0.1:4173` (set `PORT` to override). |
 | `npm test` | Run unit tests (Node test runner). |
 | `npm run test:browser-safety` | Run Playwright browser safety and behavior tests. |
 | `npm run architecture:check` | Enforce vertical-slice and purity boundaries. |
