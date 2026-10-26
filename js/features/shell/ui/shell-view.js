@@ -11,6 +11,7 @@ export function createShellView({
   onCloseParentsArea,
   onClearProgress,
   onToggleSoundEffects,
+  onPlayInstructionAudio,
   onHint,
   onRetry,
   onReturnHome,
@@ -20,7 +21,7 @@ export function createShellView({
   const {
     startButton, continueButton, parentsButton,
     playButton, stopButton, resetButton, nextLevelButton,
-    retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
+    retryLevelButton, returnHomeButton, saveProgramButton, hintButton, playInstructionAudioButton,
     parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
     soundEffectsToggle,
     clearProgressButton, closeParentAreaButton,
@@ -41,6 +42,7 @@ export function createShellView({
     closeParentAreaButton.textContent = labels.controls.closeParentArea;
     document.querySelector('#world-heading').textContent = labels.world.heading;
     hintButton.textContent = labels.controls.hint;
+    playInstructionAudioButton.textContent = labels.controls.playInstructionAudio;
     document.querySelector('#block-area-heading').textContent = labels.blockArea.heading;
     document.querySelector('#program-heading').textContent = labels.blockArea.programHeading;
     document.querySelector('#program-demo').textContent = labels.blockArea.firstLevelDemo;
@@ -63,6 +65,7 @@ export function createShellView({
     startButton.disabled = isRunning;
     continueButton.disabled = isRunning || !hasSaved;
     parentsButton.disabled = isRunning;
+    playInstructionAudioButton.disabled = isRunning;
     nextLevelButton.disabled = isRunning || nextLevelButton.hidden;
   }
 
@@ -146,6 +149,7 @@ export function createShellView({
     resetButton.addEventListener('click', onReset);
     nextLevelButton.addEventListener('click', onNextLevel);
     hintButton.addEventListener('click', onHint);
+    playInstructionAudioButton.addEventListener('click', onPlayInstructionAudio);
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);

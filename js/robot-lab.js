@@ -72,6 +72,7 @@ const shellView = createShellView({
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
+    playInstructionAudioButton: qs('#play-instruction-audio-button'),
     parentAreaElement: qs('#parent-area'),
     parentProgressSummaryElement: qs('#parent-progress-summary'),
     parentConceptListElement: qs('#parent-concept-list'),
@@ -143,6 +144,19 @@ const shellView = createShellView({
   onHint: () => {
     const hintResult = metaView.showNextHint({ speakHint: speakHintIfEnabled });
     statusView.setStatus(hintResult.wasSpoken ? 'hintSpoken' : 'hintShown');
+  },
+  onPlayInstructionAudio: () => {
+    if (!soundEffectsEnabled) {
+      statusView.setStatus('instructionAudioMuted');
+      return;
+    }
+
+    const instructionText = [
+      qs('#level-hint')?.textContent ?? '',
+      qs('#success-condition')?.textContent ?? ''
+    ].join(' ').trim();
+    const spoken = speakTextWithSpeechSynthesis(instructionText);
+    statusView.setStatus(spoken ? 'instructionSpoken' : 'instructionSpeechUnavailable');
   },
   onRetry: () => { cancelActiveRun(); initializeLevel(currentRequestedLevelId); },
   onReturnHome: () => { cancelActiveRun(); initializeLevel(playableLevelIds[0] ?? 'level-001'); },
@@ -263,7 +277,15 @@ function playLevelCompletionSound() {
 }
 
 function speakHintIfEnabled(hintText) {
-  if (runtimeConfig.hintSpeechEnabled !== true) {
+  if (runtimeConfig.hintSpeechEnabled !== true || !soundEffectsEnabled) {
+    return false;
+  }
+
+  return speakTextWithSpeechSynthesis(hintText);
+}
+
+function speakTextWithSpeechSynthesis(text) {
+  if (typeof text !== 'string' || text.trim().length === 0) {
     return false;
   }
 
@@ -273,14 +295,21 @@ function speakHintIfEnabled(hintText) {
     return false;
   }
 
-  if (typeof speechApi.cancel === 'function') {
-    speechApi.cancel();
-  }
+  try {
+    if (typeof speechApi.cancel === 'function') {
+      speechApi.cancel();
+    }
 
-  const utterance = new SpeechUtterance(hintText);
-  utterance.lang = 'ar';
-  speechApi.speak(utterance);
-  return true;
+    const utterance = new SpeechUtterance(text.trim());
+    utterance.lang = 'ar';
+    speechApi.speak(utterance);
+    return true;
+  } catch (error) {
+    if (runtimeLogger?.warn) {
+      runtimeLogger.warn({ code: 'runtime.warning', message: 'Failed to play spoken instruction.', error: String(error) });
+    }
+    return false;
+  }
 }
 
 function getExecConfig(level) {

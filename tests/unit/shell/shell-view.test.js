@@ -27,6 +27,7 @@ function makeShellView(overrides = {}) {
     startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
     retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
+    playInstructionAudioButton: makeElement(),
     parentAreaElement: makeElement({ hidden: true }), parentProgressSummaryElement: makeElement(), parentConceptListElement: makeElement({
       textContent: '',
       _items: [],
@@ -54,7 +55,7 @@ function makeShellView(overrides = {}) {
     },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
-    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ', clearProgress: 'امسح', closeParentArea: 'إغلاق' },
+    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', playInstructionAudio: 'استمع', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ', clearProgress: 'امسح', closeParentArea: 'إغلاق' },
     levelCompletion: { message: 'ممتاز', finalLevelMessage: 'أكملت الجميع' },
     movementGuideHeading: 'الحركة',
     movement: { forward: 'أمام', right: 'يمين', left: 'يسار' }
@@ -77,6 +78,7 @@ function makeShellView(overrides = {}) {
     onCloseParentsArea: overrides.onCloseParentsArea ?? (() => {}),
     onClearProgress: overrides.onClearProgress ?? (() => {}),
     onToggleSoundEffects: overrides.onToggleSoundEffects ?? (() => {}),
+    onPlayInstructionAudio: overrides.onPlayInstructionAudio ?? (() => {}),
     onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
@@ -103,6 +105,7 @@ test('createShellView syncPrimaryActions disables all action buttons when runnin
   view.syncPrimaryActions(true);
   assert.equal(elements.startButton.disabled, true);
   assert.equal(elements.parentsButton.disabled, true);
+  assert.equal(elements.playInstructionAudioButton.disabled, true);
 });
 
 test('createShellView setEditingEnabled disables control buttons when false', () => {
