@@ -31,12 +31,28 @@
           <span id="parents-button-label"></span>
         </button>
       </nav>
+      <section id="parent-area" class="parent-area" hidden aria-live="polite">
+        <h2 id="parent-area-heading"></h2>
+        <p id="parent-area-description"></p>
+        <label class="parent-area__toggle" for="sound-effects-toggle">
+          <input id="sound-effects-toggle" type="checkbox">
+          <span id="sound-effects-label"></span>
+        </label>
+        <p id="parent-progress-summary" class="parent-area__summary"></p>
+        <ul id="parent-concept-list" class="parent-area__concepts"></ul>
+        <div class="parent-area__actions">
+          <button id="clear-progress-button" type="button"></button>
+          <button id="close-parent-area-button" type="button"></button>
+        </div>
+      </section>
       <div class="workspace">
         <section id="robot-world" class="panel world-panel" aria-label="عالم الروبوت">
           <h2 id="world-heading"></h2>
           <div id="world-grid" class="world-grid" role="img" aria-label="شبكة الروبوت"></div>
           <p id="collection-summary" class="level-meta"></p>
           <p id="level-hint" class="level-meta"></p>
+          <button id="hint-button" type="button" class="hint-button"></button>
+          <button id="play-instruction-audio-button" type="button" class="hint-button"></button>
           <p id="success-condition" class="level-meta"></p>
         </section>
         <section id="block-area" class="panel block-panel" aria-label="منطقة الأوامر">

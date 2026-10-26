@@ -23,6 +23,7 @@ const runtimeConfig = createRuntimeConfig({
     selectedBlockRepeatCount: searchParams.get('repeat') ?? undefined,
     stepDelayMilliseconds: searchParams.get('stepDelayMs') ?? undefined
   },
+  hintSpeechEnabled: searchParams.get('hintSpeech') === '1' || searchParams.get('hintSpeech') === 'true',
   levelOverrides: [brokenLevel, testLevelValidation, levelRepeat],
   logger: runtimeLogger
 });

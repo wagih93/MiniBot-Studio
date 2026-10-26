@@ -26,7 +26,13 @@ function makeShellView(overrides = {}) {
   const elements = {
     startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
-    retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(),
+    retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
+    playInstructionAudioButton: makeElement(),
+    parentAreaElement: makeElement({ hidden: true }), parentProgressSummaryElement: makeElement(), parentConceptListElement: makeElement({
+      textContent: '',
+      _items: [],
+      append(item) { this._items.push(item); }
+    }), soundEffectsToggle: makeElement({ checked: false }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -34,9 +40,22 @@ function makeShellView(overrides = {}) {
     pageTitle: 'MiniBot Studio',
     heading: 'مختبر الروبوت',
     primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل' },
+    parentArea: {
+      heading: 'منطقة الأهل',
+      description: 'إدارة التقدم',
+      soundEffectsLabel: 'تشغيل المؤثرات الصوتية',
+      clearProgressConfirm: 'تأكيد',
+      completedLevelsTemplate: 'المستويات المكتملة: {count}',
+      conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
+      learningConceptLabels: {
+        sequencing: 'التسلسل',
+        directions: 'الاتجاهات',
+        repetition: 'التكرار'
+      }
+    },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
-    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ' },
+    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', playInstructionAudio: 'استمع', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ', clearProgress: 'امسح', closeParentArea: 'إغلاق' },
     levelCompletion: { message: 'ممتاز', finalLevelMessage: 'أكملت الجميع' },
     movementGuideHeading: 'الحركة',
     movement: { forward: 'أمام', right: 'يمين', left: 'يسار' }
@@ -56,6 +75,11 @@ function makeShellView(overrides = {}) {
     onStart: overrides.onStart ?? (() => {}),
     onContinue: overrides.onContinue ?? (() => {}),
     onParents: overrides.onParents ?? (() => {}),
+    onCloseParentsArea: overrides.onCloseParentsArea ?? (() => {}),
+    onClearProgress: overrides.onClearProgress ?? (() => {}),
+    onToggleSoundEffects: overrides.onToggleSoundEffects ?? (() => {}),
+    onPlayInstructionAudio: overrides.onPlayInstructionAudio ?? (() => {}),
+    onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
     onSaveProgram: overrides.onSaveProgram ?? (() => {}),
@@ -81,6 +105,7 @@ test('createShellView syncPrimaryActions disables all action buttons when runnin
   view.syncPrimaryActions(true);
   assert.equal(elements.startButton.disabled, true);
   assert.equal(elements.parentsButton.disabled, true);
+  assert.equal(elements.playInstructionAudioButton.disabled, true);
 });
 
 test('createShellView setEditingEnabled disables control buttons when false', () => {
@@ -136,4 +161,49 @@ test('createShellView hideLevelCompletion hides celebration state', () => {
   assert.equal(elements.levelCompletionElement.hidden, true);
   assert.equal(elements.nextLevelButton.hidden, true);
   assert.equal(elements.levelCompletionMessageElement.textContent, '');
+});
+
+test('createShellView showParentArea and hideParentArea toggle visibility', () => {
+  const { view, elements } = makeShellView();
+  view.showParentArea();
+  assert.equal(elements.parentAreaElement.hidden, false);
+  view.hideParentArea();
+  assert.equal(elements.parentAreaElement.hidden, true);
+});
+
+test('createShellView setSoundEffectsEnabled syncs the sound toggle state', () => {
+  const { view, elements } = makeShellView();
+  view.setSoundEffectsEnabled(true);
+  assert.equal(elements.soundEffectsToggle.checked, true);
+  view.setSoundEffectsEnabled(false);
+  assert.equal(elements.soundEffectsToggle.checked, false);
+});
+
+test('createShellView renderParentAreaSummary renders concept counts', () => {
+  const createdListItems = [];
+  global.document = {
+    title: '',
+    querySelector: (sel) => stubQuerySelector(sel),
+    createElement: () => {
+      const item = makeElement();
+      createdListItems.push(item);
+      return item;
+    }
+  };
+  const { view, elements } = makeShellView();
+
+  view.renderParentAreaSummary({
+    completedLevelCount: 2,
+    conceptSummaries: [
+      { conceptKey: 'sequencing', completedLevelCount: 2 },
+      { conceptKey: 'directions', completedLevelCount: 1 },
+      { conceptKey: 'repetition', completedLevelCount: 0 }
+    ]
+  });
+
+  assert.equal(elements.parentProgressSummaryElement.textContent, 'المستويات المكتملة: 2');
+  assert.deepEqual(
+    createdListItems.map((item) => item.textContent),
+    ['التسلسل: جُرّب في 2 مستوى.', 'الاتجاهات: جُرّب في 1 مستوى.', 'التكرار: جُرّب في 0 مستوى.']
+  );
 });
