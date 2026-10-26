@@ -18,6 +18,11 @@ const fallbackLevel = {
   hints: [arStrings.levelMeta.defaultHint]
 };
 const defaultExecCfg = { maxStepsPerRun: 12, repeatSelectedBlockCount: 1, stepDelayMilliseconds: 220 };
+const soundEffectProfiles = {
+  movement: { frequency: 420, durationSeconds: 0.06, gain: 0.03, cooldownMilliseconds: 100 },
+  collection: { frequency: 560, durationSeconds: 0.12, gain: 0.05, cooldownMilliseconds: 180 },
+  success: { frequency: 720, durationSeconds: 0.2, gain: 0.08, cooldownMilliseconds: 220 }
+};
 
 const playableLevelIds = listLevelIds();
 const playableLevelsById = Object.fromEntries(
@@ -39,6 +44,7 @@ let runtimeErrorListenersAttached = false;
 let hasInitialized = false;
 let currentRequestedLevelId = runtimeConfig.initialLevelId;
 let soundEffectsEnabled = parentSettingsRepo.loadSoundEffectsEnabled();
+const lastSoundEffectAtByType = new Map();
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const statusView = createExecutionStatusView({ statusElement: qs('#status'), labels: arStrings.status });
 const gridView = createWorldGridView({ worldGridElement: qs('#world-grid'), isCollectibleCollected });
@@ -240,13 +246,29 @@ function getParentAreaSummary() {
 }
 
 function playLevelCompletionSound() {
+  return playSoundEffect('success');
+}
+
+function playSoundEffect(effectType) {
   if (!soundEffectsEnabled) {
-    return;
+    return false;
   }
+
+  const profile = soundEffectProfiles[effectType];
+  if (!profile) {
+    return false;
+  }
+
+  const now = Date.now();
+  const lastPlayedAt = lastSoundEffectAtByType.get(effectType) ?? 0;
+  if (now - lastPlayedAt < profile.cooldownMilliseconds) {
+    return false;
+  }
+  lastSoundEffectAtByType.set(effectType, now);
 
   const AudioContextType = globalThis.AudioContext || globalThis.webkitAudioContext;
   if (typeof AudioContextType !== 'function') {
-    return;
+    return false;
   }
 
   try {
@@ -255,24 +277,26 @@ function playLevelCompletionSound() {
     const gainNode = audioContext.createGain();
 
     oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(profile.frequency, audioContext.currentTime);
     gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.2);
+    gainNode.gain.exponentialRampToValueAtTime(profile.gain, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + profile.durationSeconds);
 
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
+    oscillator.stop(audioContext.currentTime + profile.durationSeconds);
     oscillator.onended = () => {
       if (typeof audioContext.close === 'function') {
         void audioContext.close();
       }
     };
+    return true;
   } catch (error) {
     if (runtimeLogger?.warn) {
       runtimeLogger.warn({ code: 'runtime.warning', message: 'Failed to play sound effect.', error: String(error) });
     }
+    return false;
   }
 }
 
@@ -341,9 +365,19 @@ async function runRobotSession(runToken, signal, execConfig) {
     onEvent: (ev) => {
       if (runToken !== activeRunToken) return;
       if (ev.type === 'activeStepChanged') { setActiveStep(ev.stepId ?? null); return; }
-      if (ev.type === 'robotUpdated') { robotState = ev.robotState; gridView.render(activeLevel, robotState, objectiveProgress, ev.animation); return; }
+      if (ev.type === 'robotUpdated') {
+        if (ev.animation && (ev.animation.kind === 'move' || ev.animation.kind === 'turn')) {
+          playSoundEffect('movement');
+        }
+        robotState = ev.robotState;
+        gridView.render(activeLevel, robotState, objectiveProgress, ev.animation);
+        return;
+      }
       if (ev.type === 'objectiveUpdated') { objectiveProgress = ev.objectiveProgress; metaView.updateCollectionSummary(objectiveProgress); return; }
       if (ev.type === 'statusChanged') {
+        if (ev.status === 'collected') {
+          playSoundEffect('collection');
+        }
         if (ev.status === 'levelComplete') {
           const nextLevelId = getNextLevelId(activeLevel.id);
           progressRepo.saveCompletedLevelId(activeLevel.id);
