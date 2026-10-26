@@ -1,6 +1,7 @@
 import { cp, mkdir, readFile, readdir, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { findTopLevelDirectoryMatches } from './build-path-checks.mjs';
 
 const requiredDocumentationPaths = [
   'docs/COPILOT_PROJECT_SETUP.md',
@@ -49,15 +50,17 @@ async function validateDistContents() {
   }
 
   const jsEntries = await readdir(resolve(distRootPath, 'js'), { recursive: true });
-  if (jsEntries.some((entry) => String(entry).includes('tests'))) {
+  const normalizedJsEntries = jsEntries.map((entry) => String(entry).replace(/\\/g, '/'));
+  if (normalizedJsEntries.some((entry) =>
+    entry === 'tests' || entry.startsWith('tests/') || entry.includes('/tests/'))
+  ) {
     failBuild('Build failed. dist/js contains test files.');
   }
 
   const legacyDirs = ['simulator', 'levels', 'i18n'];
-  for (const legacyDir of legacyDirs) {
-    if (jsEntries.some((entry) => String(entry).startsWith(legacyDir) || String(entry).includes(`/${legacyDir}/`))) {
-      failBuild(`Build failed. dist/js still contains legacy directory: ${legacyDir}`);
-    }
+  const legacyMatches = findTopLevelDirectoryMatches(normalizedJsEntries, legacyDirs);
+  for (const legacyDir of legacyMatches) {
+    failBuild(`Build failed. dist/js still contains legacy directory: ${legacyDir}`);
   }
 }
 
