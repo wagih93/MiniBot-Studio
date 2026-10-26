@@ -21,7 +21,7 @@ import {
   runProgram
 } from './features/program-execution/index.js';
 import { createConsoleLogger, reportRuntimeError } from './features/shell/index.js';
-import { createDefaultRuntimeConfig } from './runtime-config.js';
+import { createDefaultRuntimeConfig } from './shared/runtime-config.js';
 
 const statusElement = document.querySelector('#status');
 const startButton = document.querySelector('#start-button');

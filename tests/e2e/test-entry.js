@@ -1,5 +1,5 @@
 import { initializeRobotLab } from '../../js/robot-lab.js';
-import { createRuntimeConfig } from '../../js/runtime-config.js';
+import { createRuntimeConfig } from '../../js/shared/runtime-config.js';
 import { brokenLevel } from '../fixtures/levels/broken-level.js';
 import { testLevelValidation } from '../fixtures/levels/test-level-validation.js';
 
