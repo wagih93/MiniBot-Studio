@@ -14,6 +14,7 @@ export const arStrings = {
   parentArea: {
     heading: 'منطقة الأهل',
     description: 'يمكنك هنا مسح التقدم المحفوظ على هذا الجهاز.',
+    soundEffectsLabel: 'تشغيل المؤثرات الصوتية',
     clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟',
     completedLevelsTemplate: 'المستويات المكتملة: {count}',
     conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
@@ -103,6 +104,9 @@ export const arStrings = {
     progressCleared: 'الحالة: تم مسح التقدم المحفوظ على هذا الجهاز.',
     progressClearCancelled: 'الحالة: لم يتم مسح التقدم.',
     progressClearFailed: 'الحالة: تعذّر مسح التقدم. حاول مرة أخرى.',
+    soundEffectsEnabled: 'الحالة: تم تشغيل المؤثرات الصوتية.',
+    soundEffectsDisabled: 'الحالة: تم إيقاف المؤثرات الصوتية.',
+    soundEffectsSaveFailed: 'الحالة: تعذّر حفظ إعدادات الصوت. حاول مرة أخرى.',
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
     invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
     programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',

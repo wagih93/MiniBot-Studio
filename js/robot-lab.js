@@ -1,7 +1,7 @@
 import { arStrings } from './shared/i18n/ar.js';
 import { getLevelById, listLevelIds, validateLevelData, createLevelMetaView } from './features/levels/index.js';
 import { createRobotState, createWorldGridView } from './features/robot-simulation/index.js';
-import { createLearningProgressSummary, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
+import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
 import { createConsoleLogger, reportRuntimeError, createShellView } from './features/shell/index.js';
@@ -25,6 +25,7 @@ const playableLevelsById = Object.fromEntries(
 );
 const progressRepo = createLocalStorageProgressRepository({ allowedLevelIds: playableLevelIds });
 const programRepo = createLocalStorageProgramRepository({ allowedLevelIds: playableLevelIds });
+const parentSettingsRepo = createLocalStorageParentSettingsRepository();
 const delay = createAbortSignalDelay();
 let activeRunToken = 0;
 let activeRunController = null;
@@ -37,6 +38,7 @@ let runtimeLogger = createConsoleLogger();
 let runtimeErrorListenersAttached = false;
 let hasInitialized = false;
 let currentRequestedLevelId = runtimeConfig.initialLevelId;
+let soundEffectsEnabled = parentSettingsRepo.loadSoundEffectsEnabled();
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const statusView = createExecutionStatusView({ statusElement: qs('#status'), labels: arStrings.status });
 const gridView = createWorldGridView({ worldGridElement: qs('#world-grid'), isCollectibleCollected });
@@ -73,6 +75,7 @@ const shellView = createShellView({
     parentAreaElement: qs('#parent-area'),
     parentProgressSummaryElement: qs('#parent-progress-summary'),
     parentConceptListElement: qs('#parent-concept-list'),
+    soundEffectsToggle: qs('#sound-effects-toggle'),
     clearProgressButton: qs('#clear-progress-button'),
     closeParentAreaButton: qs('#close-parent-area-button'),
     hintButton: qs('#hint-button'),
@@ -92,6 +95,7 @@ const shellView = createShellView({
     initializeLevel(continueLevelId);
   },
   onParents: () => {
+    shellView.setSoundEffectsEnabled(soundEffectsEnabled);
     shellView.renderParentAreaSummary(getParentAreaSummary());
     shellView.showParentArea();
     statusView.setStatus('parentsAreaOpen');
@@ -122,6 +126,19 @@ const shellView = createShellView({
     shellView.syncPrimaryActions(false);
     shellView.hideParentArea();
     statusView.setStatus('progressCleared');
+  },
+  onToggleSoundEffects: (enabled) => {
+    const previousValue = soundEffectsEnabled;
+    soundEffectsEnabled = enabled === true;
+
+    if (!parentSettingsRepo.saveSoundEffectsEnabled(soundEffectsEnabled)) {
+      soundEffectsEnabled = previousValue;
+      shellView.setSoundEffectsEnabled(previousValue);
+      statusView.setStatus('soundEffectsSaveFailed');
+      return;
+    }
+
+    statusView.setStatus(soundEffectsEnabled ? 'soundEffectsEnabled' : 'soundEffectsDisabled');
   },
   onHint: () => {
     const hintResult = metaView.showNextHint({ speakHint: speakHintIfEnabled });
@@ -208,6 +225,43 @@ function getParentAreaSummary() {
   });
 }
 
+function playLevelCompletionSound() {
+  if (!soundEffectsEnabled) {
+    return;
+  }
+
+  const AudioContextType = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (typeof AudioContextType !== 'function') {
+    return;
+  }
+
+  try {
+    const audioContext = new AudioContextType();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.2);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+    oscillator.onended = () => {
+      if (typeof audioContext.close === 'function') {
+        void audioContext.close();
+      }
+    };
+  } catch (error) {
+    if (runtimeLogger?.warn) {
+      runtimeLogger.warn({ code: 'runtime.warning', message: 'Failed to play sound effect.', error: String(error) });
+    }
+  }
+}
+
 function speakHintIfEnabled(hintText) {
   if (runtimeConfig.hintSpeechEnabled !== true) {
     return false;
@@ -265,6 +319,7 @@ async function runRobotSession(runToken, signal, execConfig) {
           const nextLevelId = getNextLevelId(activeLevel.id);
           progressRepo.saveCompletedLevelId(activeLevel.id);
           progressRepo.saveSavedLevelId(nextLevelId ?? activeLevel.id);
+          playLevelCompletionSound();
           shellView.showLevelCompletion(getNextLevelId(activeLevel.id) !== null);
           shellView.syncPrimaryActions(isRunInProgress);
         }

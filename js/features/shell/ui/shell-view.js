@@ -10,6 +10,7 @@ export function createShellView({
   onParents,
   onCloseParentsArea,
   onClearProgress,
+  onToggleSoundEffects,
   onHint,
   onRetry,
   onReturnHome,
@@ -21,6 +22,7 @@ export function createShellView({
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
     parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
+    soundEffectsToggle,
     clearProgressButton, closeParentAreaButton,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
@@ -34,6 +36,7 @@ export function createShellView({
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
     document.querySelector('#parent-area-heading').textContent = labels.parentArea.heading;
     document.querySelector('#parent-area-description').textContent = labels.parentArea.description;
+    document.querySelector('#sound-effects-label').textContent = labels.parentArea.soundEffectsLabel;
     clearProgressButton.textContent = labels.controls.clearProgress;
     closeParentAreaButton.textContent = labels.controls.closeParentArea;
     document.querySelector('#world-heading').textContent = labels.world.heading;
@@ -107,6 +110,10 @@ export function createShellView({
     parentAreaElement.hidden = true;
   }
 
+  function setSoundEffectsEnabled(enabled) {
+    soundEffectsToggle.checked = enabled === true;
+  }
+
   function renderParentAreaSummary(summary) {
     const completedLevelCount = Number.isInteger(summary?.completedLevelCount)
       ? summary.completedLevelCount
@@ -144,6 +151,7 @@ export function createShellView({
     parentsButton.addEventListener('click', onParents);
     closeParentAreaButton.addEventListener('click', onCloseParentsArea);
     clearProgressButton.addEventListener('click', onClearProgress);
+    soundEffectsToggle.addEventListener('change', () => onToggleSoundEffects(soundEffectsToggle.checked));
     retryLevelButton.addEventListener('click', onRetry);
     returnHomeButton.addEventListener('click', onReturnHome);
     saveProgramButton.addEventListener('click', onSaveProgram);
@@ -159,6 +167,7 @@ export function createShellView({
     hideLevelCompletion,
     showParentArea,
     hideParentArea,
+    setSoundEffectsEnabled,
     renderParentAreaSummary,
     attachEvents
   };

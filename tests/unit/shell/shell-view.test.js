@@ -31,7 +31,7 @@ function makeShellView(overrides = {}) {
       textContent: '',
       _items: [],
       append(item) { this._items.push(item); }
-    }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
+    }), soundEffectsToggle: makeElement({ checked: false }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -42,6 +42,7 @@ function makeShellView(overrides = {}) {
     parentArea: {
       heading: 'منطقة الأهل',
       description: 'إدارة التقدم',
+      soundEffectsLabel: 'تشغيل المؤثرات الصوتية',
       clearProgressConfirm: 'تأكيد',
       completedLevelsTemplate: 'المستويات المكتملة: {count}',
       conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
@@ -75,6 +76,7 @@ function makeShellView(overrides = {}) {
     onParents: overrides.onParents ?? (() => {}),
     onCloseParentsArea: overrides.onCloseParentsArea ?? (() => {}),
     onClearProgress: overrides.onClearProgress ?? (() => {}),
+    onToggleSoundEffects: overrides.onToggleSoundEffects ?? (() => {}),
     onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
@@ -164,6 +166,14 @@ test('createShellView showParentArea and hideParentArea toggle visibility', () =
   assert.equal(elements.parentAreaElement.hidden, false);
   view.hideParentArea();
   assert.equal(elements.parentAreaElement.hidden, true);
+});
+
+test('createShellView setSoundEffectsEnabled syncs the sound toggle state', () => {
+  const { view, elements } = makeShellView();
+  view.setSoundEffectsEnabled(true);
+  assert.equal(elements.soundEffectsToggle.checked, true);
+  view.setSoundEffectsEnabled(false);
+  assert.equal(elements.soundEffectsToggle.checked, false);
 });
 
 test('createShellView renderParentAreaSummary renders concept counts', () => {
