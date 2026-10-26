@@ -26,4 +26,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      - name: Print unit test count
+        run: |
+          node --test "tests/unit/**/*.test.js" > /tmp/unit-tests.log 2>&1
+          grep -E "ℹ tests [0-9]+" /tmp/unit-tests.log | tail -n 1
       - run: npm run check
