@@ -203,6 +203,20 @@ for (const absoluteFilePath of files) {
   violations.push(...getTopLevelMutableStateViolations(relativeFilePath, lines));
 }
 
+// Enforce: no .js files directly under js/ root except app.js and robot-lab.js
+const allowedJsRootFiles = new Set(['app.js', 'robot-lab.js']);
+const jsRootEntries = await readdir(jsRootPath, { withFileTypes: true });
+for (const entry of jsRootEntries) {
+  if (entry.isFile() && extname(entry.name) === '.js' && !allowedJsRootFiles.has(entry.name)) {
+    violations.push({
+      kind: 'unexpectedJsRootFile',
+      filePath: `js/${entry.name}`,
+      lineNumber: 1,
+      details: `Only app.js and robot-lab.js are allowed directly under js/; found ${entry.name}`
+    });
+  }
+}
+
 const filteredViolations = violations.filter((violation) => {
   const allowlistKey = `${violation.filePath}:${violation.lineNumber}`;
   if (violation.kind === 'crossSliceInternalImport') {
