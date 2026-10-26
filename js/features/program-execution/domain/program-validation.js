@@ -11,6 +11,10 @@ export function validateProgram(level, instructionSequence) {
     return null;
   }
 
+  if (blockTypes.includes('invalidRepeatCount')) {
+    return 'invalidRepeatCount';
+  }
+
   if (validationRules.requiresStartBlock && blockTypes[0] !== 'start') {
     return 'startRequired';
   }

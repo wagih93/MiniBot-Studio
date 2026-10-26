@@ -1,9 +1,11 @@
 import {
+  addBodyStep,
   addProgramStep,
   clearProgram,
   clearProgramInsertPreview,
   createProgramEditorState,
   moveProgramStep,
+  removeBodyStep,
   removeProgramStep,
   restoreProgramFromBlockTypes,
   setActiveProgramStep,
@@ -72,6 +74,16 @@ export function createProgramEditor(initialAvailableBlockTypes = []) {
       state = clearProgram(state);
       state = restoreProgramFromBlockTypes(state, blockTypes, availableBlockTypes);
       return state.programSteps.length > 0;
+    },
+    addBodyStep(repeatStepId, blockType) {
+      const result = addBodyStep(state, { repeatStepId, blockType, availableBlockTypes });
+      state = result.state;
+      return result.added;
+    },
+    removeBodyStep(repeatStepId, bodyStepId) {
+      const result = removeBodyStep(state, { repeatStepId, bodyStepId });
+      state = result.state;
+      return result.removed;
     }
   };
 }

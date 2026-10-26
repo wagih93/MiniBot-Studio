@@ -6,12 +6,16 @@ export function createProgramWorkspaceView({
   getBlockPresentation,
   deleteStepLabel,
   emptyProgramLabel,
+  repeatBodyEmptyLabel,
+  repeatCountTemplate,
   isRunInProgress,
   isFirstLevel,
   onInvalidDrop,
   onProgramChanged,
   onProgramRemoved,
-  onProgramReordered
+  onProgramReordered,
+  onAddToBody,
+  onRemoveFromBody
 }) {
   function render() {
     const stepElements = [];
@@ -127,6 +131,9 @@ export function createProgramWorkspaceView({
   }
 
   function createStepElement(step, activeProgramStepId) {
+    if (step.blockType === 'repeat') {
+      return createRepeatStepElement(step, activeProgramStepId);
+    }
     const presentation = getBlockPresentation(step.blockType);
     const stepElement = document.createElement('li');
     stepElement.classList.add('program-step');
@@ -174,6 +181,90 @@ export function createProgramWorkspaceView({
     });
 
     stepElement.append(iconElement, labelElement, removeButton);
+    return stepElement;
+  }
+
+  function createRepeatStepElement(step, activeProgramStepId) {
+    const presentation = getBlockPresentation('repeat');
+    const isBodyActive = Array.isArray(step.body) && step.body.some((s) => String(s.id) === String(activeProgramStepId));
+    const stepElement = document.createElement('li');
+    stepElement.classList.add('program-step', 'program-step--repeat');
+    stepElement.dataset.stepId = String(step.id);
+    stepElement.dataset.active = (isBodyActive || String(step.id) === String(activeProgramStepId)) ? 'true' : 'false';
+
+    const headerEl = document.createElement('div');
+    headerEl.classList.add('program-step__repeat-header');
+
+    const iconEl = document.createElement('span');
+    iconEl.classList.add('program-step__icon');
+    iconEl.setAttribute('aria-hidden', 'true');
+    iconEl.textContent = presentation.icon;
+
+    const count = Number.isInteger(step.repeatCount) ? step.repeatCount : 3;
+    const labelEl = document.createElement('span');
+    labelEl.classList.add('program-step__label');
+    labelEl.textContent = (repeatCountTemplate ?? '').replace('{count}', String(count));
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.classList.add('program-step__remove');
+    removeBtn.setAttribute('aria-label', `${deleteStepLabel} ${presentation.label}`);
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', () => {
+      if (getProgramEditor().removeProgramStep(step.id)) { onProgramRemoved(); }
+      render();
+    });
+
+    headerEl.append(iconEl, labelEl, removeBtn);
+    stepElement.append(headerEl);
+
+    const bodyList = document.createElement('ul');
+    bodyList.classList.add('program-step__body');
+    if (!Array.isArray(step.body) || step.body.length === 0) {
+      const empty = document.createElement('li');
+      empty.classList.add('program-step__body-empty');
+      empty.textContent = repeatBodyEmptyLabel ?? '';
+      bodyList.append(empty);
+    } else {
+      for (const bodyStep of step.body) {
+        const bodyPresentation = getBlockPresentation(bodyStep.blockType);
+        const bodyEl = document.createElement('li');
+        bodyEl.classList.add('program-step', 'program-step--body');
+        bodyEl.dataset.stepId = String(bodyStep.id);
+        bodyEl.dataset.active = String(bodyStep.id) === String(activeProgramStepId) ? 'true' : 'false';
+        const bIcon = document.createElement('span');
+        bIcon.classList.add('program-step__icon');
+        bIcon.setAttribute('aria-hidden', 'true');
+        bIcon.textContent = bodyPresentation.icon;
+        const bLabel = document.createElement('span');
+        bLabel.classList.add('program-step__label');
+        bLabel.textContent = bodyPresentation.label;
+        const bRemove = document.createElement('button');
+        bRemove.type = 'button';
+        bRemove.classList.add('program-step__remove');
+        bRemove.setAttribute('aria-label', `${deleteStepLabel} ${bodyPresentation.label}`);
+        bRemove.textContent = '✕';
+        bRemove.addEventListener('click', () => {
+          if (typeof onRemoveFromBody === 'function') onRemoveFromBody(step.id, bodyStep.id);
+          render();
+        });
+        bodyEl.append(bIcon, bLabel, bRemove);
+        bodyList.append(bodyEl);
+      }
+    }
+    stepElement.append(bodyList);
+
+    if (!isRunInProgress()) {
+      const addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.classList.add('program-step__add-to-body');
+      addBtn.setAttribute('aria-label', '+');
+      addBtn.textContent = '+';
+      addBtn.addEventListener('click', () => {
+        if (typeof onAddToBody === 'function') onAddToBody(step.id);
+      });
+      stepElement.append(addBtn);
+    }
     return stepElement;
   }
 

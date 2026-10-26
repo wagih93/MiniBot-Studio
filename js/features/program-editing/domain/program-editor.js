@@ -1,3 +1,7 @@
+import { REPEAT_DEFAULT_COUNT, REPEAT_MIN_COUNT, REPEAT_MAX_COUNT } from '../../../shared/repeat-config.js';
+
+export { REPEAT_MIN_COUNT, REPEAT_MAX_COUNT };
+
 export function createProgramEditorState({
   programSteps = [],
   nextProgramStepId = 1,
@@ -59,7 +63,9 @@ export function addProgramStep(state, { blockType, insertIndex, availableBlockTy
   }
 
   const normalizedInsertIndex = normalizeInsertIndex(insertIndex, state.programSteps.length);
-  const newStep = { id: state.nextProgramStepId, blockType };
+  const newStep = blockType === 'repeat'
+    ? { id: state.nextProgramStepId, blockType, repeatCount: REPEAT_DEFAULT_COUNT, body: [] }
+    : { id: state.nextProgramStepId, blockType };
   const nextProgramSteps = [...state.programSteps];
   nextProgramSteps.splice(normalizedInsertIndex, 0, newStep);
 
@@ -113,6 +119,36 @@ export function moveProgramStep(state, stepId, insertIndex) {
     },
     moved: true
   };
+}
+
+export function addBodyStep(state, { repeatStepId, blockType, availableBlockTypes }) {
+  if (!isAvailableBlockType(blockType, availableBlockTypes) || blockType === 'repeat') {
+    return { state, added: false };
+  }
+  const repeatIndex = state.programSteps.findIndex((s) => String(s.id) === String(repeatStepId));
+  if (repeatIndex < 0 || state.programSteps[repeatIndex].blockType !== 'repeat') {
+    return { state, added: false };
+  }
+  const repeatStep = state.programSteps[repeatIndex];
+  const newBodyStep = { id: state.nextProgramStepId, blockType };
+  const nextRepeatStep = { ...repeatStep, body: [...repeatStep.body, newBodyStep] };
+  const nextProgramSteps = [...state.programSteps];
+  nextProgramSteps[repeatIndex] = nextRepeatStep;
+  return { state: { ...state, programSteps: nextProgramSteps, nextProgramStepId: state.nextProgramStepId + 1 }, added: true };
+}
+
+export function removeBodyStep(state, { repeatStepId, bodyStepId }) {
+  const repeatIndex = state.programSteps.findIndex((s) => String(s.id) === String(repeatStepId));
+  if (repeatIndex < 0 || state.programSteps[repeatIndex].blockType !== 'repeat') {
+    return { state, removed: false };
+  }
+  const repeatStep = state.programSteps[repeatIndex];
+  const nextBody = repeatStep.body.filter((s) => String(s.id) !== String(bodyStepId));
+  if (nextBody.length === repeatStep.body.length) return { state, removed: false };
+  const nextRepeatStep = { ...repeatStep, body: nextBody };
+  const nextProgramSteps = [...state.programSteps];
+  nextProgramSteps[repeatIndex] = nextRepeatStep;
+  return { state: { ...state, programSteps: nextProgramSteps }, removed: true };
 }
 
 export function restoreProgramFromBlockTypes(state, blockTypes, availableBlockTypes) {
