@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { level001 } from '../../js/levels/data/level-001.js';
+import { level001 } from '../../js/features/levels/domain/data/level-001.js';
 import { brokenLevel } from '../fixtures/levels/broken-level.js';
-import { validateLevelData } from '../../js/levels/level-validator.js';
+import { validateLevelData } from '../../js/features/levels/index.js';
 
 test('level validator accepts valid level data', () => {
   const validation = validateLevelData(level001);

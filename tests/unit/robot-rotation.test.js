@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createRobotState, turnLeft, turnRight } from '../../js/simulator/robot.js';
-import { level001 } from '../../js/levels/data/level-001.js';
+import { createRobotState, turnLeft, turnRight } from '../../js/features/robot-simulation/index.js';
+import { level001 } from '../../js/features/levels/domain/data/level-001.js';
 
 test('turn right rotates direction by 90 degrees without changing position', () => {
   const robotState = createRobotState(level001.robot);
