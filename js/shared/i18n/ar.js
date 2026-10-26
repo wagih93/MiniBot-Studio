@@ -11,6 +11,11 @@ export const arStrings = {
     heading: 'عالم الروبوت',
     description: 'شبكة التجربة'
   },
+  parentArea: {
+    heading: 'منطقة الأهل',
+    description: 'يمكنك هنا مسح التقدم المحفوظ على هذا الجهاز.',
+    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟'
+  },
   blockArea: {
     heading: 'منطقة الأوامر',
     programHeading: 'مساحة البرنامج',
@@ -58,7 +63,9 @@ export const arStrings = {
     deleteStep: 'احذف',
     retryLevel: 'حاول مرة أخرى',
     returnHome: 'العودة للرئيسية',
-    saveProgram: 'احفظ البرنامج'
+    saveProgram: 'احفظ البرنامج',
+    clearProgress: 'امسح التقدم',
+    closeParentArea: 'إغلاق'
   },
   levelCompletion: {
     message: 'أحسنت! أنهيت هذا المستوى.',
@@ -85,7 +92,10 @@ export const arStrings = {
     hintSpoken: 'الحالة: تم عرض التلميح وقراءته بصوت مرتفع.',
     stepLimitExceeded: 'الحالة: تم إيقاف البرنامج لأنه تجاوز الحد الآمن للخطوات.',
     continueUnavailable: 'الحالة: لا يوجد تقدّم محفوظ بعد.',
-    parentsAreaPending: 'الحالة: إعدادات الأهل ستظهر في خطوة قادمة.',
+    parentsAreaOpen: 'الحالة: يمكنك إدارة التقدم من منطقة الأهل.',
+    progressCleared: 'الحالة: تم مسح التقدم المحفوظ على هذا الجهاز.',
+    progressClearCancelled: 'الحالة: لم يتم مسح التقدم.',
+    progressClearFailed: 'الحالة: تعذّر مسح التقدم. حاول مرة أخرى.',
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
     invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
     programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',

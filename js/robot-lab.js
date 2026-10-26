@@ -67,22 +67,54 @@ const shellView = createShellView({
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
+    parentAreaElement: qs('#parent-area'), clearProgressButton: qs('#clear-progress-button'), closeParentAreaButton: qs('#close-parent-area-button'),
     hintButton: qs('#hint-button'),
     levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message'),
     levelCompletionElement: qs('#level-completion'), levelCompletionMessageElement: qs('#level-completion-message')
   },
   labels: arStrings,
-  readHasSavedProgress: () => progressRepo.loadSavedLevelId() !== null,
+  readHasSavedProgress: hasSavedProgress,
   onPlay: startRun,
   onStop: () => cancelActiveRun('stopped'),
   onReset: () => { cancelActiveRun(); resetRobotPosition(); statusView.setStatus('reset'); },
   onStart: () => { cancelActiveRun(); initializeLevel(playableLevelIds[0] ?? 'level-001'); },
   onContinue: () => {
-    const savedId = progressRepo.loadSavedLevelId();
-    if (!savedId) { statusView.setStatus('continueUnavailable'); return; }
-    cancelActiveRun(); initializeLevel(savedId);
+    const continueLevelId = resolveContinueLevelId();
+    if (!continueLevelId) { statusView.setStatus('continueUnavailable'); return; }
+    cancelActiveRun();
+    initializeLevel(continueLevelId);
   },
-  onParents: () => statusView.setStatus('parentsAreaPending'),
+  onParents: () => {
+    shellView.showParentArea();
+    statusView.setStatus('parentsAreaOpen');
+  },
+  onCloseParentsArea: () => {
+    shellView.hideParentArea();
+    statusView.setStatus('idle');
+  },
+  onClearProgress: () => {
+    if (typeof globalThis.confirm !== 'function') {
+      statusView.setStatus('progressClearFailed');
+      return;
+    }
+
+    const confirmed = globalThis.confirm(arStrings.parentArea.clearProgressConfirm);
+    if (!confirmed) {
+      statusView.setStatus('progressClearCancelled');
+      return;
+    }
+
+    if (!progressRepo.clearProgress()) {
+      statusView.setStatus('progressClearFailed');
+      return;
+    }
+
+    cancelActiveRun();
+    initializeLevel(playableLevelIds[0] ?? 'level-001');
+    shellView.syncPrimaryActions(false);
+    shellView.hideParentArea();
+    statusView.setStatus('progressCleared');
+  },
   onHint: () => {
     const hintResult = metaView.showNextHint({ speakHint: speakHintIfEnabled });
     statusView.setStatus(hintResult.wasSpoken ? 'hintSpoken' : 'hintShown');
@@ -129,6 +161,36 @@ function getNextLevelId(levelId) {
   }
 
   return playableLevelIds[currentIndex + 1];
+}
+
+function hasSavedProgress() {
+  return progressRepo.loadSavedLevelId() !== null || progressRepo.loadCompletedLevelIds().length > 0;
+}
+
+function resolveContinueLevelId() {
+  const savedLevelId = progressRepo.loadSavedLevelId();
+  if (savedLevelId) {
+    return savedLevelId;
+  }
+
+  const completedLevelIds = new Set(progressRepo.loadCompletedLevelIds());
+  if (completedLevelIds.size === 0) {
+    return null;
+  }
+
+  let lastCompletedIndex = -1;
+  for (const completedLevelId of completedLevelIds) {
+    const levelIndex = playableLevelIds.indexOf(completedLevelId);
+    if (levelIndex > lastCompletedIndex) {
+      lastCompletedIndex = levelIndex;
+    }
+  }
+
+  if (lastCompletedIndex < 0) {
+    return null;
+  }
+
+  return playableLevelIds[lastCompletedIndex + 1] ?? playableLevelIds[lastCompletedIndex] ?? null;
 }
 
 function speakHintIfEnabled(hintText) {
@@ -185,7 +247,9 @@ async function runRobotSession(runToken, signal, execConfig) {
       if (ev.type === 'objectiveUpdated') { objectiveProgress = ev.objectiveProgress; metaView.updateCollectionSummary(objectiveProgress); return; }
       if (ev.type === 'statusChanged') {
         if (ev.status === 'levelComplete') {
-          progressRepo.saveSavedLevelId(activeLevel.id);
+          const nextLevelId = getNextLevelId(activeLevel.id);
+          progressRepo.saveCompletedLevelId(activeLevel.id);
+          progressRepo.saveSavedLevelId(nextLevelId ?? activeLevel.id);
           shellView.showLevelCompletion(getNextLevelId(activeLevel.id) !== null);
           shellView.syncPrimaryActions(isRunInProgress);
         }
@@ -227,6 +291,7 @@ function resetRobotPosition() {
 function initializeLevel(levelId) {
   currentRequestedLevelId = levelId;
   const { level, usedFallback } = resolveLevel(levelId);
+  shellView.hideParentArea();
   shellView.hideLevelCompletion();
   activeLevel = level; robotState = createRobotState(level.robot); objectiveProgress = createObjectiveProgress(level);
   programEditor.reset(); workspaceView.render(); metaView.updateLevelIndicator(level.id);

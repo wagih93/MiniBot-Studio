@@ -8,6 +8,8 @@ export function createShellView({
   onStart,
   onContinue,
   onParents,
+  onCloseParentsArea,
+  onClearProgress,
   onHint,
   onRetry,
   onReturnHome,
@@ -18,6 +20,7 @@ export function createShellView({
     startButton, continueButton, parentsButton,
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
+    parentAreaElement, clearProgressButton, closeParentAreaButton,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
   } = elements;
@@ -28,6 +31,10 @@ export function createShellView({
     document.querySelector('#start-button-label').textContent = labels.primaryActions.start;
     document.querySelector('#continue-button-label').textContent = labels.primaryActions.continue;
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
+    document.querySelector('#parent-area-heading').textContent = labels.parentArea.heading;
+    document.querySelector('#parent-area-description').textContent = labels.parentArea.description;
+    clearProgressButton.textContent = labels.controls.clearProgress;
+    closeParentAreaButton.textContent = labels.controls.closeParentArea;
     document.querySelector('#world-heading').textContent = labels.world.heading;
     hintButton.textContent = labels.controls.hint;
     document.querySelector('#block-area-heading').textContent = labels.blockArea.heading;
@@ -91,6 +98,14 @@ export function createShellView({
     nextLevelButton.disabled = true;
   }
 
+  function showParentArea() {
+    parentAreaElement.hidden = false;
+  }
+
+  function hideParentArea() {
+    parentAreaElement.hidden = true;
+  }
+
   function attachEvents() {
     playButton.addEventListener('click', onPlay);
     stopButton.addEventListener('click', onStop);
@@ -100,6 +115,8 @@ export function createShellView({
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);
+    closeParentAreaButton.addEventListener('click', onCloseParentsArea);
+    clearProgressButton.addEventListener('click', onClearProgress);
     retryLevelButton.addEventListener('click', onRetry);
     returnHomeButton.addEventListener('click', onReturnHome);
     saveProgramButton.addEventListener('click', onSaveProgram);
@@ -113,6 +130,8 @@ export function createShellView({
     hideLevelError,
     showLevelCompletion,
     hideLevelCompletion,
+    showParentArea,
+    hideParentArea,
     attachEvents
   };
 }

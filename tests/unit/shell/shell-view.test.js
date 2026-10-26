@@ -27,6 +27,7 @@ function makeShellView(overrides = {}) {
     startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
     retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
+    parentAreaElement: makeElement({ hidden: true }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -34,9 +35,10 @@ function makeShellView(overrides = {}) {
     pageTitle: 'MiniBot Studio',
     heading: 'مختبر الروبوت',
     primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل' },
+    parentArea: { heading: 'منطقة الأهل', description: 'إدارة التقدم', clearProgressConfirm: 'تأكيد' },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
-    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ' },
+    controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ', clearProgress: 'امسح', closeParentArea: 'إغلاق' },
     levelCompletion: { message: 'ممتاز', finalLevelMessage: 'أكملت الجميع' },
     movementGuideHeading: 'الحركة',
     movement: { forward: 'أمام', right: 'يمين', left: 'يسار' }
@@ -56,6 +58,8 @@ function makeShellView(overrides = {}) {
     onStart: overrides.onStart ?? (() => {}),
     onContinue: overrides.onContinue ?? (() => {}),
     onParents: overrides.onParents ?? (() => {}),
+    onCloseParentsArea: overrides.onCloseParentsArea ?? (() => {}),
+    onClearProgress: overrides.onClearProgress ?? (() => {}),
     onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
@@ -137,4 +141,12 @@ test('createShellView hideLevelCompletion hides celebration state', () => {
   assert.equal(elements.levelCompletionElement.hidden, true);
   assert.equal(elements.nextLevelButton.hidden, true);
   assert.equal(elements.levelCompletionMessageElement.textContent, '');
+});
+
+test('createShellView showParentArea and hideParentArea toggle visibility', () => {
+  const { view, elements } = makeShellView();
+  view.showParentArea();
+  assert.equal(elements.parentAreaElement.hidden, false);
+  view.hideParentArea();
+  assert.equal(elements.parentAreaElement.hidden, true);
 });
