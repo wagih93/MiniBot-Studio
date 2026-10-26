@@ -2,6 +2,7 @@ import { initializeRobotLab } from '../../js/robot-lab.js';
 import { createRuntimeConfig } from '../../js/shared/runtime-config.js';
 import { brokenLevel } from '../fixtures/levels/broken-level.js';
 import { testLevelValidation } from '../fixtures/levels/test-level-validation.js';
+import { levelRepeat } from '../fixtures/levels/level-repeat.js';
 
 const searchParams = new URLSearchParams(window.location.search);
 const runtimeLogEntries = [];
@@ -22,7 +23,7 @@ const runtimeConfig = createRuntimeConfig({
     selectedBlockRepeatCount: searchParams.get('repeat') ?? undefined,
     stepDelayMilliseconds: searchParams.get('stepDelayMs') ?? undefined
   },
-  levelOverrides: [brokenLevel, testLevelValidation],
+  levelOverrides: [brokenLevel, testLevelValidation, levelRepeat],
   logger: runtimeLogger
 });
 

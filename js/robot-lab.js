@@ -7,7 +7,6 @@ import { compileProgram, createObjectiveProgress, getCollectedCollectibleCount, 
 import { createConsoleLogger, reportRuntimeError, createShellView } from './features/shell/index.js';
 import { createDefaultRuntimeConfig } from './shared/runtime-config.js';
 import { createAbortSignalDelay } from './shared/abort-signal-delay.js';
-
 const qs = (sel) => document.querySelector(sel);
 
 const fallbackLevel = {
@@ -35,7 +34,6 @@ let runtimeLogger = createConsoleLogger();
 let runtimeErrorListenersAttached = false;
 let hasInitialized = false;
 let currentRequestedLevelId = runtimeConfig.initialLevelId;
-
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const statusView = createExecutionStatusView({ statusElement: qs('#status'), labels: arStrings.status });
 const gridView = createWorldGridView({ worldGridElement: qs('#world-grid'), isCollectibleCollected });
@@ -51,10 +49,12 @@ const workspaceView = createProgramWorkspaceView({
   programWorkspaceElement: qs('#program-workspace'), programListElement: qs('#program-list'),
   programDemoElement: qs('#program-demo'), getProgramEditor: () => programEditor,
   getBlockPresentation: (t) => ({ label: arStrings.blockArea.labelsByType[t] ?? t, icon: arStrings.blockArea.iconsByType?.[t] ?? '⬜' }),
-  deleteStepLabel: arStrings.controls.deleteStep, emptyProgramLabel: arStrings.blockArea.emptyProgram,
+  deleteStepLabel: arStrings.controls.deleteStep, emptyProgramLabel: arStrings.blockArea.emptyProgram, repeatBodyEmptyLabel: arStrings.blockArea.repeatBodyEmpty, repeatCountTemplate: arStrings.blockArea.repeatCountTemplate,
   isRunInProgress: () => isRunInProgress, isFirstLevel: () => activeLevel.id === 'level-001',
   onInvalidDrop: () => statusView.setStatus('invalidDrop'), onProgramChanged: () => statusView.setStatus('programUpdated'),
-  onProgramRemoved: () => statusView.setStatus('programRemoved'), onProgramReordered: () => statusView.setStatus('programReordered')
+  onProgramRemoved: () => statusView.setStatus('programRemoved'), onProgramReordered: () => statusView.setStatus('programReordered'),
+  onAddToBody: (rid) => { const bt = toolboxView.getSelectedBlockType(); if (bt && programEditor.addBodyStep(rid, bt)) { workspaceView.render(); statusView.setStatus('programUpdated'); } },
+  onRemoveFromBody: (rid, bid) => { if (programEditor.removeBodyStep(rid, bid)) { workspaceView.render(); statusView.setStatus('programRemoved'); } }
 });
 const metaView = createLevelMetaView({
   levelHintElement: qs('#level-hint'), objectiveConditionElement: qs('#success-condition'),
