@@ -7,4 +7,5 @@ export {
   removeProgramStep,
   restoreProgramFromBlockTypes
 } from './domain/program-editor.js';
+export { createBlockToolboxView } from './ui/block-toolbox-view.js';
 export { createProgramWorkspaceView } from './ui/program-workspace-view.js';
