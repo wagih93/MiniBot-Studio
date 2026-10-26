@@ -21,6 +21,7 @@ export const level004 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
+  learningConcepts: ['sequencing', 'directions'],
   hints: [
     'الطريق المباشر إلى النجمة مغلق بجدار.',
     'ابدأ بالنزول ثم اتجه يميناً لتجاوز الجدار.'

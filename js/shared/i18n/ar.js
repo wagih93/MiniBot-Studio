@@ -14,7 +14,15 @@ export const arStrings = {
   parentArea: {
     heading: 'منطقة الأهل',
     description: 'يمكنك هنا مسح التقدم المحفوظ على هذا الجهاز.',
-    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟'
+    soundEffectsLabel: 'تشغيل المؤثرات الصوتية',
+    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟',
+    completedLevelsTemplate: 'المستويات المكتملة: {count}',
+    conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
+    learningConceptLabels: {
+      sequencing: 'التسلسل',
+      directions: 'الاتجاهات',
+      repetition: 'التكرار'
+    }
   },
   blockArea: {
     heading: 'منطقة الأوامر',
@@ -59,6 +67,7 @@ export const arStrings = {
     stop: 'إيقاف',
     reset: 'إعادة',
     hint: 'تلميح',
+    playInstructionAudio: 'استمع للتعليمات',
     nextLevel: 'المستوى التالي',
     deleteStep: 'احذف',
     retryLevel: 'حاول مرة أخرى',
@@ -90,12 +99,18 @@ export const arStrings = {
     levelComplete: 'الحالة: رائع! أنهيت التحدي.',
     hintShown: 'الحالة: تم عرض التلميح التالي.',
     hintSpoken: 'الحالة: تم عرض التلميح وقراءته بصوت مرتفع.',
+    instructionSpoken: 'الحالة: تمت قراءة تعليمات المستوى.',
+    instructionSpeechUnavailable: 'الحالة: لا تتوفر ميزة القراءة الصوتية على هذا المتصفح.',
+    instructionAudioMuted: 'الحالة: الصوت مكتوم من إعدادات الأهل.',
     stepLimitExceeded: 'الحالة: تم إيقاف البرنامج لأنه تجاوز الحد الآمن للخطوات.',
     continueUnavailable: 'الحالة: لا يوجد تقدّم محفوظ بعد.',
     parentsAreaOpen: 'الحالة: يمكنك إدارة التقدم من منطقة الأهل.',
     progressCleared: 'الحالة: تم مسح التقدم المحفوظ على هذا الجهاز.',
     progressClearCancelled: 'الحالة: لم يتم مسح التقدم.',
     progressClearFailed: 'الحالة: تعذّر مسح التقدم. حاول مرة أخرى.',
+    soundEffectsEnabled: 'الحالة: تم تشغيل المؤثرات الصوتية.',
+    soundEffectsDisabled: 'الحالة: تم إيقاف المؤثرات الصوتية.',
+    soundEffectsSaveFailed: 'الحالة: تعذّر حفظ إعدادات الصوت. حاول مرة أخرى.',
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
     invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
     programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',
