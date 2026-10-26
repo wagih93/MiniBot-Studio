@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,12 +22,21 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Print unit test count
+        shell: bash
         run: |
+          set -euo pipefail
           node --test "tests/unit/**/*.test.js" > /tmp/unit-tests.log 2>&1
-          grep -E "ℹ tests [0-9]+" /tmp/unit-tests.log | tail -n 1
+          count=$(grep -E "ℹ tests [0-9]+" /tmp/unit-tests.log | tail -n 1 || true)
+          if [ -n "$count" ]; then
+            echo "$count"
+          else
+            echo "No unit-test count reported."
+            cat /tmp/unit-tests.log
+            exit 1
+          fi
       - run: npm run check
