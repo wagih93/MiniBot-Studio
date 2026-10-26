@@ -89,6 +89,18 @@ button {
   font-weight: 600;
 }
 
+.parent-area__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.parent-area__toggle input {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+}
+
 .parent-area__concepts {
   margin: 0;
   padding-inline-start: 20px;

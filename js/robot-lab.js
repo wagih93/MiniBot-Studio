@@ -1,7 +1,7 @@
 import { arStrings } from './shared/i18n/ar.js';
 import { getLevelById, listLevelIds, validateLevelData, createLevelMetaView } from './features/levels/index.js';
 import { createRobotState, createWorldGridView } from './features/robot-simulation/index.js';
-import { createLearningProgressSummary, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
+import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
 import { createConsoleLogger, reportRuntimeError, createShellView } from './features/shell/index.js';
@@ -18,6 +18,11 @@ const fallbackLevel = {
   hints: [arStrings.levelMeta.defaultHint]
 };
 const defaultExecCfg = { maxStepsPerRun: 12, repeatSelectedBlockCount: 1, stepDelayMilliseconds: 220 };
+const soundEffectProfiles = {
+  movement: { frequency: 420, durationSeconds: 0.06, gain: 0.03, cooldownMilliseconds: 100 },
+  collection: { frequency: 560, durationSeconds: 0.12, gain: 0.05, cooldownMilliseconds: 180 },
+  success: { frequency: 720, durationSeconds: 0.2, gain: 0.08, cooldownMilliseconds: 220 }
+};
 
 const playableLevelIds = listLevelIds();
 const playableLevelsById = Object.fromEntries(
@@ -25,6 +30,7 @@ const playableLevelsById = Object.fromEntries(
 );
 const progressRepo = createLocalStorageProgressRepository({ allowedLevelIds: playableLevelIds });
 const programRepo = createLocalStorageProgramRepository({ allowedLevelIds: playableLevelIds });
+const parentSettingsRepo = createLocalStorageParentSettingsRepository();
 const delay = createAbortSignalDelay();
 let activeRunToken = 0;
 let activeRunController = null;
@@ -37,6 +43,8 @@ let runtimeLogger = createConsoleLogger();
 let runtimeErrorListenersAttached = false;
 let hasInitialized = false;
 let currentRequestedLevelId = runtimeConfig.initialLevelId;
+let soundEffectsEnabled = parentSettingsRepo.loadSoundEffectsEnabled();
+const lastSoundEffectAtByType = new Map();
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const statusView = createExecutionStatusView({ statusElement: qs('#status'), labels: arStrings.status });
 const gridView = createWorldGridView({ worldGridElement: qs('#world-grid'), isCollectibleCollected });
@@ -70,9 +78,11 @@ const shellView = createShellView({
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
+    playInstructionAudioButton: qs('#play-instruction-audio-button'),
     parentAreaElement: qs('#parent-area'),
     parentProgressSummaryElement: qs('#parent-progress-summary'),
     parentConceptListElement: qs('#parent-concept-list'),
+    soundEffectsToggle: qs('#sound-effects-toggle'),
     clearProgressButton: qs('#clear-progress-button'),
     closeParentAreaButton: qs('#close-parent-area-button'),
     hintButton: qs('#hint-button'),
@@ -92,6 +102,7 @@ const shellView = createShellView({
     initializeLevel(continueLevelId);
   },
   onParents: () => {
+    shellView.setSoundEffectsEnabled(soundEffectsEnabled);
     shellView.renderParentAreaSummary(getParentAreaSummary());
     shellView.showParentArea();
     statusView.setStatus('parentsAreaOpen');
@@ -123,9 +134,35 @@ const shellView = createShellView({
     shellView.hideParentArea();
     statusView.setStatus('progressCleared');
   },
+  onToggleSoundEffects: (enabled) => {
+    const previousValue = soundEffectsEnabled;
+    soundEffectsEnabled = enabled === true;
+
+    if (!parentSettingsRepo.saveSoundEffectsEnabled(soundEffectsEnabled)) {
+      soundEffectsEnabled = previousValue;
+      shellView.setSoundEffectsEnabled(previousValue);
+      statusView.setStatus('soundEffectsSaveFailed');
+      return;
+    }
+
+    statusView.setStatus(soundEffectsEnabled ? 'soundEffectsEnabled' : 'soundEffectsDisabled');
+  },
   onHint: () => {
     const hintResult = metaView.showNextHint({ speakHint: speakHintIfEnabled });
     statusView.setStatus(hintResult.wasSpoken ? 'hintSpoken' : 'hintShown');
+  },
+  onPlayInstructionAudio: () => {
+    if (!soundEffectsEnabled) {
+      statusView.setStatus('instructionAudioMuted');
+      return;
+    }
+
+    const instructionText = [
+      qs('#level-hint')?.textContent ?? '',
+      qs('#success-condition')?.textContent ?? ''
+    ].join(' ').trim();
+    const spoken = speakTextWithSpeechSynthesis(instructionText);
+    statusView.setStatus(spoken ? 'instructionSpoken' : 'instructionSpeechUnavailable');
   },
   onRetry: () => { cancelActiveRun(); initializeLevel(currentRequestedLevelId); },
   onReturnHome: () => { cancelActiveRun(); initializeLevel(playableLevelIds[0] ?? 'level-001'); },
@@ -208,8 +245,71 @@ function getParentAreaSummary() {
   });
 }
 
+function playLevelCompletionSound() {
+  return playSoundEffect('success');
+}
+
+function playSoundEffect(effectType) {
+  if (!soundEffectsEnabled) {
+    return false;
+  }
+
+  const profile = soundEffectProfiles[effectType];
+  if (!profile) {
+    return false;
+  }
+
+  const now = Date.now();
+  const lastPlayedAt = lastSoundEffectAtByType.get(effectType) ?? 0;
+  if (now - lastPlayedAt < profile.cooldownMilliseconds) {
+    return false;
+  }
+  lastSoundEffectAtByType.set(effectType, now);
+
+  const AudioContextType = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (typeof AudioContextType !== 'function') {
+    return false;
+  }
+
+  try {
+    const audioContext = new AudioContextType();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(profile.frequency, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(profile.gain, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + profile.durationSeconds);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + profile.durationSeconds);
+    oscillator.onended = () => {
+      if (typeof audioContext.close === 'function') {
+        void audioContext.close();
+      }
+    };
+    return true;
+  } catch (error) {
+    if (runtimeLogger?.warn) {
+      runtimeLogger.warn({ code: 'runtime.warning', message: 'Failed to play sound effect.', error: String(error) });
+    }
+    return false;
+  }
+}
+
 function speakHintIfEnabled(hintText) {
-  if (runtimeConfig.hintSpeechEnabled !== true) {
+  if (runtimeConfig.hintSpeechEnabled !== true || !soundEffectsEnabled) {
+    return false;
+  }
+
+  return speakTextWithSpeechSynthesis(hintText);
+}
+
+function speakTextWithSpeechSynthesis(text) {
+  if (typeof text !== 'string' || text.trim().length === 0) {
     return false;
   }
 
@@ -219,14 +319,21 @@ function speakHintIfEnabled(hintText) {
     return false;
   }
 
-  if (typeof speechApi.cancel === 'function') {
-    speechApi.cancel();
-  }
+  try {
+    if (typeof speechApi.cancel === 'function') {
+      speechApi.cancel();
+    }
 
-  const utterance = new SpeechUtterance(hintText);
-  utterance.lang = 'ar';
-  speechApi.speak(utterance);
-  return true;
+    const utterance = new SpeechUtterance(text.trim());
+    utterance.lang = 'ar';
+    speechApi.speak(utterance);
+    return true;
+  } catch (error) {
+    if (runtimeLogger?.warn) {
+      runtimeLogger.warn({ code: 'runtime.warning', message: 'Failed to play spoken instruction.', error: String(error) });
+    }
+    return false;
+  }
 }
 
 function getExecConfig(level) {
@@ -258,13 +365,24 @@ async function runRobotSession(runToken, signal, execConfig) {
     onEvent: (ev) => {
       if (runToken !== activeRunToken) return;
       if (ev.type === 'activeStepChanged') { setActiveStep(ev.stepId ?? null); return; }
-      if (ev.type === 'robotUpdated') { robotState = ev.robotState; gridView.render(activeLevel, robotState, objectiveProgress, ev.animation); return; }
+      if (ev.type === 'robotUpdated') {
+        if (ev.animation && (ev.animation.kind === 'move' || ev.animation.kind === 'turn')) {
+          playSoundEffect('movement');
+        }
+        robotState = ev.robotState;
+        gridView.render(activeLevel, robotState, objectiveProgress, ev.animation);
+        return;
+      }
       if (ev.type === 'objectiveUpdated') { objectiveProgress = ev.objectiveProgress; metaView.updateCollectionSummary(objectiveProgress); return; }
       if (ev.type === 'statusChanged') {
+        if (ev.status === 'collected') {
+          playSoundEffect('collection');
+        }
         if (ev.status === 'levelComplete') {
           const nextLevelId = getNextLevelId(activeLevel.id);
           progressRepo.saveCompletedLevelId(activeLevel.id);
           progressRepo.saveSavedLevelId(nextLevelId ?? activeLevel.id);
+          playLevelCompletionSound();
           shellView.showLevelCompletion(getNextLevelId(activeLevel.id) !== null);
           shellView.syncPrimaryActions(isRunInProgress);
         }
