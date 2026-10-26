@@ -64,10 +64,11 @@ const metaView = createLevelMetaView({
 const shellView = createShellView({
   elements: {
     startButton: qs('#start-button'), continueButton: qs('#continue-button'), parentsButton: qs('#parents-button'),
-    playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'),
+    playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
-    levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message')
+    levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message'),
+    levelCompletionElement: qs('#level-completion'), levelCompletionMessageElement: qs('#level-completion-message')
   },
   labels: arStrings,
   readHasSavedProgress: () => progressRepo.loadSavedLevelId() !== null,
@@ -83,6 +84,12 @@ const shellView = createShellView({
   onParents: () => statusView.setStatus('parentsAreaPending'),
   onRetry: () => { cancelActiveRun(); initializeLevel(currentRequestedLevelId); },
   onReturnHome: () => { cancelActiveRun(); initializeLevel(playableLevelIds[0] ?? 'level-001'); },
+  onNextLevel: () => {
+    const nextLevelId = getNextLevelId(activeLevel.id);
+    if (!nextLevelId) return;
+    cancelActiveRun();
+    initializeLevel(nextLevelId);
+  },
   onSaveProgram: () => {
     const saved = programRepo.saveProgram(activeLevel.id, programEditor.getProgramBlockTypes());
     statusView.setStatus(saved ? 'programSaved' : 'programLoadFailed');
@@ -108,6 +115,15 @@ function resolveLevel(levelId) {
   const { isValid, errors } = validateLevelData(level);
   if (!isValid) { if (runtimeLogger?.warn) runtimeLogger.warn({ code: 'runtime.warning', message: 'Level validation failed.', levelId, errors }); return { level: fallbackLevel, usedFallback: true }; }
   return { level, usedFallback: false };
+}
+
+function getNextLevelId(levelId) {
+  const currentIndex = playableLevelIds.indexOf(levelId);
+  if (currentIndex < 0 || currentIndex >= playableLevelIds.length - 1) {
+    return null;
+  }
+
+  return playableLevelIds[currentIndex + 1];
 }
 
 function getExecConfig(level) {
@@ -142,7 +158,11 @@ async function runRobotSession(runToken, signal, execConfig) {
       if (ev.type === 'robotUpdated') { robotState = ev.robotState; gridView.render(activeLevel, robotState, objectiveProgress, ev.animation); return; }
       if (ev.type === 'objectiveUpdated') { objectiveProgress = ev.objectiveProgress; metaView.updateCollectionSummary(objectiveProgress); return; }
       if (ev.type === 'statusChanged') {
-        if (ev.status === 'levelComplete') { progressRepo.saveSavedLevelId(activeLevel.id); shellView.syncPrimaryActions(isRunInProgress); }
+        if (ev.status === 'levelComplete') {
+          progressRepo.saveSavedLevelId(activeLevel.id);
+          shellView.showLevelCompletion(getNextLevelId(activeLevel.id) !== null);
+          shellView.syncPrimaryActions(isRunInProgress);
+        }
         statusView.setStatus(ev.status);
       }
     }
@@ -181,6 +201,7 @@ function resetRobotPosition() {
 function initializeLevel(levelId) {
   currentRequestedLevelId = levelId;
   const { level, usedFallback } = resolveLevel(levelId);
+  shellView.hideLevelCompletion();
   activeLevel = level; robotState = createRobotState(level.robot); objectiveProgress = createObjectiveProgress(level);
   programEditor.reset(); workspaceView.render(); metaView.updateLevelIndicator(level.id);
   gridView.render(level, robotState, objectiveProgress); toolboxView.render(level.availableBlocks);

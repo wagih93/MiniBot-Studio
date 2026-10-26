@@ -77,10 +77,15 @@
         </div>
       </section>
       <p id="status" class="status" data-state="idle"></p>
+      <section id="level-completion" class="level-completion" hidden aria-live="polite">
+        <span class="level-completion__icon" aria-hidden="true">🎉</span>
+        <p id="level-completion-message" class="level-completion__message"></p>
+      </section>
       <div class="controls" role="group" aria-label="أزرار التحكم">
         <button id="play-button" type="button"></button>
         <button id="stop-button" type="button"></button>
         <button id="reset-button" type="button"></button>
+        <button id="next-level-button" type="button" hidden></button>
       </div>
     </main>
   </body>

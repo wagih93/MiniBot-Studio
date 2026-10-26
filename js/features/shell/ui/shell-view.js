@@ -10,13 +10,15 @@ export function createShellView({
   onParents,
   onRetry,
   onReturnHome,
-  onSaveProgram
+  onSaveProgram,
+  onNextLevel
 }) {
   const {
     startButton, continueButton, parentsButton,
-    playButton, stopButton, resetButton,
+    playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton,
-    programWorkspaceElement, levelErrorElement, levelErrorMessageElement
+    programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
+    levelCompletionElement, levelCompletionMessageElement
   } = elements;
 
   function applyStaticLabels() {
@@ -37,6 +39,7 @@ export function createShellView({
     playButton.textContent = labels.controls.play;
     stopButton.textContent = labels.controls.stop;
     resetButton.textContent = labels.controls.reset;
+    nextLevelButton.textContent = labels.controls.nextLevel;
     retryLevelButton.textContent = labels.controls.retryLevel;
     returnHomeButton.textContent = labels.controls.returnHome;
   }
@@ -47,10 +50,12 @@ export function createShellView({
     startButton.disabled = isRunning;
     continueButton.disabled = isRunning || !hasSaved;
     parentsButton.disabled = isRunning;
+    nextLevelButton.disabled = isRunning || nextLevelButton.hidden;
   }
 
   function setEditingEnabled(enabled, programListElement) {
     playButton.disabled = !enabled;
+    nextLevelButton.disabled = !enabled || nextLevelButton.hidden;
     retryLevelButton.disabled = !enabled;
     returnHomeButton.disabled = !enabled;
     saveProgramButton.disabled = !enabled;
@@ -68,10 +73,27 @@ export function createShellView({
     levelErrorMessageElement.textContent = '';
   }
 
+  function showLevelCompletion(canGoToNextLevel) {
+    levelCompletionElement.hidden = false;
+    levelCompletionMessageElement.textContent = canGoToNextLevel
+      ? labels.levelCompletion.message
+      : labels.levelCompletion.finalLevelMessage;
+    nextLevelButton.hidden = !canGoToNextLevel;
+    nextLevelButton.disabled = !canGoToNextLevel;
+  }
+
+  function hideLevelCompletion() {
+    levelCompletionElement.hidden = true;
+    levelCompletionMessageElement.textContent = '';
+    nextLevelButton.hidden = true;
+    nextLevelButton.disabled = true;
+  }
+
   function attachEvents() {
     playButton.addEventListener('click', onPlay);
     stopButton.addEventListener('click', onStop);
     resetButton.addEventListener('click', onReset);
+    nextLevelButton.addEventListener('click', onNextLevel);
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);
@@ -80,6 +102,14 @@ export function createShellView({
     saveProgramButton.addEventListener('click', onSaveProgram);
   }
 
-  return { applyStaticLabels, syncPrimaryActions, setEditingEnabled, showLevelError, hideLevelError, attachEvents };
+  return {
+    applyStaticLabels,
+    syncPrimaryActions,
+    setEditingEnabled,
+    showLevelError,
+    hideLevelError,
+    showLevelCompletion,
+    hideLevelCompletion,
+    attachEvents
+  };
 }
-

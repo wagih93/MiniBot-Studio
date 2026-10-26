@@ -318,6 +318,27 @@ button {
   overflow-wrap: anywhere;
 }
 
+.level-completion {
+  border: 1px solid #9ad8a5;
+  border-radius: 10px;
+  background: #ecf9ef;
+  color: #1e5a2d;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.level-completion__icon {
+  font-size: 1.35rem;
+  animation: level-completion-bounce 0.85s ease-in-out 2;
+}
+
+.level-completion__message {
+  margin: 0;
+  font-weight: 600;
+}
+
 .level-error {
   border: 1px solid #e1b9b9;
   border-radius: 10px;
@@ -397,6 +418,21 @@ button {
     transform: scale(1.2);
   }
   to {
+    transform: scale(1);
+  }
+}
+
+@keyframes level-completion-bounce {
+  0% {
+    transform: scale(0.85);
+  }
+  35% {
+    transform: scale(1.2);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
     transform: scale(1);
   }
 }

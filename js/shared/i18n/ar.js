@@ -53,10 +53,15 @@ export const arStrings = {
     play: 'تشغيل',
     stop: 'إيقاف',
     reset: 'إعادة',
+    nextLevel: 'المستوى التالي',
     deleteStep: 'احذف',
     retryLevel: 'حاول مرة أخرى',
     returnHome: 'العودة للرئيسية',
     saveProgram: 'احفظ البرنامج'
+  },
+  levelCompletion: {
+    message: 'أحسنت! أنهيت هذا المستوى.',
+    finalLevelMessage: 'أحسنت! أكملت كل المستويات المتاحة.'
   },
   levelError: {
     fallbackMessage: 'تعذّر فتح هذا المستوى. تم فتح مستوى آمن.',
