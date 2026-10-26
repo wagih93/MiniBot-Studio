@@ -17,7 +17,7 @@
 | US-067 | `29203a5` |
 | US-068 | `33d0980` |
 
-- **Verdict:** **Changes requested**
+- **Verdict:** **Changes approved** (all code findings closed; M4 is a process finding requiring owner action)
 
 ---
 
@@ -144,6 +144,8 @@
 
 ### B1 — Blocker (reraised from REVIEW-000 B1): UI view factories are empty stubs; robot-lab.js (792 lines) still owns all UI rendering
 
+**Verdict: Closed.** Fixed in `fix/US-061-extract-remaining-ui-views` (PR #40).
+
 **File/Lines:** `js/features/robot-simulation/ui/world-grid-view.js:1`, `js/features/program-execution/ui/execution-status-view.js:1`, `js/features/shell/ui/shell-view.js:1`, `js/features/levels/ui/level-meta-view.js:1`, `js/features/learning-progress/ui/learning-progress-view.js:1`, `js/robot-lab.js:1-792`
 
 **Evidence:**
@@ -181,6 +183,8 @@ Acceptance criteria: `robot-lab.js` under 200 lines; no DOM-creating calls in `r
 
 ### M1 — Major: Legacy shim folders are shipped to `dist/` and bypass the architecture check
 
+**Verdict: Closed.** Fixed in `fix/US-061-remove-legacy-shims` (PR #39).
+
 **File/Lines:** `js/simulator/robot.js:1`, `js/simulator/world.js:1`, `js/levels/level-registry.js:1`, `js/levels/level-validator.js:1`, `js/levels/objective-tracker.js:1`, `js/levels/data/level-001.js:1`, `js/i18n/ar.js:1` (and 2 more level data shims); `scripts/build.mjs:14`
 
 **Evidence:**
@@ -213,6 +217,8 @@ Four unit test files still import through these shims:
 
 ### M2 — Major: `js/shared/i18n/ar.js` is a backward shim; canonical AR strings are in the legacy path
 
+**Verdict: Closed.** Fixed in `fix/US-067-fix-canonical-ar-source` (PR #37).
+
 **File/Lines:** `js/shared/i18n/ar.js:1`, `js/i18n/ar.js:1`
 
 **Evidence:**
@@ -241,6 +247,8 @@ The architecture guidelines (`ARCHITECTURE_GUIDELINES.md §1`) specify:
 
 ### M3 — Major: `js/runtime-config.js` is at the wrong path
 
+**Verdict: Closed.** Fixed in `fix/US-065-move-runtime-config-to-shared` (PR #38).
+
 **File/Lines:** `js/runtime-config.js:1`, `ARCHITECTURE_GUIDELINES.md §1`
 
 **Evidence:**
@@ -259,6 +267,8 @@ The file lives at `js/runtime-config.js` (70 lines, full implementation). It is 
 ---
 
 ### M4 — Major: PRs #29–#35 were closed, not merged; formal review was bypassed for 7 of 8 stories
+
+**Verdict: Owner action required.** This is a process finding — the repository owner must enable branch protection as described in `docs/recommended-branch-protection.md`.
 
 **Evidence:**
 ```
@@ -287,6 +297,8 @@ The implementation status still shows all 8 stories as "In Review" (not "Done"),
 
 ### m1 — Minor: `js/features/levels/domain/objective-tracker.js` is a conceptually misplaced re-export
 
+**Verdict: Closed.** Fixed in `fix/US-061-remove-legacy-shims` (PR #39).
+
 **File/Lines:** `js/features/levels/domain/objective-tracker.js:1`, `js/features/levels/index.js:1`
 
 **Evidence:**
@@ -308,6 +320,8 @@ The legacy shim `js/levels/objective-tracker.js` was the reason this re-export w
 
 ### m2 — Minor: Implementation status is stale; all Sprint 2.5 stories still show "In Review"
 
+**Verdict: Closed.** Fixed in `fix/US-068-update-implementation-status` (PR #41).
+
 **File/Lines:** `docs/implementation-status.md` rows US-061–US-068
 
 **Evidence:** Every Sprint 2.5 story has status "In Review". But the code for all 8 stories is on master (commits `1abc185` through `33d0980`). The status column should reflect merged = "Done" (pending this review's sign-off) or "Done" after blockers/majors close.
@@ -317,6 +331,8 @@ The legacy shim `js/levels/objective-tracker.js` was the reason this re-export w
 ---
 
 ### m3 — Minor: `js/features/learning-progress/domain/learning-progress-state.js` is unused
+
+**Verdict: Closed.** Fixed in `fix/US-061-remove-legacy-shims` (PR #39).
 
 **File/Lines:** `js/features/learning-progress/domain/learning-progress-state.js:1`
 
