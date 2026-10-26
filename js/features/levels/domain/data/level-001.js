@@ -17,6 +17,7 @@ export const level001 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
+  learningConcepts: ['sequencing'],
   hints: [
     'النجمة أمام الروبوت مباشرة.',
     'أضف أمر "تقدّم خطوة" مرة واحدة ثم اضغط تشغيل.'

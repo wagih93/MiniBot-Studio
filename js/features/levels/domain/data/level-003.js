@@ -17,6 +17,7 @@ export const level003 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
+  learningConcepts: ['sequencing', 'directions'],
   hints: [
     'هناك عائق أمام الروبوت مباشرة.',
     'انعطف يميناً مرة واحدة ثم تقدّم خطوة.'

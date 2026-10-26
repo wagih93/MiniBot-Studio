@@ -2,10 +2,12 @@ import { assertProgressRepository } from '../application/progress-repository-por
 
 export function createInMemoryProgressRepository({
   allowedLevelIds = [],
-  initialSavedLevelId = null
+  initialSavedLevelId = null,
+  initialCompletedLevelIds = []
 } = {}) {
   const allowedLevelIdsSet = new Set(allowedLevelIds);
   let savedLevelId = normalizeLevelId(initialSavedLevelId, allowedLevelIdsSet);
+  const completedLevelIds = normalizeCompletedLevelIds(initialCompletedLevelIds, allowedLevelIdsSet);
 
   return assertProgressRepository({
     loadSavedLevelId() {
@@ -18,6 +20,23 @@ export function createInMemoryProgressRepository({
       }
 
       savedLevelId = normalizedLevelId;
+      return true;
+    },
+    loadCompletedLevelIds() {
+      return [...completedLevelIds];
+    },
+    saveCompletedLevelId(levelId) {
+      const normalizedLevelId = normalizeLevelId(levelId, allowedLevelIdsSet);
+      if (!normalizedLevelId) {
+        return false;
+      }
+
+      completedLevelIds.add(normalizedLevelId);
+      return true;
+    },
+    clearProgress() {
+      savedLevelId = null;
+      completedLevelIds.clear();
       return true;
     }
   });
@@ -33,4 +52,19 @@ function normalizeLevelId(levelId, allowedLevelIdsSet) {
   }
 
   return allowedLevelIdsSet.has(levelId) ? levelId : null;
+}
+
+function normalizeCompletedLevelIds(levelIds, allowedLevelIdsSet) {
+  if (!Array.isArray(levelIds)) {
+    return new Set();
+  }
+
+  const normalized = new Set();
+  for (const levelId of levelIds) {
+    const normalizedLevelId = normalizeLevelId(levelId, allowedLevelIdsSet);
+    if (normalizedLevelId) {
+      normalized.add(normalizedLevelId);
+    }
+  }
+  return normalized;
 }

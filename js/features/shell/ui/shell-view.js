@@ -8,6 +8,10 @@ export function createShellView({
   onStart,
   onContinue,
   onParents,
+  onCloseParentsArea,
+  onClearProgress,
+  onToggleSoundEffects,
+  onPlayInstructionAudio,
   onHint,
   onRetry,
   onReturnHome,
@@ -17,7 +21,10 @@ export function createShellView({
   const {
     startButton, continueButton, parentsButton,
     playButton, stopButton, resetButton, nextLevelButton,
-    retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
+    retryLevelButton, returnHomeButton, saveProgramButton, hintButton, playInstructionAudioButton,
+    parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
+    soundEffectsToggle,
+    clearProgressButton, closeParentAreaButton,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
   } = elements;
@@ -28,8 +35,14 @@ export function createShellView({
     document.querySelector('#start-button-label').textContent = labels.primaryActions.start;
     document.querySelector('#continue-button-label').textContent = labels.primaryActions.continue;
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
+    document.querySelector('#parent-area-heading').textContent = labels.parentArea.heading;
+    document.querySelector('#parent-area-description').textContent = labels.parentArea.description;
+    document.querySelector('#sound-effects-label').textContent = labels.parentArea.soundEffectsLabel;
+    clearProgressButton.textContent = labels.controls.clearProgress;
+    closeParentAreaButton.textContent = labels.controls.closeParentArea;
     document.querySelector('#world-heading').textContent = labels.world.heading;
     hintButton.textContent = labels.controls.hint;
+    playInstructionAudioButton.textContent = labels.controls.playInstructionAudio;
     document.querySelector('#block-area-heading').textContent = labels.blockArea.heading;
     document.querySelector('#program-heading').textContent = labels.blockArea.programHeading;
     document.querySelector('#program-demo').textContent = labels.blockArea.firstLevelDemo;
@@ -52,6 +65,7 @@ export function createShellView({
     startButton.disabled = isRunning;
     continueButton.disabled = isRunning || !hasSaved;
     parentsButton.disabled = isRunning;
+    playInstructionAudioButton.disabled = isRunning;
     nextLevelButton.disabled = isRunning || nextLevelButton.hidden;
   }
 
@@ -91,15 +105,57 @@ export function createShellView({
     nextLevelButton.disabled = true;
   }
 
+  function showParentArea() {
+    parentAreaElement.hidden = false;
+  }
+
+  function hideParentArea() {
+    parentAreaElement.hidden = true;
+  }
+
+  function setSoundEffectsEnabled(enabled) {
+    soundEffectsToggle.checked = enabled === true;
+  }
+
+  function renderParentAreaSummary(summary) {
+    const completedLevelCount = Number.isInteger(summary?.completedLevelCount)
+      ? summary.completedLevelCount
+      : 0;
+    const conceptSummaries = Array.isArray(summary?.conceptSummaries)
+      ? summary.conceptSummaries
+      : [];
+
+    parentProgressSummaryElement.textContent = labels.parentArea.completedLevelsTemplate
+      .replace('{count}', String(completedLevelCount));
+    parentConceptListElement.textContent = '';
+
+    for (const conceptSummary of conceptSummaries) {
+      const learningConceptLabel = labels.parentArea.learningConceptLabels?.[conceptSummary.conceptKey]
+        ?? conceptSummary.conceptKey;
+      const completedCount = Number.isInteger(conceptSummary.completedLevelCount)
+        ? conceptSummary.completedLevelCount
+        : 0;
+      const conceptItem = document.createElement('li');
+      conceptItem.textContent = labels.parentArea.conceptCountTemplate
+        .replace('{concept}', learningConceptLabel)
+        .replace('{count}', String(completedCount));
+      parentConceptListElement.append(conceptItem);
+    }
+  }
+
   function attachEvents() {
     playButton.addEventListener('click', onPlay);
     stopButton.addEventListener('click', onStop);
     resetButton.addEventListener('click', onReset);
     nextLevelButton.addEventListener('click', onNextLevel);
     hintButton.addEventListener('click', onHint);
+    playInstructionAudioButton.addEventListener('click', onPlayInstructionAudio);
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);
+    closeParentAreaButton.addEventListener('click', onCloseParentsArea);
+    clearProgressButton.addEventListener('click', onClearProgress);
+    soundEffectsToggle.addEventListener('change', () => onToggleSoundEffects(soundEffectsToggle.checked));
     retryLevelButton.addEventListener('click', onRetry);
     returnHomeButton.addEventListener('click', onReturnHome);
     saveProgramButton.addEventListener('click', onSaveProgram);
@@ -113,6 +169,10 @@ export function createShellView({
     hideLevelError,
     showLevelCompletion,
     hideLevelCompletion,
+    showParentArea,
+    hideParentArea,
+    setSoundEffectsEnabled,
+    renderParentAreaSummary,
     attachEvents
   };
 }

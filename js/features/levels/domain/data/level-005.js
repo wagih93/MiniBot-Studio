@@ -21,6 +21,7 @@ export const level005 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
+  learningConcepts: ['sequencing', 'directions'],
   hints: [
     'قسّم الطريق إلى خطوات قصيرة قبل تشغيل البرنامج.',
     'استخدم الانعطاف كلما تغيّر اتجاه المسار نحو النجمة.'

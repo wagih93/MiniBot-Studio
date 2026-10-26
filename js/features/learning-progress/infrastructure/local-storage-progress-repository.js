@@ -1,10 +1,12 @@
 import { assertProgressRepository } from '../application/progress-repository-port.js';
 
 const defaultStorageKey = 'minibot.progress.levelId';
+const defaultCompletedStorageKey = 'minibot.progress.completedLevelIds.v1';
 
 export function createLocalStorageProgressRepository({
   storage = getDefaultStorage(),
   storageKey = defaultStorageKey,
+  completedStorageKey = defaultCompletedStorageKey,
   allowedLevelIds = []
 } = {}) {
   const allowedLevelIdsSet = new Set(allowedLevelIds);
@@ -21,6 +23,28 @@ export function createLocalStorageProgressRepository({
       }
 
       return writeStorageValue(storage, storageKey, normalizedLevelId);
+    },
+    loadCompletedLevelIds() {
+      const storedValue = readStorageValue(storage, completedStorageKey);
+      return normalizeCompletedLevelIds(storedValue, allowedLevelIdsSet);
+    },
+    saveCompletedLevelId(levelId) {
+      const normalizedLevelId = normalizeLevelId(levelId, allowedLevelIdsSet);
+      if (!normalizedLevelId) {
+        return false;
+      }
+
+      const completedLevelIds = normalizeCompletedLevelIds(
+        readStorageValue(storage, completedStorageKey),
+        allowedLevelIdsSet
+      );
+      if (!completedLevelIds.includes(normalizedLevelId)) {
+        completedLevelIds.push(normalizedLevelId);
+      }
+      return writeStorageValue(storage, completedStorageKey, JSON.stringify(completedLevelIds));
+    },
+    clearProgress() {
+      return removeStorageValue(storage, storageKey) && removeStorageValue(storage, completedStorageKey);
     }
   });
 }
@@ -59,6 +83,19 @@ function writeStorageValue(storage, storageKey, value) {
   }
 }
 
+function removeStorageValue(storage, storageKey) {
+  if (!storage || typeof storage.removeItem !== 'function') {
+    return false;
+  }
+
+  try {
+    storage.removeItem(storageKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function normalizeLevelId(levelId, allowedLevelIdsSet) {
   if (typeof levelId !== 'string' || levelId.length === 0) {
     return null;
@@ -69,4 +106,28 @@ function normalizeLevelId(levelId, allowedLevelIdsSet) {
   }
 
   return allowedLevelIdsSet.has(levelId) ? levelId : null;
+}
+
+function normalizeCompletedLevelIds(storedValue, allowedLevelIdsSet) {
+  if (typeof storedValue !== 'string' || storedValue.length === 0) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(storedValue);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    const normalized = [];
+    for (const levelId of parsed) {
+      const normalizedLevelId = normalizeLevelId(levelId, allowedLevelIdsSet);
+      if (normalizedLevelId && !normalized.includes(normalizedLevelId)) {
+        normalized.push(normalizedLevelId);
+      }
+    }
+    return normalized;
+  } catch {
+    return [];
+  }
 }
