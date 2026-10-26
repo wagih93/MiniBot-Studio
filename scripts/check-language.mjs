@@ -44,7 +44,6 @@ async function listFiles(rootPath) {
 
 function isArabicAllowedFile(relativeFilePath) {
   return relativeFilePath.startsWith('js/shared/i18n/') ||
-    relativeFilePath.startsWith('js/i18n/') ||
     relativeFilePath.startsWith('js/features/levels/domain/data/');
 }
 
