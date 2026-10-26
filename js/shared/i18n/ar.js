@@ -14,7 +14,14 @@ export const arStrings = {
   parentArea: {
     heading: 'منطقة الأهل',
     description: 'يمكنك هنا مسح التقدم المحفوظ على هذا الجهاز.',
-    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟'
+    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟',
+    completedLevelsTemplate: 'المستويات المكتملة: {count}',
+    conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
+    learningConceptLabels: {
+      sequencing: 'التسلسل',
+      directions: 'الاتجاهات',
+      repetition: 'التكرار'
+    }
   },
   blockArea: {
     heading: 'منطقة الأوامر',

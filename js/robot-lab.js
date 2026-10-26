@@ -1,7 +1,7 @@
 import { arStrings } from './shared/i18n/ar.js';
 import { getLevelById, listLevelIds, validateLevelData, createLevelMetaView } from './features/levels/index.js';
 import { createRobotState, createWorldGridView } from './features/robot-simulation/index.js';
-import { createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
+import { createLearningProgressSummary, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
 import { createConsoleLogger, reportRuntimeError, createShellView } from './features/shell/index.js';
@@ -20,6 +20,9 @@ const fallbackLevel = {
 const defaultExecCfg = { maxStepsPerRun: 12, repeatSelectedBlockCount: 1, stepDelayMilliseconds: 220 };
 
 const playableLevelIds = listLevelIds();
+const playableLevelsById = Object.fromEntries(
+  playableLevelIds.map((levelId) => [levelId, getLevelById(levelId)])
+);
 const progressRepo = createLocalStorageProgressRepository({ allowedLevelIds: playableLevelIds });
 const programRepo = createLocalStorageProgramRepository({ allowedLevelIds: playableLevelIds });
 const delay = createAbortSignalDelay();
@@ -67,7 +70,11 @@ const shellView = createShellView({
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
     saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
-    parentAreaElement: qs('#parent-area'), clearProgressButton: qs('#clear-progress-button'), closeParentAreaButton: qs('#close-parent-area-button'),
+    parentAreaElement: qs('#parent-area'),
+    parentProgressSummaryElement: qs('#parent-progress-summary'),
+    parentConceptListElement: qs('#parent-concept-list'),
+    clearProgressButton: qs('#clear-progress-button'),
+    closeParentAreaButton: qs('#close-parent-area-button'),
     hintButton: qs('#hint-button'),
     levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message'),
     levelCompletionElement: qs('#level-completion'), levelCompletionMessageElement: qs('#level-completion-message')
@@ -85,6 +92,7 @@ const shellView = createShellView({
     initializeLevel(continueLevelId);
   },
   onParents: () => {
+    shellView.renderParentAreaSummary(getParentAreaSummary());
     shellView.showParentArea();
     statusView.setStatus('parentsAreaOpen');
   },
@@ -191,6 +199,13 @@ function resolveContinueLevelId() {
   }
 
   return playableLevelIds[lastCompletedIndex + 1] ?? playableLevelIds[lastCompletedIndex] ?? null;
+}
+
+function getParentAreaSummary() {
+  return createLearningProgressSummary({
+    completedLevelIds: progressRepo.loadCompletedLevelIds(),
+    levelsById: playableLevelsById
+  });
 }
 
 function speakHintIfEnabled(hintText) {

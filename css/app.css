@@ -85,6 +85,17 @@ button {
   margin: 0;
 }
 
+.parent-area__summary {
+  font-weight: 600;
+}
+
+.parent-area__concepts {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 6px;
+}
+
 .parent-area__actions {
   display: flex;
   flex-wrap: wrap;

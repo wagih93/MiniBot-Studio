@@ -20,7 +20,8 @@ export function createShellView({
     startButton, continueButton, parentsButton,
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton,
-    parentAreaElement, clearProgressButton, closeParentAreaButton,
+    parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
+    clearProgressButton, closeParentAreaButton,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
   } = elements;
@@ -106,6 +107,32 @@ export function createShellView({
     parentAreaElement.hidden = true;
   }
 
+  function renderParentAreaSummary(summary) {
+    const completedLevelCount = Number.isInteger(summary?.completedLevelCount)
+      ? summary.completedLevelCount
+      : 0;
+    const conceptSummaries = Array.isArray(summary?.conceptSummaries)
+      ? summary.conceptSummaries
+      : [];
+
+    parentProgressSummaryElement.textContent = labels.parentArea.completedLevelsTemplate
+      .replace('{count}', String(completedLevelCount));
+    parentConceptListElement.textContent = '';
+
+    for (const conceptSummary of conceptSummaries) {
+      const learningConceptLabel = labels.parentArea.learningConceptLabels?.[conceptSummary.conceptKey]
+        ?? conceptSummary.conceptKey;
+      const completedCount = Number.isInteger(conceptSummary.completedLevelCount)
+        ? conceptSummary.completedLevelCount
+        : 0;
+      const conceptItem = document.createElement('li');
+      conceptItem.textContent = labels.parentArea.conceptCountTemplate
+        .replace('{concept}', learningConceptLabel)
+        .replace('{count}', String(completedCount));
+      parentConceptListElement.append(conceptItem);
+    }
+  }
+
   function attachEvents() {
     playButton.addEventListener('click', onPlay);
     stopButton.addEventListener('click', onStop);
@@ -132,6 +159,7 @@ export function createShellView({
     hideLevelCompletion,
     showParentArea,
     hideParentArea,
+    renderParentAreaSummary,
     attachEvents
   };
 }

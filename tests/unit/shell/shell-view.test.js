@@ -27,7 +27,11 @@ function makeShellView(overrides = {}) {
     startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
     retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
-    parentAreaElement: makeElement({ hidden: true }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
+    parentAreaElement: makeElement({ hidden: true }), parentProgressSummaryElement: makeElement(), parentConceptListElement: makeElement({
+      textContent: '',
+      _items: [],
+      append(item) { this._items.push(item); }
+    }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -35,7 +39,18 @@ function makeShellView(overrides = {}) {
     pageTitle: 'MiniBot Studio',
     heading: 'مختبر الروبوت',
     primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل' },
-    parentArea: { heading: 'منطقة الأهل', description: 'إدارة التقدم', clearProgressConfirm: 'تأكيد' },
+    parentArea: {
+      heading: 'منطقة الأهل',
+      description: 'إدارة التقدم',
+      clearProgressConfirm: 'تأكيد',
+      completedLevelsTemplate: 'المستويات المكتملة: {count}',
+      conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
+      learningConceptLabels: {
+        sequencing: 'التسلسل',
+        directions: 'الاتجاهات',
+        repetition: 'التكرار'
+      }
+    },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
     controls: { play: 'تشغيل', stop: 'إيقاف', reset: 'إعادة', hint: 'تلميح', nextLevel: 'التالي', retryLevel: 'حاول', returnHome: 'رئيسية', saveProgram: 'احفظ', clearProgress: 'امسح', closeParentArea: 'إغلاق' },
@@ -149,4 +164,33 @@ test('createShellView showParentArea and hideParentArea toggle visibility', () =
   assert.equal(elements.parentAreaElement.hidden, false);
   view.hideParentArea();
   assert.equal(elements.parentAreaElement.hidden, true);
+});
+
+test('createShellView renderParentAreaSummary renders concept counts', () => {
+  const createdListItems = [];
+  global.document = {
+    title: '',
+    querySelector: (sel) => stubQuerySelector(sel),
+    createElement: () => {
+      const item = makeElement();
+      createdListItems.push(item);
+      return item;
+    }
+  };
+  const { view, elements } = makeShellView();
+
+  view.renderParentAreaSummary({
+    completedLevelCount: 2,
+    conceptSummaries: [
+      { conceptKey: 'sequencing', completedLevelCount: 2 },
+      { conceptKey: 'directions', completedLevelCount: 1 },
+      { conceptKey: 'repetition', completedLevelCount: 0 }
+    ]
+  });
+
+  assert.equal(elements.parentProgressSummaryElement.textContent, 'المستويات المكتملة: 2');
+  assert.deepEqual(
+    createdListItems.map((item) => item.textContent),
+    ['التسلسل: جُرّب في 2 مستوى.', 'الاتجاهات: جُرّب في 1 مستوى.', 'التكرار: جُرّب في 0 مستوى.']
+  );
 });

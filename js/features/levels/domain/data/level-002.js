@@ -17,6 +17,7 @@ export const level002 = {
     reachGoal: true,
     collectAllCollectibles: true
   },
+  learningConcepts: ['sequencing'],
   hints: [
     'النجمة تبعد خليتين عن نقطة البداية.',
     'استخدم أمر "تقدّم خطوة" مرتين متتاليتين.'

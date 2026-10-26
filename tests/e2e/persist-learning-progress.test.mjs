@@ -70,6 +70,23 @@ test('Completed levels are persisted locally and Continue restores progress afte
     });
     assert.equal(continueVisible, true);
 
+    await reopenedPage.click('#parents-button');
+    await reopenedPage.waitForSelector('#parent-area:not([hidden])');
+    const parentDashboardSnapshot = await reopenedPage.evaluate(() => ({
+      completedLevels: document.querySelector('#parent-progress-summary')?.textContent?.trim() ?? '',
+      conceptLines: Array.from(document.querySelectorAll('#parent-concept-list li')).map((item) => item.textContent?.trim() ?? ''),
+      fullText: document.querySelector('#parent-area')?.textContent?.trim() ?? ''
+    }));
+
+    assert.match(parentDashboardSnapshot.completedLevels, /1/);
+    assert.equal(parentDashboardSnapshot.conceptLines.length, 3);
+    assert.ok(parentDashboardSnapshot.conceptLines.some((line) => /التسلسل.*1/.test(line)));
+    assert.ok(parentDashboardSnapshot.conceptLines.some((line) => /الاتجاهات.*0/.test(line)));
+    assert.ok(parentDashboardSnapshot.conceptLines.some((line) => /التكرار.*0/.test(line)));
+    assert.doesNotMatch(parentDashboardSnapshot.fullText, /ترتيب|مقارنة|خسارة|عقوبة|فشل/);
+
+    await reopenedPage.click('#close-parent-area-button');
+
     await reopenedPage.click('#continue-button');
     await reopenedPage.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('2/5'));
 
