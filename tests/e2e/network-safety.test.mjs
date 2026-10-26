@@ -30,7 +30,10 @@ test('Robot Lab session blocks non-local network requests', async () => {
     await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
     await page.click('#block-moveForward');
     await page.click('#play-button');
-    await page.waitForSelector('#status[data-state="complete"]');
+    await page.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
     await page.click('#stop-button');
     await page.click('#reset-button');
 
@@ -41,4 +44,3 @@ test('Robot Lab session blocks non-local network requests', async () => {
     await closeServer(server);
   }
 });
-

@@ -16,7 +16,10 @@ test('Move forward animates one step, blocks at walls, and keeps state synchroni
     await page.click('#block-moveForward');
     await page.click('#play-button');
     await page.waitForSelector('#world-grid .robot.moving-east');
-    await page.waitForSelector('#status[data-state="complete"]');
+    await page.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
 
     const firstMovePosition = await page.evaluate(() => {
       const robotCell = document.querySelector('#world-grid .robot');
@@ -50,4 +53,3 @@ test('Move forward animates one step, blocks at walls, and keeps state synchroni
     await closeServer(server);
   }
 });
-

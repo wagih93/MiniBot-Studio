@@ -7,7 +7,7 @@ import {
   createLocalStorageProgressRepository
 } from '../../../js/features/learning-progress/index.js';
 
-const allowedLevelIds = ['level-001', 'level-002', 'level-collect'];
+const allowedLevelIds = ['level-001', 'level-002', 'level-003', 'level-004', 'level-005'];
 
 runProgressRepositoryContract('in-memory adapter', (options = {}) =>
   createInMemoryProgressRepository({
@@ -45,6 +45,9 @@ test('localStorage progress adapter returns safe defaults when storage is unavai
 
   assert.equal(repository.loadSavedLevelId(), null);
   assert.equal(repository.saveSavedLevelId('level-001'), false);
+  assert.deepEqual(repository.loadCompletedLevelIds(), []);
+  assert.equal(repository.saveCompletedLevelId('level-001'), false);
+  assert.equal(repository.clearProgress(), false);
 });
 
 test('localStorage program adapter returns safe defaults when storage is unavailable', () => {
@@ -89,6 +92,17 @@ test('localStorage program adapter handles corrupt and unknown-version stores sa
   });
 });
 
+test('localStorage progress adapter handles corrupt completed-level stores safely', () => {
+  const repository = createLocalStorageProgressRepository({
+    allowedLevelIds,
+    storage: createMemoryStorage({
+      'minibot.progress.completedLevelIds.v1': '{not-valid-json'
+    })
+  });
+
+  assert.deepEqual(repository.loadCompletedLevelIds(), []);
+});
+
 test('in-memory program adapter handles unknown-version stores safely', () => {
   const repository = createInMemoryProgramRepository({
     allowedLevelIds,
@@ -124,6 +138,33 @@ function runProgressRepositoryContract(adapterName, createRepository) {
 
     assert.equal(repository.saveSavedLevelId('unknown-level'), false);
     assert.equal(repository.loadSavedLevelId(), 'level-001');
+  });
+
+  test(`ProgressRepository contract: ${adapterName} saves completed level identifiers`, () => {
+    const repository = createRepository();
+    assert.equal(repository.saveCompletedLevelId('level-001'), true);
+    assert.equal(repository.saveCompletedLevelId('level-001'), true);
+    assert.equal(repository.saveCompletedLevelId('level-003'), true);
+
+    assert.deepEqual(repository.loadCompletedLevelIds(), ['level-001', 'level-003']);
+  });
+
+  test(`ProgressRepository contract: ${adapterName} rejects unknown completed level identifiers`, () => {
+    const repository = createRepository();
+    repository.saveCompletedLevelId('level-002');
+
+    assert.equal(repository.saveCompletedLevelId('unknown-level'), false);
+    assert.deepEqual(repository.loadCompletedLevelIds(), ['level-002']);
+  });
+
+  test(`ProgressRepository contract: ${adapterName} clears saved progress`, () => {
+    const repository = createRepository();
+    repository.saveSavedLevelId('level-004');
+    repository.saveCompletedLevelId('level-001');
+
+    assert.equal(repository.clearProgress(), true);
+    assert.equal(repository.loadSavedLevelId(), null);
+    assert.deepEqual(repository.loadCompletedLevelIds(), []);
   });
 }
 

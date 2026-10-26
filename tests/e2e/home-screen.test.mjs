@@ -67,10 +67,10 @@ test('Selecting Play opens the first available level', async () => {
     }));
 
     assert.equal(beforePlay.cellCount, 25);
-    assert.match(beforePlay.indicator, /2\/3/);
+    assert.match(beforePlay.indicator, /2\/5/);
 
     await page.click('#start-button');
-    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('1/3'));
+    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('1/5'));
 
     const afterPlay = await page.evaluate(() => ({
       cellCount: document.querySelectorAll('#world-grid .cell').length,
@@ -78,7 +78,7 @@ test('Selecting Play opens the first available level', async () => {
     }));
 
     assert.equal(afterPlay.cellCount, 16);
-    assert.match(afterPlay.indicator, /1\/3/);
+    assert.match(afterPlay.indicator, /1\/5/);
   } finally {
     await context.close();
     await browser.close();
@@ -107,7 +107,7 @@ test('Continue is shown when progress exists and opens the saved level', async (
     assert.equal(continueVisible, true);
 
     await page.click('#continue-button');
-    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('2/3'));
+    await page.waitForFunction(() => (document.querySelector('#level-indicator')?.textContent ?? '').includes('2/5'));
 
     const continuedLevelSnapshot = await page.evaluate(() => ({
       cellCount: document.querySelectorAll('#world-grid .cell').length,
@@ -115,11 +115,10 @@ test('Continue is shown when progress exists and opens the saved level', async (
     }));
 
     assert.equal(continuedLevelSnapshot.cellCount, 25);
-    assert.match(continuedLevelSnapshot.indicator, /2\/3/);
+    assert.match(continuedLevelSnapshot.indicator, /2\/5/);
   } finally {
     await context.close();
     await browser.close();
     await closeServer(server);
   }
 });
-

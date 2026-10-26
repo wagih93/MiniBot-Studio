@@ -10,16 +10,16 @@ export const level002 = {
     column: 0,
     direction: 'east'
   },
-  collectibles: [{ row: 4, column: 4, type: 'star' }],
-  obstacles: [
-    { row: 1, column: 1 },
-    { row: 2, column: 1 },
-    { row: 3, column: 2 }
-  ],
-  availableBlocks: ['moveForward', 'turnRight', 'turnLeft'],
+  collectibles: [{ row: 0, column: 2, type: 'star' }],
+  obstacles: [{ row: 2, column: 2 }],
+  availableBlocks: ['moveForward'],
   successConditions: {
     reachGoal: true,
     collectAllCollectibles: true
   },
-  hints: ['تجنّب العوائق في الوسط وجرّب الانعطاف مرتين.']
+  learningConcepts: ['sequencing'],
+  hints: [
+    'النجمة تبعد خليتين عن نقطة البداية.',
+    'استخدم أمر "تقدّم خطوة" مرتين متتاليتين.'
+  ]
 };

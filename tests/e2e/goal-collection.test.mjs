@@ -12,7 +12,7 @@ test('Star collection is tracked once and completion uses level success conditio
   const page = await context.newPage();
 
   try {
-    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-collect`, { waitUntil: 'networkidle' });
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001`, { waitUntil: 'networkidle' });
 
     await page.click('#block-moveForward');
     await page.click('#play-button');
@@ -43,4 +43,3 @@ test('Star collection is tracked once and completion uses level success conditio
     await closeServer(server);
   }
 });
-

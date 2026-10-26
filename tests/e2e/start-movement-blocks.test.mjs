@@ -89,7 +89,10 @@ test('Movement blocks run consecutively and show instruction outcomes', async ()
     await addBlockToWorkspace(page, 'moveForward');
     await page.click('#play-button');
     await page.waitForSelector('#status[data-state="running"]');
-    await page.waitForSelector('#status[data-state="complete"]');
+    await page.waitForFunction(() => {
+      const state = document.querySelector('#status')?.getAttribute('data-state');
+      return state === 'complete' || state === 'levelComplete';
+    });
 
     const finalPosition = await page.evaluate(() => {
       const robot = document.querySelector('#world-grid .robot');
@@ -106,4 +109,3 @@ test('Movement blocks run consecutively and show instruction outcomes', async ()
     await closeServer(server);
   }
 });
-
