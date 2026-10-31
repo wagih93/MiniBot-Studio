@@ -1,5 +1,6 @@
 const defaultSoundEffectProfiles = {
   movement: { frequency: 420, durationSeconds: 0.06, gain: 0.03, cooldownMilliseconds: 100 },
+  interaction: { frequency: 640, durationSeconds: 0.08, gain: 0.05, cooldownMilliseconds: 120 },
   collection: { frequency: 560, durationSeconds: 0.12, gain: 0.05, cooldownMilliseconds: 180 },
   success: { frequency: 720, durationSeconds: 0.2, gain: 0.08, cooldownMilliseconds: 220 }
 };

@@ -16,7 +16,7 @@ Child-facing Arabic wording lives in `js/shared/i18n/ar.js`; this file fixes the
 | **Robot** | The character controlled by programs. Has a position and a heading. | `Robot`, `RobotState` | bot, player |
 | **Heading** | The direction the robot faces: `north`, `east`, `south`, `west`. Never mirrored by RTL. | `Heading` | direction (use for left/right turn only: `TurnDirection`) |
 | **Block** | A draggable piece in the toolbox, identified by a block type. | `BlockType`, `BlockDefinition`, `Toolbox` | command, button |
-| **Block type** | The kind of a block: `start`, `moveForward`, `turnLeft`, `turnRight`, later `repeat`, `if`. | `blockType` | op, kind |
+| **Block type** | The kind of a block: `start`, `moveForward`, `turnLeft`, `turnRight`, `repeat`, `if`, `lightOn`, `playSound`. | `blockType` | op, kind |
 | **Program** | The ordered list of program steps the child built for a level. | `Program` | script, code, sequence |
 | **Program step** | One placed block inside a program, with a unique id. | `ProgramStep`, `stepId` | instruction (see below), item |
 | **Instruction** | The executable form of a valid program, produced by compiling it for a run. | `Instruction`, `compileProgram` | command |

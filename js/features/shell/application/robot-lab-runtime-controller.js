@@ -26,6 +26,13 @@ function createFreePlayLabLevel(seedLevel) {
   };
   const seedCollectibles = cloneGridPositions(seedLevel.collectibles);
   const seedHints = Array.isArray(seedLevel.hints) ? seedLevel.hints.filter((hint) => typeof hint === 'string' && hint.length > 0) : [];
+  const seedAvailableBlocks = Array.isArray(seedLevel.availableBlocks) ? [...seedLevel.availableBlocks] : [];
+  if (!seedAvailableBlocks.includes('lightOn')) {
+    seedAvailableBlocks.push('lightOn');
+  }
+  if (!seedAvailableBlocks.includes('playSound')) {
+    seedAvailableBlocks.push('playSound');
+  }
   const fallbackCollectible = {
     row: Math.max(0, baseGrid.rows - 1),
     column: Math.max(0, baseGrid.columns - 1)
@@ -51,7 +58,7 @@ function createFreePlayLabLevel(seedLevel) {
     objective: {
       collectAllCollectibles: false
     },
-    availableBlocks: Array.isArray(seedLevel.availableBlocks) ? [...seedLevel.availableBlocks] : [],
+    availableBlocks: seedAvailableBlocks,
     hints
   };
 }
@@ -454,6 +461,15 @@ export function createRobotLabRuntimeController({
         if (event.type === 'objectiveUpdated') {
           objectiveProgress = event.objectiveProgress;
           metaView.updateCollectionSummary(objectiveProgress);
+          return;
+        }
+        if (event.type === 'soundEffectRequested') {
+          if (!soundEffectsEnabled) {
+            statusView.setStatus('soundMuted');
+            return;
+          }
+          audioFeedback.playSoundEffect(event.effectType, { enabled: true });
+          statusView.setStatus('soundPlayed');
           return;
         }
         if (event.type === 'statusChanged') {

@@ -89,7 +89,7 @@ test('runProgram moves forward when the path is open', async () => {
   });
 
   assert.equal(runResult.status, 'complete');
-  assert.deepEqual(runResult.robotState, { row: 0, column: 1, direction: 'east' });
+  assert.deepEqual(runResult.robotState, { row: 0, column: 1, direction: 'east', lightOn: false });
 });
 
 test('runProgram turns right and left without moving the robot', async () => {
@@ -101,7 +101,39 @@ test('runProgram turns right and left without moving the robot', async () => {
   });
 
   assert.equal(runResult.status, 'complete');
-  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'east' });
+  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'east', lightOn: false });
+});
+
+test('runProgram keeps light state visible after light block executes', async () => {
+  const { runResult } = await runWithDefaults({
+    instructionSequence: [
+      { blockType: 'lightOn', stepId: 25 },
+      { blockType: 'turnRight', stepId: 26 }
+    ]
+  });
+
+  assert.equal(runResult.status, 'complete');
+  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'south', lightOn: true });
+});
+
+test('runProgram emits sound requests without breaking sequencing', async () => {
+  const { runResult, events } = await runWithDefaults({
+    instructionSequence: [
+      { blockType: 'playSound', stepId: 27 },
+      { blockType: 'moveForward', stepId: 28 }
+    ]
+  });
+
+  assert.equal(runResult.status, 'complete');
+  assert.deepEqual(runResult.robotState, { row: 0, column: 1, direction: 'east', lightOn: false });
+  const activeStepIds = events
+    .filter((event) => event.type === 'activeStepChanged')
+    .map((event) => event.stepId);
+  assert.deepEqual(activeStepIds, [27, 28]);
+  assert.equal(
+    events.some((event) => event.type === 'soundEffectRequested' && event.effectType === 'interaction'),
+    true
+  );
 });
 
 test('runProgram blocks move when an obstacle is ahead', async () => {
@@ -115,7 +147,7 @@ test('runProgram blocks move when an obstacle is ahead', async () => {
   });
 
   assert.equal(runResult.status, 'blocked');
-  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'east' });
+  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'east', lightOn: false });
 });
 
 test('runProgram blocks move when robot would leave the grid', async () => {
@@ -129,7 +161,7 @@ test('runProgram blocks move when robot would leave the grid', async () => {
   });
 
   assert.equal(runResult.status, 'blocked');
-  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'north' });
+  assert.deepEqual(runResult.robotState, { row: 0, column: 0, direction: 'north', lightOn: false });
 });
 
 test('runProgram emits collected status when robot reaches a collectible', async () => {
@@ -175,7 +207,7 @@ test('runProgram stops with stepLimitExceeded when reaching the configured limit
   });
 
   assert.equal(runResult.status, 'stepLimitExceeded');
-  assert.deepEqual(runResult.robotState, { row: 0, column: 1, direction: 'east' });
+  assert.deepEqual(runResult.robotState, { row: 0, column: 1, direction: 'east', lightOn: false });
 });
 
 test('runProgram returns aborted when cancellation happens in the middle of the run', async () => {

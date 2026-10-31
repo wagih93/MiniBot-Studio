@@ -252,6 +252,11 @@ input:focus-visible,
   font-weight: 600;
 }
 
+.cell.robot.robot-light-on {
+  background: #fff1be;
+  border-color: #d4ad2f;
+}
+
 .cell.target {
   background: #fff8dc;
 }

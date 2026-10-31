@@ -37,7 +37,9 @@ export const arStrings = {
       turnRight: 'انعطف يميناً',
       turnLeft: 'انعطف يساراً',
       repeat: 'كرر',
-      if: 'إذا كان الطريق مغلقاً'
+      if: 'إذا كان الطريق مغلقاً',
+      lightOn: 'شغّل الضوء',
+      playSound: 'شغّل الصوت'
     },
     iconsByType: {
       start: '🏁',
@@ -45,7 +47,9 @@ export const arStrings = {
       turnRight: '↱',
       turnLeft: '↰',
       repeat: '🔁',
-      if: '🚧'
+      if: '🚧',
+      lightOn: '💡',
+      playSound: '🔊'
     },
     repeatCountTemplate: 'كرر {count} مرات',
     repeatBodyEmpty: 'اسحب أوامر هنا.',
@@ -153,6 +157,9 @@ export const arStrings = {
     soundEffectsEnabled: 'الحالة: تم تشغيل المؤثرات الصوتية.',
     soundEffectsDisabled: 'الحالة: تم إيقاف المؤثرات الصوتية.',
     soundEffectsSaveFailed: 'الحالة: تعذّر حفظ إعدادات الصوت. حاول مرة أخرى.',
+    lightOn: 'الحالة: تم تشغيل ضوء الروبوت.',
+    soundPlayed: 'الحالة: تم تشغيل صوت الروبوت.',
+    soundMuted: 'الحالة: الصوت مكتوم لكن البرنامج مستمر.',
     programUpdated: 'الحالة: تمت إضافة الأمر إلى البرنامج.',
     invalidDrop: 'الحالة: لا يمكن إضافة هذا الأمر هنا.',
     programReordered: 'الحالة: تم ترتيب الأوامر من جديد.',

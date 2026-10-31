@@ -19,8 +19,12 @@ export function createWorldGridView({ worldGridElement, isCollectibleCollected }
 
         if (isRobot) {
           cell.classList.add('robot');
+          if (robotState.lightOn === true) {
+            cell.classList.add('robot-light-on');
+          }
           cell.dataset.direction = robotState.direction;
-          cell.textContent = `🤖 ${directionSymbol[robotState.direction] ?? ''}`;
+          const lightMarker = robotState.lightOn === true ? '💡' : '⚪';
+          cell.textContent = `🤖 ${lightMarker} ${directionSymbol[robotState.direction] ?? ''}`;
           if (robotAnimation?.row === row && robotAnimation?.column === column) {
             if (robotAnimation.kind === 'move') cell.classList.add(`moving-${robotAnimation.direction}`);
             if (robotAnimation.kind === 'turn') cell.classList.add(`rotating-${robotAnimation.turnDirection}`);
@@ -43,4 +47,3 @@ export function createWorldGridView({ worldGridElement, isCollectibleCollected }
 
   return { render };
 }
-

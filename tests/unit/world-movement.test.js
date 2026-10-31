@@ -9,7 +9,7 @@ test('move forward advances one cell when the path is open', () => {
   assert.equal(canMoveForward(level001, robotState), true);
 
   const nextState = moveForward(robotState);
-  assert.deepEqual(nextState, { row: 0, column: 1, direction: 'east' });
+  assert.deepEqual(nextState, { row: 0, column: 1, direction: 'east', lightOn: false });
 });
 
 test('move forward is blocked by walls and boundaries', () => {
