@@ -47,7 +47,8 @@ export const arStrings = {
       if: '🚧'
     },
     repeatCountTemplate: 'كرر {count} مرات',
-    repeatBodyEmpty: 'اسحب أوامر هنا.'
+    repeatBodyEmpty: 'اسحب أوامر هنا.',
+    addToBody: 'أضف إلى داخل الكتلة'
   },
   levelMeta: {
     levelIndicatorTemplate: 'المستوى {current}/{total}',

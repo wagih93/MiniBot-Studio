@@ -5,6 +5,7 @@ export function createProgramWorkspaceView({
   getProgramEditor,
   getBlockPresentation,
   deleteStepLabel,
+  addToBodyLabel,
   emptyProgramLabel,
   repeatBodyEmptyLabel,
   repeatCountTemplate,
@@ -262,7 +263,7 @@ export function createProgramWorkspaceView({
       const addBtn = document.createElement('button');
       addBtn.type = 'button';
       addBtn.classList.add('program-step__add-to-body');
-      addBtn.setAttribute('aria-label', '+');
+      addBtn.setAttribute('aria-label', addToBodyLabel ?? '+');
       addBtn.textContent = '+';
       addBtn.addEventListener('click', () => {
         if (typeof onAddToBody === 'function') onAddToBody(step.id);
