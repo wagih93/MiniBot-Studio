@@ -110,6 +110,24 @@ export function createShellEventBindings({
       }
       statusView.setStatus('labEditApplied');
     },
+    onSelectRobotDesign: (design) => {
+      const updateResult = readRuntimeController().updateRobotAppearance({ design });
+      if (!updateResult.saved) {
+        statusView.setStatus('robotAppearanceSaveFailed');
+        return;
+      }
+      readShellView().setRobotAppearanceSelection(updateResult.appearance);
+      statusView.setStatus('robotAppearanceUpdated');
+    },
+    onSelectRobotColor: (color) => {
+      const updateResult = readRuntimeController().updateRobotAppearance({ color });
+      if (!updateResult.saved) {
+        statusView.setStatus('robotAppearanceSaveFailed');
+        return;
+      }
+      readShellView().setRobotAppearanceSelection(updateResult.appearance);
+      statusView.setStatus('robotAppearanceUpdated');
+    },
     onTutorialNext: () => {
       const nextStep = tutorialController.nextStep();
       if (nextStep.completed) {

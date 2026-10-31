@@ -34,6 +34,19 @@ function makeShellView(overrides = {}) {
     labControlsHeadingElement: makeElement(),
     labModeRobotButton: makeElement(),
     labModeObstacleButton: makeElement(),
+    robotCustomizationHeadingElement: makeElement(),
+    robotDesignHeadingElement: makeElement(),
+    robotColorHeadingElement: makeElement(),
+    robotDesignButtons: [
+      makeElement({ dataset: { robotDesign: 'classic' } }),
+      makeElement({ dataset: { robotDesign: 'explorer' } }),
+      makeElement({ dataset: { robotDesign: 'turbo' } })
+    ],
+    robotColorButtons: [
+      makeElement({ dataset: { robotColor: 'blue' } }),
+      makeElement({ dataset: { robotColor: 'green' } }),
+      makeElement({ dataset: { robotColor: 'purple' } })
+    ],
     parentAreaElement: makeElement({ hidden: true }), parentProgressSummaryElement: makeElement(), parentConceptListElement: makeElement({
       textContent: '',
       _items: [],
@@ -56,6 +69,13 @@ function makeShellView(overrides = {}) {
     heading: 'مختبر الروبوت',
     primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل', lab: 'المختبر الحر' },
     freePlayLab: { heading: 'المختبر الحر', modeRobot: 'حرّك الروبوت', modeObstacle: 'بدّل العوائق' },
+    robotCustomization: {
+      heading: 'تخصيص الروبوت',
+      designHeading: 'شكل الروبوت',
+      colorHeading: 'لون الروبوت',
+      designOptions: { classic: 'كلاسيكي', explorer: 'مستكشف', turbo: 'سريع' },
+      colorOptions: { blue: 'أزرق', green: 'أخضر', purple: 'بنفسجي' }
+    },
     parentArea: {
       heading: 'منطقة الأهل',
       description: 'إدارة التقدم',
@@ -109,6 +129,8 @@ function makeShellView(overrides = {}) {
     onSelectLabRobotMode: overrides.onSelectLabRobotMode ?? (() => {}),
     onSelectLabObstacleMode: overrides.onSelectLabObstacleMode ?? (() => {}),
     onLabCellSelected: overrides.onLabCellSelected ?? (() => {}),
+    onSelectRobotDesign: overrides.onSelectRobotDesign ?? (() => {}),
+    onSelectRobotColor: overrides.onSelectRobotColor ?? (() => {}),
     onTutorialNext: overrides.onTutorialNext ?? (() => {}),
     onTutorialSkip: overrides.onTutorialSkip ?? (() => {}),
     onTutorialClose: overrides.onTutorialClose ?? (() => {}),
@@ -165,6 +187,8 @@ test('createShellView setEditingEnabled disables control buttons when false', ()
   assert.equal(elements.saveProgramButton.disabled, true);
   assert.equal(elements.labModeRobotButton.disabled, true);
   assert.equal(elements.labModeObstacleButton.disabled, true);
+  assert.equal(elements.robotDesignButtons.every((button) => button.disabled), true);
+  assert.equal(elements.robotColorButtons.every((button) => button.disabled), true);
 });
 
 test('createShellView setLabControlsState toggles visibility and selected mode', () => {
@@ -179,6 +203,17 @@ test('createShellView setLabControlsState toggles visibility and selected mode',
   assert.equal(elements.labControlsElement.hidden, true);
   assert.equal(elements.labModeRobotButton.dataset.selected, 'true');
   assert.equal(elements.labModeObstacleButton.dataset.selected, 'false');
+});
+
+test('createShellView setRobotAppearanceSelection updates selected design and color', () => {
+  const { view, elements } = makeShellView();
+
+  view.setRobotAppearanceSelection({ design: 'explorer', color: 'purple' });
+
+  const selectedDesigns = elements.robotDesignButtons.filter((button) => button.dataset.selected === 'true');
+  const selectedColors = elements.robotColorButtons.filter((button) => button.dataset.selected === 'true');
+  assert.deepEqual(selectedDesigns.map((button) => button.dataset.robotDesign), ['explorer']);
+  assert.deepEqual(selectedColors.map((button) => button.dataset.robotColor), ['purple']);
 });
 
 test('createShellView setEditingEnabled sets aria-disabled on workspace', () => {

@@ -1,10 +1,12 @@
 import { assertParentSettingsRepository } from '../application/parent-settings-repository-port.js';
 
 const defaultSoundEffectsStorageKey = 'minibot.settings.soundEffectsEnabled';
+const defaultRobotAppearanceStorageKey = 'minibot.settings.robotAppearance.v1';
 
 export function createLocalStorageParentSettingsRepository({
   storage = getDefaultStorage(),
-  soundEffectsStorageKey = defaultSoundEffectsStorageKey
+  soundEffectsStorageKey = defaultSoundEffectsStorageKey,
+  robotAppearanceStorageKey = defaultRobotAppearanceStorageKey
 } = {}) {
   return assertParentSettingsRepository({
     loadSoundEffectsEnabled() {
@@ -17,6 +19,48 @@ export function createLocalStorageParentSettingsRepository({
       }
 
       return writeStorageValue(storage, soundEffectsStorageKey, enabled ? 'true' : 'false');
+    },
+    loadRobotAppearance() {
+      const storedValue = readStorageValue(storage, robotAppearanceStorageKey);
+      if (!storedValue) {
+        return null;
+      }
+
+      try {
+        const parsedValue = JSON.parse(storedValue);
+        if (!parsedValue || typeof parsedValue !== 'object') {
+          return null;
+        }
+
+        if (typeof parsedValue.design !== 'string' || typeof parsedValue.color !== 'string') {
+          return null;
+        }
+
+        return {
+          design: parsedValue.design,
+          color: parsedValue.color
+        };
+      } catch {
+        return null;
+      }
+    },
+    saveRobotAppearance(appearance) {
+      if (!appearance || typeof appearance !== 'object') {
+        return false;
+      }
+
+      if (typeof appearance.design !== 'string' || appearance.design.length === 0) {
+        return false;
+      }
+
+      if (typeof appearance.color !== 'string' || appearance.color.length === 0) {
+        return false;
+      }
+
+      return writeStorageValue(storage, robotAppearanceStorageKey, JSON.stringify({
+        design: appearance.design,
+        color: appearance.color
+      }));
     }
   });
 }

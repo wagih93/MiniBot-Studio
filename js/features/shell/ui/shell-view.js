@@ -17,6 +17,8 @@ export function createShellView({
   onSelectLabRobotMode,
   onSelectLabObstacleMode,
   onLabCellSelected,
+  onSelectRobotDesign,
+  onSelectRobotColor,
   onTutorialNext,
   onTutorialSkip,
   onTutorialClose,
@@ -32,6 +34,8 @@ export function createShellView({
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton, playInstructionAudioButton,
     worldGridElement, labControlsElement, labControlsHeadingElement, labModeRobotButton, labModeObstacleButton,
+    robotCustomizationHeadingElement, robotDesignHeadingElement, robotColorHeadingElement,
+    robotDesignButtons = [], robotColorButtons = [],
     parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
     soundEffectsToggle,
     clearProgressButton, closeParentAreaButton,
@@ -76,6 +80,28 @@ export function createShellView({
     if (labModeObstacleButton) {
       labModeObstacleButton.textContent = labels.freePlayLab?.modeObstacle ?? '';
     }
+    if (robotCustomizationHeadingElement) {
+      robotCustomizationHeadingElement.textContent = labels.robotCustomization?.heading ?? '';
+    }
+    if (robotDesignHeadingElement) {
+      robotDesignHeadingElement.textContent = labels.robotCustomization?.designHeading ?? '';
+    }
+    if (robotColorHeadingElement) {
+      robotColorHeadingElement.textContent = labels.robotCustomization?.colorHeading ?? '';
+    }
+
+    for (const button of robotDesignButtons) {
+      const designKey = button.dataset.robotDesign;
+      button.textContent = labels.robotCustomization?.designOptions?.[designKey] ?? designKey ?? '';
+      button.setAttribute('aria-label', button.textContent);
+    }
+
+    for (const button of robotColorButtons) {
+      const colorKey = button.dataset.robotColor;
+      button.textContent = labels.robotCustomization?.colorOptions?.[colorKey] ?? colorKey ?? '';
+      button.setAttribute('aria-label', button.textContent);
+    }
+
     document.querySelector('#movement-heading').textContent = labels.movementGuideHeading;
     document.querySelector('#move-forward-label').textContent = labels.movement.forward;
     document.querySelector('#turn-right-label').textContent = labels.movement.right;
@@ -118,6 +144,12 @@ export function createShellView({
     if (labModeObstacleButton) {
       labModeObstacleButton.disabled = !enabled;
     }
+    for (const button of robotDesignButtons) {
+      button.disabled = !enabled;
+    }
+    for (const button of robotColorButtons) {
+      button.disabled = !enabled;
+    }
     programWorkspaceElement.setAttribute('aria-disabled', enabled ? 'false' : 'true');
   }
 
@@ -134,6 +166,19 @@ export function createShellView({
     const isRobotMode = selectedMode === 'robot';
     labModeRobotButton.dataset.selected = isRobotMode ? 'true' : 'false';
     labModeObstacleButton.dataset.selected = isRobotMode ? 'false' : 'true';
+  }
+
+  function setRobotAppearanceSelection(appearance) {
+    const selectedDesign = appearance?.design ?? '';
+    const selectedColor = appearance?.color ?? '';
+
+    for (const button of robotDesignButtons) {
+      button.dataset.selected = button.dataset.robotDesign === selectedDesign ? 'true' : 'false';
+    }
+
+    for (const button of robotColorButtons) {
+      button.dataset.selected = button.dataset.robotColor === selectedColor ? 'true' : 'false';
+    }
   }
 
   function showLevelError(message) {
@@ -285,6 +330,16 @@ export function createShellView({
     if (labModeObstacleButton && typeof onSelectLabObstacleMode === 'function') {
       labModeObstacleButton.addEventListener('click', onSelectLabObstacleMode);
     }
+    if (typeof onSelectRobotDesign === 'function') {
+      for (const button of robotDesignButtons) {
+        button.addEventListener('click', () => onSelectRobotDesign(button.dataset.robotDesign));
+      }
+    }
+    if (typeof onSelectRobotColor === 'function') {
+      for (const button of robotColorButtons) {
+        button.addEventListener('click', () => onSelectRobotColor(button.dataset.robotColor));
+      }
+    }
     if (worldGridElement && typeof onLabCellSelected === 'function') {
       worldGridElement.addEventListener('click', (event) => {
         const cellElement = event.target?.closest?.('.cell');
@@ -315,6 +370,7 @@ export function createShellView({
     setSoundEffectsEnabled,
     renderParentAreaSummary,
     setLabControlsState,
+    setRobotAppearanceSelection,
     attachEvents
   };
 }

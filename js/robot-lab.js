@@ -1,6 +1,6 @@
 import { arStrings } from './shared/i18n/ar.js';
 import { getLevelById, listLevelIds, validateLevelData, createLevelMetaView } from './features/levels/index.js';
-import { createRobotState, createWorldGridView, readForwardSensorState } from './features/robot-simulation/index.js';
+import { createRobotState, createWorldGridView, normalizeRobotAppearance, readForwardSensorState } from './features/robot-simulation/index.js';
 import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, createRunSessionController, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
@@ -138,6 +138,11 @@ const shellElements = {
   labControlsHeadingElement: qs('#lab-controls-heading'),
   labModeRobotButton: qs('#lab-mode-robot-button'),
   labModeObstacleButton: qs('#lab-mode-obstacle-button'),
+  robotCustomizationHeadingElement: qs('#robot-customization-heading'),
+  robotDesignHeadingElement: qs('#robot-design-heading'),
+  robotColorHeadingElement: qs('#robot-color-heading'),
+  robotDesignButtons: Array.from(document.querySelectorAll('[data-robot-design]')),
+  robotColorButtons: Array.from(document.querySelectorAll('[data-robot-color]')),
   blockListElement: qs('#block-list'),
   programWorkspaceElement: qs('#program-workspace'),
   playInstructionAudioButton: qs('#play-instruction-audio-button'),
@@ -193,6 +198,7 @@ runtimeController = createRobotLabRuntimeController({
   getLevelById,
   validateLevelData,
   createRobotState,
+  normalizeRobotAppearance,
   readForwardSensorState,
   createObjectiveProgress,
   createLearningProgressSummary,
