@@ -30,6 +30,7 @@ Child-facing Arabic wording lives in `js/shared/i18n/ar.js`; this file fixes the
 | **Parent area** | The adult-only area for settings, data export and reset. | `parent-area` | admin, settings page |
 | **Story Studio** | The animation workspace, separate from Robot Lab. | `story-studio` | animation-lab |
 | **Robot Lab** | The environment where the child builds and runs programs. | `robot-lab` | game, simulator (the simulator is a slice inside Robot Lab) |
+| **Offline support** | Service-worker-based caching that keeps Robot Lab playable without network after the first load. | `registerOfflineSupport`, `service-worker.js` | offline mode, PWA cache |
 
 ## Rules
 
