@@ -37,7 +37,9 @@ function createControllerHarness({
   loadSavedLevelId = () => null,
   loadCompletedLevelIds = () => [],
   initialSoundEffectsEnabled = true,
+  loadRobotAppearance = () => null,
   saveSoundEffectsEnabled = () => true,
+  saveRobotAppearance = () => true,
   clearAppData = () => true,
   runProgram = async () => ({ robotState: { row: 0, column: 0, direction: 'east' }, objectiveProgress: { completed: false } })
 } = {}) {
@@ -70,6 +72,7 @@ function createControllerHarness({
   const saveCompletedCalls = [];
   const saveLevelCalls = [];
   const soundSaveCalls = [];
+  const appearanceSaveCalls = [];
   const clearCalls = [];
   const setEditingCalls = [];
   const soundEffectCalls = [];
@@ -86,6 +89,10 @@ function createControllerHarness({
     getLevelById: (levelId) => levelsById[levelId] ?? null,
     validateLevelData: () => ({ isValid: true, errors: [] }),
     createRobotState: (robot) => ({ ...robot }),
+    normalizeRobotAppearance: (appearance) => ({
+      design: appearance?.design === 'explorer' || appearance?.design === 'turbo' ? appearance.design : 'classic',
+      color: appearance?.color === 'green' || appearance?.color === 'purple' ? appearance.color : 'blue'
+    }),
     readForwardSensorState: () => 'clear',
     createObjectiveProgress: (level) => ({ levelId: level.id, completed: false }),
     createLearningProgressSummary: ({ completedLevelIds }) => ({
@@ -112,9 +119,14 @@ function createControllerHarness({
     },
     parentSettingsRepository: {
       loadSoundEffectsEnabled: () => initialSoundEffectsEnabled,
+      loadRobotAppearance,
       saveSoundEffectsEnabled(value) {
         soundSaveCalls.push(value);
         return saveSoundEffectsEnabled(value);
+      },
+      saveRobotAppearance(appearance) {
+        appearanceSaveCalls.push(appearance);
+        return saveRobotAppearance(appearance);
       }
     },
     appDataRepository: {
@@ -189,6 +201,7 @@ function createControllerHarness({
     saveCompletedCalls,
     saveLevelCalls,
     soundSaveCalls,
+    appearanceSaveCalls,
     soundEffectCalls,
     clearCalls,
     setEditingCalls
@@ -338,4 +351,29 @@ test('sound block shows muted feedback without requesting audio when muted', asy
 
   assert.ok(harness.statusCalls.includes('soundMuted'));
   assert.deepEqual(harness.soundEffectCalls, []);
+});
+
+test('updateRobotAppearance normalizes values and persists preferences', () => {
+  const harness = createControllerHarness({
+    loadRobotAppearance: () => ({ design: 'invalid', color: 'unknown' })
+  });
+
+  assert.deepEqual(harness.controller.getRobotAppearance(), { design: 'classic', color: 'blue' });
+
+  const updateResult = harness.controller.updateRobotAppearance({ design: 'explorer', color: 'purple' });
+
+  assert.equal(updateResult.saved, true);
+  assert.deepEqual(updateResult.appearance, { design: 'explorer', color: 'purple' });
+  assert.deepEqual(harness.appearanceSaveCalls, [{ design: 'explorer', color: 'purple' }]);
+});
+
+test('updateRobotAppearance reports save failure and keeps previous appearance', () => {
+  const harness = createControllerHarness({
+    saveRobotAppearance: () => false
+  });
+
+  const updateResult = harness.controller.updateRobotAppearance({ design: 'explorer' });
+
+  assert.equal(updateResult.saved, false);
+  assert.deepEqual(updateResult.appearance, { design: 'classic', color: 'blue' });
 });

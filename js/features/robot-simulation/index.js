@@ -5,6 +5,12 @@ export {
   turnRight
 } from './domain/robot.js';
 export {
+  robotDesignOptions,
+  robotColorOptions,
+  defaultRobotAppearance,
+  normalizeRobotAppearance
+} from './domain/robot-appearance.js';
+export {
   canMoveForward,
   readForwardSensorState,
   getForwardPosition,

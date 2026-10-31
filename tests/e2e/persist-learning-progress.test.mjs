@@ -118,6 +118,7 @@ test('Parent area clears local app data only after explicit confirmation', async
       }
     }));
     window.localStorage.setItem('minibot.settings.soundEffectsEnabled', 'false');
+    window.localStorage.setItem('minibot.settings.robotAppearance.v1', JSON.stringify({ design: 'explorer', color: 'green' }));
     window.localStorage.setItem('minibot.tutorial.completed', 'true');
   });
   const page = await context.newPage();
@@ -135,12 +136,14 @@ test('Parent area clears local app data only after explicit confirmation', async
       completedLevelIds: JSON.parse(window.localStorage.getItem('minibot.progress.completedLevelIds.v1') ?? '[]'),
       storedPrograms: window.localStorage.getItem('minibot.programs.v1'),
       soundEffectsSetting: window.localStorage.getItem('minibot.settings.soundEffectsEnabled'),
+      robotAppearanceSetting: window.localStorage.getItem('minibot.settings.robotAppearance.v1'),
       tutorialState: window.localStorage.getItem('minibot.tutorial.completed')
     }));
     assert.equal(storageAfterCancel.savedLevelId, 'level-003');
     assert.deepEqual(storageAfterCancel.completedLevelIds, ['level-001', 'level-002']);
     assert.notEqual(storageAfterCancel.storedPrograms, null);
     assert.equal(storageAfterCancel.soundEffectsSetting, 'false');
+    assert.notEqual(storageAfterCancel.robotAppearanceSetting, null);
     assert.equal(storageAfterCancel.tutorialState, 'true');
 
     await page.click('#parents-button');
@@ -153,6 +156,7 @@ test('Parent area clears local app data only after explicit confirmation', async
       completedLevelIds: window.localStorage.getItem('minibot.progress.completedLevelIds.v1'),
       storedPrograms: window.localStorage.getItem('minibot.programs.v1'),
       soundEffectsSetting: window.localStorage.getItem('minibot.settings.soundEffectsEnabled'),
+      robotAppearanceSetting: window.localStorage.getItem('minibot.settings.robotAppearance.v1'),
       tutorialState: window.localStorage.getItem('minibot.tutorial.completed'),
       continueHidden: document.querySelector('#continue-button')?.hasAttribute('hidden') ?? true
     }));
@@ -160,6 +164,7 @@ test('Parent area clears local app data only after explicit confirmation', async
     assert.equal(storageAfterClear.completedLevelIds, null);
     assert.equal(storageAfterClear.storedPrograms, null);
     assert.equal(storageAfterClear.soundEffectsSetting, null);
+    assert.equal(storageAfterClear.robotAppearanceSetting, null);
     assert.equal(storageAfterClear.tutorialState, null);
     assert.equal(storageAfterClear.continueHidden, true);
   } finally {

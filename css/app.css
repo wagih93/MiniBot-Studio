@@ -216,6 +216,43 @@ input:focus-visible,
   border-color: #173857;
 }
 
+.robot-customization {
+  border: 1px solid #9bbce1;
+  border-radius: 8px;
+  background: #edf5ff;
+  padding: 8px;
+  display: grid;
+  gap: 10px;
+}
+
+.robot-customization h3,
+.robot-customization p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1f4a78;
+}
+
+.robot-customization__group {
+  display: grid;
+  gap: 8px;
+}
+
+.robot-customization__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.robot-customization__options button {
+  min-inline-size: 124px;
+  min-block-size: 64px;
+}
+
+.robot-customization__options button[data-selected="true"] {
+  background: #1f4a78;
+  border-color: #173857;
+}
+
 .level-meta {
   margin: 0;
   font-size: 0.95rem;
@@ -248,13 +285,44 @@ input:focus-visible,
 }
 
 .cell.robot {
-  background: #e7f0fb;
+  background: #1f4a78;
+  color: #ffffff;
+  border-color: #173857;
   font-weight: 600;
 }
 
+.cell.robot.robot-color-blue {
+  background: #1f4a78;
+  border-color: #173857;
+}
+
+.cell.robot.robot-color-green {
+  background: #145233;
+  border-color: #0e3a24;
+}
+
+.cell.robot.robot-color-purple {
+  background: #44246f;
+  border-color: #311a50;
+}
+
+.cell.robot.robot-design-classic {
+  border-style: solid;
+  border-radius: 6px;
+}
+
+.cell.robot.robot-design-explorer {
+  border-style: dashed;
+  border-radius: 12px;
+}
+
+.cell.robot.robot-design-turbo {
+  border-style: double;
+  border-radius: 3px;
+}
+
 .cell.robot.robot-light-on {
-  background: #fff1be;
-  border-color: #d4ad2f;
+  box-shadow: inset 0 0 0 2px #ffe266, 0 0 8px rgba(255, 214, 82, 0.85);
 }
 
 .cell.target {

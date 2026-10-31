@@ -23,6 +23,7 @@ test('local app data repository clears all configured keys', () => {
     'minibot.progress.completedLevelIds.v1': '["level-001"]',
     'minibot.programs.v1': '{"version":1,"programs":{"level-003":["start"]}}',
     'minibot.settings.soundEffectsEnabled': 'false',
+    'minibot.settings.robotAppearance.v1': '{"design":"explorer","color":"green"}',
     'minibot.tutorial.completed': 'true'
   });
   const repository = createLocalStorageAppDataRepository({ storage });
@@ -32,6 +33,7 @@ test('local app data repository clears all configured keys', () => {
   assert.equal(storage.getItem('minibot.progress.completedLevelIds.v1'), null);
   assert.equal(storage.getItem('minibot.programs.v1'), null);
   assert.equal(storage.getItem('minibot.settings.soundEffectsEnabled'), null);
+  assert.equal(storage.getItem('minibot.settings.robotAppearance.v1'), null);
   assert.equal(storage.getItem('minibot.tutorial.completed'), null);
 });
 

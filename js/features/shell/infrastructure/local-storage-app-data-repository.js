@@ -3,6 +3,7 @@ const defaultStorageKeys = Object.freeze([
   'minibot.progress.completedLevelIds.v1',
   'minibot.programs.v1',
   'minibot.settings.soundEffectsEnabled',
+  'minibot.settings.robotAppearance.v1',
   'minibot.tutorial.completed'
 ]);
 

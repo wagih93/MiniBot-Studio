@@ -75,6 +75,7 @@ export function createRobotLabRuntimeController({
   getLevelById,
   validateLevelData,
   createRobotState,
+  normalizeRobotAppearance,
   readForwardSensorState,
   createObjectiveProgress,
   createLearningProgressSummary,
@@ -100,7 +101,8 @@ export function createRobotLabRuntimeController({
   runtimeLogger = null
 }) {
   let activeLevel = fallbackLevel;
-  let robotState = createRobotState(fallbackLevel.robot);
+  let robotAppearance = normalizeRobotAppearance(parentSettingsRepository.loadRobotAppearance());
+  let robotState = applyRobotAppearanceToState(createRobotState(fallbackLevel.robot));
   let objectiveProgress = createObjectiveProgress(fallbackLevel);
   let currentRequestedLevelId = fallbackLevel.id;
   let currentRuntimeConfig = runtimeConfig;
@@ -146,6 +148,14 @@ export function createRobotLabRuntimeController({
 
   function hasSavedProgress() {
     return progressRepository.loadSavedLevelId() !== null || progressRepository.loadCompletedLevelIds().length > 0;
+  }
+
+  function applyRobotAppearanceToState(state) {
+    return {
+      ...state,
+      robotDesign: robotAppearance.design,
+      robotColor: robotAppearance.color
+    };
   }
 
   function isFreePlayLabActive() {
@@ -227,6 +237,31 @@ export function createRobotLabRuntimeController({
     };
   }
 
+  function getRobotAppearance() {
+    return { ...robotAppearance };
+  }
+
+  function updateRobotAppearance(partialAppearance) {
+    const mergedAppearance = normalizeRobotAppearance({
+      ...robotAppearance,
+      ...(partialAppearance ?? emptyObject)
+    });
+
+    if (mergedAppearance.design === robotAppearance.design && mergedAppearance.color === robotAppearance.color) {
+      return { saved: true, appearance: getRobotAppearance() };
+    }
+
+    if (!parentSettingsRepository.saveRobotAppearance(mergedAppearance)) {
+      return { saved: false, appearance: getRobotAppearance() };
+    }
+
+    robotAppearance = mergedAppearance;
+    robotState = applyRobotAppearanceToState(robotState);
+    renderWorld();
+
+    return { saved: true, appearance: getRobotAppearance() };
+  }
+
   function clearProgressAndReset(confirmAction, confirmationMessage, firstLevelId) {
     if (typeof confirmAction !== 'function') {
       return 'progressClearFailed';
@@ -241,6 +276,7 @@ export function createRobotLabRuntimeController({
     }
 
     soundEffectsEnabled = parentSettingsRepository.loadSoundEffectsEnabled();
+    robotAppearance = normalizeRobotAppearance(parentSettingsRepository.loadRobotAppearance());
     cancelActiveRun();
     initializeLevel(firstLevelId);
     shellView.syncPrimaryActions(false);
@@ -327,7 +363,7 @@ export function createRobotLabRuntimeController({
   }
 
   function renderWorld(robotAnimation = null) {
-    gridView.render(activeLevel, robotState, objectiveProgress, robotAnimation);
+    gridView.render(activeLevel, robotState, objectiveProgress, robotAnimation, robotAppearance);
     metaView.updateCollectionSummary(objectiveProgress);
     metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
   }
@@ -341,19 +377,20 @@ export function createRobotLabRuntimeController({
       freePlayMode = freePlayModes.robot;
     }
     activeLevel = level;
-    robotState = createRobotState(level.robot);
+    robotState = applyRobotAppearanceToState(createRobotState(level.robot));
     objectiveProgress = createObjectiveProgress(level);
     if (typeof shellView.setLabControlsState === 'function') {
       shellView.setLabControlsState(level.id === freePlayLabId, freePlayMode);
     }
+    if (typeof shellView.setRobotAppearanceSelection === 'function') {
+      shellView.setRobotAppearanceSelection(robotAppearance);
+    }
     programEditor.reset();
     workspaceView.render();
     metaView.updateLevelIndicator(level.id);
-    gridView.render(level, robotState, objectiveProgress);
+    renderWorld();
     toolboxView.render(level.availableBlocks);
     const restoreResult = restoreProgram(level.id);
-    metaView.updateCollectionSummary(objectiveProgress);
-    metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
     metaView.render(level);
     if (usedFallback) {
       return {
@@ -407,7 +444,7 @@ export function createRobotLabRuntimeController({
         column,
         direction: activeLevel.robot.direction
       };
-      robotState = createRobotState(activeLevel.robot);
+      robotState = applyRobotAppearanceToState(createRobotState(activeLevel.robot));
       objectiveProgress = createObjectiveProgress(activeLevel);
       renderWorld();
       return { applied: true, status: 'labEditApplied' };
@@ -453,9 +490,8 @@ export function createRobotLabRuntimeController({
           if (event.animation && (event.animation.kind === 'move' || event.animation.kind === 'turn')) {
             audioFeedback.playSoundEffect('movement', { enabled: soundEffectsEnabled });
           }
-          robotState = event.robotState;
-          gridView.render(activeLevel, robotState, objectiveProgress, event.animation);
-          metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
+          robotState = applyRobotAppearanceToState(event.robotState);
+          renderWorld(event.animation);
           return;
         }
         if (event.type === 'objectiveUpdated') {
@@ -499,7 +535,7 @@ export function createRobotLabRuntimeController({
     });
 
     if (runSessionController.isCurrentRunToken(runToken)) {
-      robotState = result.robotState;
+      robotState = applyRobotAppearanceToState(result.robotState);
       objectiveProgress = result.objectiveProgress;
     }
   }
@@ -539,7 +575,7 @@ export function createRobotLabRuntimeController({
   }
 
   function resetRobotPosition() {
-    robotState = createRobotState(activeLevel.robot);
+    robotState = applyRobotAppearanceToState(createRobotState(activeLevel.robot));
     objectiveProgress = createObjectiveProgress(activeLevel);
     renderWorld();
   }
@@ -561,12 +597,14 @@ export function createRobotLabRuntimeController({
     getCurrentRequestedLevelId,
     getActiveLevelId,
     getSoundEffectsEnabled,
+    getRobotAppearance,
     isHintSpeechEnabled,
     hasSavedProgress,
     isFreePlayLabActive,
     resolveContinueLevelId,
     getParentAreaViewModel,
     updateSoundEffectsSetting,
+    updateRobotAppearance,
     clearProgressAndReset,
     initializeLevel,
     setFreePlayMode,

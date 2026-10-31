@@ -14,6 +14,7 @@ Child-facing Arabic wording lives in `js/shared/i18n/ar.js`; this file fixes the
 | **Goal** | The cell the robot must reach. | `goal` | target, destination |
 | **Collectible** | An object on a cell the robot collects by entering it (the star). | `collectible` | goal-as-collectible, item, pickup |
 | **Robot** | The character controlled by programs. Has a position and a heading. | `Robot`, `RobotState` | bot, player |
+| **Robot appearance** | The child-selected visual style for the robot (`design` and `color`) that does not affect rules. | `robotAppearance`, `robotDesign`, `robotColor` | skin, avatar-style |
 | **Heading** | The direction the robot faces: `north`, `east`, `south`, `west`. Never mirrored by RTL. | `Heading` | direction (use for left/right turn only: `TurnDirection`) |
 | **Block** | A draggable piece in the toolbox, identified by a block type. | `BlockType`, `BlockDefinition`, `Toolbox` | command, button |
 | **Block type** | The kind of a block: `start`, `moveForward`, `turnLeft`, `turnRight`, `repeat`, `if`, `lightOn`, `playSound`. | `blockType` | op, kind |

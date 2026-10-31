@@ -121,6 +121,21 @@ export const arStrings = {
     modeRobot: 'حرّك الروبوت',
     modeObstacle: 'بدّل العوائق'
   },
+  robotCustomization: {
+    heading: 'تخصيص الروبوت',
+    designHeading: 'شكل الروبوت',
+    colorHeading: 'لون الروبوت',
+    designOptions: {
+      classic: 'كلاسيكي',
+      explorer: 'مستكشف',
+      turbo: 'سريع'
+    },
+    colorOptions: {
+      blue: 'أزرق',
+      green: 'أخضر',
+      purple: 'بنفسجي'
+    }
+  },
   levelCompletion: {
     message: 'أحسنت! أنهيت هذا المستوى.',
     finalLevelMessage: 'أحسنت! أكملت كل المستويات المتاحة.'
@@ -157,6 +172,8 @@ export const arStrings = {
     soundEffectsEnabled: 'الحالة: تم تشغيل المؤثرات الصوتية.',
     soundEffectsDisabled: 'الحالة: تم إيقاف المؤثرات الصوتية.',
     soundEffectsSaveFailed: 'الحالة: تعذّر حفظ إعدادات الصوت. حاول مرة أخرى.',
+    robotAppearanceUpdated: 'الحالة: تم تحديث مظهر الروبوت.',
+    robotAppearanceSaveFailed: 'الحالة: تعذّر حفظ مظهر الروبوت. حاول مرة أخرى.',
     lightOn: 'الحالة: تم تشغيل ضوء الروبوت.',
     soundPlayed: 'الحالة: تم تشغيل صوت الروبوت.',
     soundMuted: 'الحالة: الصوت مكتوم لكن البرنامج مستمر.',
