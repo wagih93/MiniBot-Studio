@@ -363,8 +363,8 @@ button {
 }
 
 .program-step__remove {
-  min-inline-size: 36px;
-  min-block-size: 36px;
+  min-inline-size: 64px;
+  min-block-size: 64px;
   padding: 0;
   border-radius: 999px;
 }

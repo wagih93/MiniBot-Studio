@@ -8,7 +8,7 @@ test('Child-facing controls meet target size and contrast requirements', async (
   const port = await listenOnRandomPort(server);
   const origin = `http://127.0.0.1:${port}`;
   const browser = await chromium.launch();
-  const context = await browser.newContext();
+  const context = await browser.newContext({ hasTouch: true });
   await context.addInitScript(() => {
     window.localStorage.setItem('minibot.tutorial.completed', 'true');
   });
@@ -16,6 +16,8 @@ test('Child-facing controls meet target size and contrast requirements', async (
 
   try {
     await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
+    await page.tap('#block-moveForward');
+    await page.waitForSelector('#program-list .program-step__remove');
 
     const accessibilitySnapshot = await page.evaluate(() => {
       const touchSelectors = [
@@ -24,6 +26,7 @@ test('Child-facing controls meet target size and contrast requirements', async (
         '#stop-button',
         '#reset-button',
         '#block-moveForward',
+        '.program-step__remove',
         '#hint-button',
         '#save-program-button'
       ];
