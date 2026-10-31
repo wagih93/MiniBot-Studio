@@ -1,14 +1,18 @@
 const tutorialStorageKey = 'minibot.tutorial.completed';
 
 export function createLocalStorageTutorialStateRepository({
-  storage = globalThis.localStorage
+  storage = getDefaultStorage()
 } = {}) {
   function hasCompletedTutorial() {
     if (!storage || typeof storage.getItem !== 'function') {
       return false;
     }
 
-    return storage.getItem(tutorialStorageKey) === 'true';
+    try {
+      return storage.getItem(tutorialStorageKey) === 'true';
+    } catch {
+      return false;
+    }
   }
 
   function markCompletedTutorial() {
@@ -28,4 +32,12 @@ export function createLocalStorageTutorialStateRepository({
     hasCompletedTutorial,
     markCompletedTutorial
   });
+}
+
+function getDefaultStorage() {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
 }
