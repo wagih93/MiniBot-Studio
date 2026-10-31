@@ -33,6 +33,11 @@ export function createLevelMetaView({
     setHintControlState();
 
     const needsAll = Boolean(level.successConditions.collectAllCollectibles);
+    if (level.mode === 'freePlay') {
+      objectiveConditionElement.textContent = `${labels.successPrefix} ${labels.freePlaySuccess}`;
+      return;
+    }
+
     objectiveConditionElement.textContent = needsAll
       ? labels.defaultSuccess
       : `${labels.successPrefix} ${labels.reachGoalSuccess}`;

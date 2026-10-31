@@ -6,7 +6,8 @@ export const arStrings = {
     start: 'ابدأ',
     continue: 'واصل اللعب',
     parents: 'للأهل',
-    tutorial: 'دليل البداية'
+    tutorial: 'دليل البداية',
+    lab: 'المختبر الحر'
   },
   world: {
     heading: 'عالم الروبوت',
@@ -61,6 +62,7 @@ export const arStrings = {
     defaultHint: 'اتبع المسار حتى النجمة.',
     defaultSuccess: 'صل إلى النجمة لتنجح.',
     reachGoalSuccess: 'وصل إلى الهدف المحدد.',
+    freePlaySuccess: 'جرّب بحرية بدون هدف ثابت.',
     fallbackLevelTitle: 'مستوى آمن'
   },
   movementGuideHeading: 'تعليمات الحركة',
@@ -109,6 +111,11 @@ export const arStrings = {
         focusTarget: 'play'
       }
     ]
+  },
+  freePlayLab: {
+    heading: 'المختبر الحر',
+    modeRobot: 'حرّك الروبوت',
+    modeObstacle: 'بدّل العوائق'
   },
   levelCompletion: {
     message: 'أحسنت! أنهيت هذا المستوى.',
@@ -165,6 +172,11 @@ export const arStrings = {
     tutorialCompleted: 'الحالة: أكملت دليل البداية.',
     tutorialSkipped: 'الحالة: تم تخطي دليل البداية.',
     tutorialHidden: 'الحالة: تم إخفاء دليل البداية.',
-    tutorialSpoken: 'الحالة: تمت قراءة خطوة الدليل بصوت مرتفع.'
+    tutorialSpoken: 'الحالة: تمت قراءة خطوة الدليل بصوت مرتفع.',
+    labOpened: 'الحالة: تم فتح المختبر الحر.',
+    labModeRobot: 'الحالة: وضع المختبر الحر لتحديد موقع الروبوت.',
+    labModeObstacle: 'الحالة: وضع المختبر الحر لتبديل العوائق.',
+    labEditApplied: 'الحالة: تم تحديث إعداد المختبر الحر.',
+    labEditInvalid: 'الحالة: لا يمكن تطبيق هذا التعديل في المختبر الحر.'
   }
 };

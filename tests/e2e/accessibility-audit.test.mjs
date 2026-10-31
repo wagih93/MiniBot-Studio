@@ -199,7 +199,8 @@ test('Keyboard navigation reaches all visible controls in logical order with vis
     await assertKeyboardOrderAndFocusVisible(page, [
       'start-button',
       'parents-button',
-      'tutorial-button'
+      'tutorial-button',
+      'lab-button'
     ]);
 
     await page.click('#start-button');
@@ -208,6 +209,7 @@ test('Keyboard navigation reaches all visible controls in logical order with vis
       'start-button',
       'parents-button',
       'tutorial-button',
+      'lab-button',
       'hint-button',
       'play-instruction-audio-button',
       'save-program-button',

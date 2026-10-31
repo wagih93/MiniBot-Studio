@@ -29,6 +29,7 @@ Child-facing Arabic wording lives in `js/shared/i18n/ar.js`; this file fixes the
 | **Saved program** | A program stored for a level so it can be restored. | `SavedProgram`, `ProgramRepository` | draft, store |
 | **Hint** | A short help message shown after failed attempts, in progressive tiers. | `Hint`, `hintTier` | tip, clue |
 | **Parent area** | The adult-only area for settings, data export and reset. | `parent-area` | admin, settings page |
+| **Free-play lab** | A sandbox world inside Robot Lab with no story objective and no progress persistence. | `free-play-lab` | sandbox level, practice stage |
 | **Story Studio** | The animation workspace, separate from Robot Lab. | `story-studio` | animation-lab |
 | **Robot Lab** | The environment where the child builds and runs programs. | `robot-lab` | game, simulator (the simulator is a slice inside Robot Lab) |
 | **Offline support** | Service-worker-based caching that keeps Robot Lab playable without network after the first load. | `registerOfflineSupport`, `service-worker.js` | offline mode, PWA cache |

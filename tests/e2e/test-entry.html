@@ -34,6 +34,10 @@
           <span class="primary-action-icon" aria-hidden="true">❓</span>
           <span id="tutorial-button-label"></span>
         </button>
+        <button id="lab-button" type="button">
+          <span class="primary-action-icon" aria-hidden="true">🧪</span>
+          <span id="lab-button-label"></span>
+        </button>
       </nav>
       <section id="parent-area" class="parent-area" hidden aria-live="polite">
         <h2 id="parent-area-heading"></h2>
@@ -64,6 +68,13 @@
         <section id="robot-world" class="panel world-panel" aria-label="عالم الروبوت">
           <h2 id="world-heading"></h2>
           <div id="world-grid" class="world-grid" role="img" aria-label="شبكة الروبوت"></div>
+          <section id="lab-controls" class="lab-controls" hidden>
+            <h3 id="lab-controls-heading"></h3>
+            <div class="lab-controls__actions">
+              <button id="lab-mode-robot-button" type="button"></button>
+              <button id="lab-mode-obstacle-button" type="button"></button>
+            </div>
+          </section>
           <p id="collection-summary" class="level-meta"></p>
           <p id="sensor-state" class="level-meta"></p>
           <p id="level-hint" class="level-meta"></p>

@@ -1,4 +1,64 @@
 const emptyObject = Object.freeze({});
+const freePlayLabId = 'free-play-lab';
+const freePlayModes = Object.freeze({
+  robot: 'robot',
+  obstacle: 'obstacle'
+});
+
+function cloneGridPosition(position) {
+  return {
+    row: position.row,
+    column: position.column
+  };
+}
+
+function cloneGridPositions(positions) {
+  if (!Array.isArray(positions)) {
+    return [];
+  }
+  return positions.map(cloneGridPosition);
+}
+
+function createFreePlayLabLevel(seedLevel) {
+  const baseGrid = {
+    rows: seedLevel.grid.rows,
+    columns: seedLevel.grid.columns
+  };
+  const seedCollectibles = cloneGridPositions(seedLevel.collectibles);
+  const seedHints = Array.isArray(seedLevel.hints) ? seedLevel.hints.filter((hint) => typeof hint === 'string' && hint.length > 0) : [];
+  const fallbackCollectible = {
+    row: Math.max(0, baseGrid.rows - 1),
+    column: Math.max(0, baseGrid.columns - 1)
+  };
+  const collectibles = seedCollectibles.length > 0 ? seedCollectibles : [fallbackCollectible];
+  const hints = seedHints.length > 0 ? seedHints : [];
+
+  return {
+    ...seedLevel,
+    id: freePlayLabId,
+    mode: 'freePlay',
+    grid: baseGrid,
+    robot: {
+      row: seedLevel.robot.row,
+      column: seedLevel.robot.column,
+      direction: seedLevel.robot.direction
+    },
+    obstacles: cloneGridPositions(seedLevel.obstacles),
+    collectibles,
+    successConditions: {
+      collectAllCollectibles: false
+    },
+    objective: {
+      collectAllCollectibles: false
+    },
+    availableBlocks: Array.isArray(seedLevel.availableBlocks) ? [...seedLevel.availableBlocks] : [],
+    hints
+  };
+}
+
+function isIntegerInRange(value, minimum, maximum) {
+  return Number.isInteger(value) && value >= minimum && value <= maximum;
+}
 
 export function createRobotLabRuntimeController({
   fallbackLevel,
@@ -39,6 +99,8 @@ export function createRobotLabRuntimeController({
   let currentRuntimeConfig = runtimeConfig;
   let currentRuntimeLogger = runtimeLogger;
   let soundEffectsEnabled = parentSettingsRepository.loadSoundEffectsEnabled();
+  let freePlayMode = freePlayModes.robot;
+  let freePlayLabLevel = null;
 
   setRuntimeConfig(runtimeConfig);
 
@@ -77,6 +139,18 @@ export function createRobotLabRuntimeController({
 
   function hasSavedProgress() {
     return progressRepository.loadSavedLevelId() !== null || progressRepository.loadCompletedLevelIds().length > 0;
+  }
+
+  function isFreePlayLabActive() {
+    return activeLevel.id === freePlayLabId;
+  }
+
+  function resolveFreePlaySeedLevel() {
+    const firstPlayableLevelId = playableLevelIds[0];
+    const seededLevel = typeof firstPlayableLevelId === 'string'
+      ? getLevelById(firstPlayableLevelId)
+      : null;
+    return seededLevel ?? fallbackLevel;
   }
 
   function getNextLevelId(levelId) {
@@ -168,6 +242,18 @@ export function createRobotLabRuntimeController({
   }
 
   function resolveLevel(levelId) {
+    if (levelId === freePlayLabId) {
+      freePlayLabLevel = createFreePlayLabLevel(resolveFreePlaySeedLevel());
+      const { isValid, errors } = validateLevelData(freePlayLabLevel);
+      if (!isValid) {
+        if (currentRuntimeLogger?.warn) {
+          currentRuntimeLogger.warn({ code: 'runtime.warning', message: 'Free-play lab validation failed.', levelId, errors });
+        }
+        return { level: fallbackLevel, usedFallback: true };
+      }
+      return { level: freePlayLabLevel, usedFallback: false };
+    }
+
     const override = Array.isArray(currentRuntimeConfig.levelOverrides)
       ? currentRuntimeConfig.levelOverrides.find((levelEntry) => levelEntry.id === levelId)
       : null;
@@ -233,14 +319,26 @@ export function createRobotLabRuntimeController({
     };
   }
 
+  function renderWorld(robotAnimation = null) {
+    gridView.render(activeLevel, robotState, objectiveProgress, robotAnimation);
+    metaView.updateCollectionSummary(objectiveProgress);
+    metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
+  }
+
   function initializeLevel(levelId) {
     currentRequestedLevelId = levelId;
     const { level, usedFallback } = resolveLevel(levelId);
     shellView.hideParentArea();
     shellView.hideLevelCompletion();
+    if (level.id === freePlayLabId) {
+      freePlayMode = freePlayModes.robot;
+    }
     activeLevel = level;
     robotState = createRobotState(level.robot);
     objectiveProgress = createObjectiveProgress(level);
+    if (typeof shellView.setLabControlsState === 'function') {
+      shellView.setLabControlsState(level.id === freePlayLabId, freePlayMode);
+    }
     programEditor.reset();
     workspaceView.render();
     metaView.updateLevelIndicator(level.id);
@@ -262,6 +360,64 @@ export function createRobotLabRuntimeController({
       restoreResult,
       usedFallback: false
     };
+  }
+
+  function setFreePlayMode(nextMode) {
+    if (!isFreePlayLabActive()) {
+      return false;
+    }
+
+    if (nextMode !== freePlayModes.robot && nextMode !== freePlayModes.obstacle) {
+      return false;
+    }
+
+    freePlayMode = nextMode;
+    return true;
+  }
+
+  function applyFreePlayEdit(row, column) {
+    if (!isFreePlayLabActive() || runSessionController.isRunInProgress()) {
+      return { applied: false, status: 'labEditInvalid' };
+    }
+
+    const maxRow = activeLevel.grid.rows - 1;
+    const maxColumn = activeLevel.grid.columns - 1;
+    if (!isIntegerInRange(row, 0, maxRow) || !isIntegerInRange(column, 0, maxColumn)) {
+      return { applied: false, status: 'labEditInvalid' };
+    }
+
+    const obstacleIndex = activeLevel.obstacles.findIndex(
+      (obstacle) => obstacle.row === row && obstacle.column === column
+    );
+
+    if (freePlayMode === freePlayModes.robot) {
+      if (obstacleIndex >= 0) {
+        return { applied: false, status: 'labEditInvalid' };
+      }
+
+      activeLevel.robot = {
+        row,
+        column,
+        direction: activeLevel.robot.direction
+      };
+      robotState = createRobotState(activeLevel.robot);
+      objectiveProgress = createObjectiveProgress(activeLevel);
+      renderWorld();
+      return { applied: true, status: 'labEditApplied' };
+    }
+
+    if (row === robotState.row && column === robotState.column) {
+      return { applied: false, status: 'labEditInvalid' };
+    }
+
+    if (obstacleIndex >= 0) {
+      activeLevel.obstacles = activeLevel.obstacles.filter((_, index) => index !== obstacleIndex);
+    } else {
+      activeLevel.obstacles = [...activeLevel.obstacles, { row, column }];
+    }
+
+    renderWorld();
+    return { applied: true, status: 'labEditApplied' };
   }
 
   async function runRobotSession(runToken, signal, executionConfig) {
@@ -369,9 +525,7 @@ export function createRobotLabRuntimeController({
   function resetRobotPosition() {
     robotState = createRobotState(activeLevel.robot);
     objectiveProgress = createObjectiveProgress(activeLevel);
-    gridView.render(activeLevel, robotState, objectiveProgress);
-    metaView.updateCollectionSummary(objectiveProgress);
-    metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
+    renderWorld();
   }
 
   function goToNextLevel() {
@@ -393,11 +547,14 @@ export function createRobotLabRuntimeController({
     getSoundEffectsEnabled,
     isHintSpeechEnabled,
     hasSavedProgress,
+    isFreePlayLabActive,
     resolveContinueLevelId,
     getParentAreaViewModel,
     updateSoundEffectsSetting,
     clearProgressAndReset,
     initializeLevel,
+    setFreePlayMode,
+    applyFreePlayEdit,
     startRun,
     cancelActiveRun,
     resetRobotPosition,

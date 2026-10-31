@@ -25,10 +25,15 @@ function stubQuerySelector(sel) {
 
 function makeShellView(overrides = {}) {
   const elements = {
-    startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(), tutorialButton: makeElement(),
+    startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(), tutorialButton: makeElement(), labButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
     retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
     playInstructionAudioButton: makeElement(),
+    worldGridElement: makeElement(),
+    labControlsElement: makeElement({ hidden: true }),
+    labControlsHeadingElement: makeElement(),
+    labModeRobotButton: makeElement(),
+    labModeObstacleButton: makeElement(),
     parentAreaElement: makeElement({ hidden: true }), parentProgressSummaryElement: makeElement(), parentConceptListElement: makeElement({
       textContent: '',
       _items: [],
@@ -49,7 +54,8 @@ function makeShellView(overrides = {}) {
   const labels = {
     pageTitle: 'MiniBot Studio',
     heading: 'مختبر الروبوت',
-    primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل' },
+    primaryActions: { start: 'ابدأ', continue: 'واصل', parents: 'للأهل', lab: 'المختبر الحر' },
+    freePlayLab: { heading: 'المختبر الحر', modeRobot: 'حرّك الروبوت', modeObstacle: 'بدّل العوائق' },
     parentArea: {
       heading: 'منطقة الأهل',
       description: 'إدارة التقدم',
@@ -98,7 +104,11 @@ function makeShellView(overrides = {}) {
     onClearProgress: overrides.onClearProgress ?? (() => {}),
     onToggleSoundEffects: overrides.onToggleSoundEffects ?? (() => {}),
     onPlayInstructionAudio: overrides.onPlayInstructionAudio ?? (() => {}),
+    onOpenLab: overrides.onOpenLab ?? (() => {}),
     onOpenTutorial: overrides.onOpenTutorial ?? (() => {}),
+    onSelectLabRobotMode: overrides.onSelectLabRobotMode ?? (() => {}),
+    onSelectLabObstacleMode: overrides.onSelectLabObstacleMode ?? (() => {}),
+    onLabCellSelected: overrides.onLabCellSelected ?? (() => {}),
     onTutorialNext: overrides.onTutorialNext ?? (() => {}),
     onTutorialSkip: overrides.onTutorialSkip ?? (() => {}),
     onTutorialClose: overrides.onTutorialClose ?? (() => {}),
@@ -130,6 +140,7 @@ test('createShellView syncPrimaryActions disables all action buttons when runnin
   assert.equal(elements.startButton.disabled, true);
   assert.equal(elements.parentsButton.disabled, true);
   assert.equal(elements.tutorialButton.disabled, true);
+  assert.equal(elements.labButton.disabled, true);
   assert.equal(elements.playInstructionAudioButton.disabled, true);
 });
 
@@ -141,6 +152,7 @@ test('createShellView syncPrimaryActions re-enables primary actions after run en
   assert.equal(elements.continueButton.hidden, false);
   assert.equal(elements.continueButton.disabled, false);
   assert.equal(elements.parentsButton.disabled, false);
+  assert.equal(elements.labButton.disabled, false);
   assert.equal(elements.playInstructionAudioButton.disabled, false);
 });
 
@@ -151,6 +163,22 @@ test('createShellView setEditingEnabled disables control buttons when false', ()
   assert.equal(elements.playButton.disabled, true);
   assert.equal(elements.retryLevelButton.disabled, true);
   assert.equal(elements.saveProgramButton.disabled, true);
+  assert.equal(elements.labModeRobotButton.disabled, true);
+  assert.equal(elements.labModeObstacleButton.disabled, true);
+});
+
+test('createShellView setLabControlsState toggles visibility and selected mode', () => {
+  const { view, elements } = makeShellView();
+
+  view.setLabControlsState(true, 'obstacle');
+  assert.equal(elements.labControlsElement.hidden, false);
+  assert.equal(elements.labModeRobotButton.dataset.selected, 'false');
+  assert.equal(elements.labModeObstacleButton.dataset.selected, 'true');
+
+  view.setLabControlsState(false, 'robot');
+  assert.equal(elements.labControlsElement.hidden, true);
+  assert.equal(elements.labModeRobotButton.dataset.selected, 'true');
+  assert.equal(elements.labModeObstacleButton.dataset.selected, 'false');
 });
 
 test('createShellView setEditingEnabled sets aria-disabled on workspace', () => {
