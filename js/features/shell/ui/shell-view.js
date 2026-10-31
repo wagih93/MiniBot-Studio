@@ -12,7 +12,11 @@ export function createShellView({
   onClearProgress,
   onToggleSoundEffects,
   onPlayInstructionAudio,
+  onOpenLab,
   onOpenTutorial,
+  onSelectLabRobotMode,
+  onSelectLabObstacleMode,
+  onLabCellSelected,
   onTutorialNext,
   onTutorialSkip,
   onTutorialClose,
@@ -24,9 +28,10 @@ export function createShellView({
   onNextLevel
 }) {
   const {
-    startButton, continueButton, parentsButton, tutorialButton,
+    startButton, continueButton, parentsButton, tutorialButton, labButton,
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton, playInstructionAudioButton,
+    worldGridElement, labControlsElement, labControlsHeadingElement, labModeRobotButton, labModeObstacleButton,
     parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
     soundEffectsToggle,
     clearProgressButton, closeParentAreaButton,
@@ -46,6 +51,10 @@ export function createShellView({
     document.querySelector('#continue-button-label').textContent = labels.primaryActions.continue;
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
     document.querySelector('#tutorial-button-label').textContent = labels.tutorial.replay;
+    const labButtonLabelElement = document.querySelector('#lab-button-label');
+    if (labButtonLabelElement) {
+      labButtonLabelElement.textContent = labels.primaryActions.lab ?? labels.primaryActions.start;
+    }
     document.querySelector('#parent-area-heading').textContent = labels.parentArea.heading;
     document.querySelector('#parent-area-description').textContent = labels.parentArea.description;
     document.querySelector('#sound-effects-label').textContent = labels.parentArea.soundEffectsLabel;
@@ -58,6 +67,15 @@ export function createShellView({
     document.querySelector('#program-heading').textContent = labels.blockArea.programHeading;
     document.querySelector('#program-demo').textContent = labels.blockArea.firstLevelDemo;
     saveProgramButton.textContent = labels.controls.saveProgram;
+    if (labControlsHeadingElement) {
+      labControlsHeadingElement.textContent = labels.freePlayLab?.heading ?? '';
+    }
+    if (labModeRobotButton) {
+      labModeRobotButton.textContent = labels.freePlayLab?.modeRobot ?? '';
+    }
+    if (labModeObstacleButton) {
+      labModeObstacleButton.textContent = labels.freePlayLab?.modeObstacle ?? '';
+    }
     document.querySelector('#movement-heading').textContent = labels.movementGuideHeading;
     document.querySelector('#move-forward-label').textContent = labels.movement.forward;
     document.querySelector('#turn-right-label').textContent = labels.movement.right;
@@ -80,6 +98,9 @@ export function createShellView({
     continueButton.disabled = isRunning || !hasSaved;
     parentsButton.disabled = isRunning;
     tutorialButton.disabled = isRunning;
+    if (labButton) {
+      labButton.disabled = isRunning;
+    }
     playInstructionAudioButton.disabled = isRunning;
     nextLevelButton.disabled = isRunning || nextLevelButton.hidden;
   }
@@ -91,7 +112,28 @@ export function createShellView({
     returnHomeButton.disabled = !enabled;
     saveProgramButton.disabled = !enabled;
     for (const btn of programListElement.querySelectorAll('.program-step__remove')) btn.disabled = !enabled;
+    if (labModeRobotButton) {
+      labModeRobotButton.disabled = !enabled;
+    }
+    if (labModeObstacleButton) {
+      labModeObstacleButton.disabled = !enabled;
+    }
     programWorkspaceElement.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+  }
+
+  function setLabControlsState(visible, selectedMode) {
+    if (!labControlsElement) {
+      return;
+    }
+
+    labControlsElement.hidden = visible !== true;
+    if (!labModeRobotButton || !labModeObstacleButton) {
+      return;
+    }
+
+    const isRobotMode = selectedMode === 'robot';
+    labModeRobotButton.dataset.selected = isRobotMode ? 'true' : 'false';
+    labModeObstacleButton.dataset.selected = isRobotMode ? 'false' : 'true';
   }
 
   function showLevelError(message) {
@@ -224,6 +266,9 @@ export function createShellView({
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);
     tutorialButton.addEventListener('click', onOpenTutorial);
+    if (labButton && typeof onOpenLab === 'function') {
+      labButton.addEventListener('click', onOpenLab);
+    }
     closeParentAreaButton.addEventListener('click', onCloseParentsArea);
     clearProgressButton.addEventListener('click', onClearProgress);
     soundEffectsToggle.addEventListener('change', () => onToggleSoundEffects(soundEffectsToggle.checked));
@@ -234,6 +279,25 @@ export function createShellView({
     retryLevelButton.addEventListener('click', onRetry);
     returnHomeButton.addEventListener('click', onReturnHome);
     saveProgramButton.addEventListener('click', onSaveProgram);
+    if (labModeRobotButton && typeof onSelectLabRobotMode === 'function') {
+      labModeRobotButton.addEventListener('click', onSelectLabRobotMode);
+    }
+    if (labModeObstacleButton && typeof onSelectLabObstacleMode === 'function') {
+      labModeObstacleButton.addEventListener('click', onSelectLabObstacleMode);
+    }
+    if (worldGridElement && typeof onLabCellSelected === 'function') {
+      worldGridElement.addEventListener('click', (event) => {
+        const cellElement = event.target?.closest?.('.cell');
+        if (!cellElement) {
+          return;
+        }
+        const row = Number.parseInt(cellElement.dataset.row ?? '', 10);
+        const column = Number.parseInt(cellElement.dataset.column ?? '', 10);
+        if (Number.isInteger(row) && Number.isInteger(column)) {
+          onLabCellSelected(row, column);
+        }
+      });
+    }
   }
 
   return {
@@ -250,6 +314,7 @@ export function createShellView({
     hideTutorial,
     setSoundEffectsEnabled,
     renderParentAreaSummary,
+    setLabControlsState,
     attachEvents
   };
 }

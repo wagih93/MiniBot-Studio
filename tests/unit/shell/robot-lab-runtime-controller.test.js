@@ -43,14 +43,24 @@ function createControllerHarness({
   const levelsById = {
     'level-001': {
       id: 'level-001',
+      grid: { rows: 4, columns: 4 },
       robot: { row: 0, column: 0, direction: 'east' },
+      collectibles: [{ row: 0, column: 3 }],
+      obstacles: [],
       availableBlocks: ['moveForward'],
+      successConditions: { collectAllCollectibles: true },
+      hints: ['hint'],
       executionLimits: { maxStepsPerRun: 10 }
     },
     'level-002': {
       id: 'level-002',
+      grid: { rows: 5, columns: 5 },
       robot: { row: 1, column: 1, direction: 'north' },
+      collectibles: [{ row: 4, column: 4 }],
+      obstacles: [{ row: 1, column: 2 }],
       availableBlocks: ['moveForward'],
+      successConditions: { collectAllCollectibles: true },
+      hints: ['hint'],
       executionLimits: { maxStepsPerRun: 10 }
     }
   };
@@ -244,4 +254,43 @@ test('startRun toggles controls and persists completion progress', async () => {
   assert.deepEqual(harness.saveCompletedCalls, ['level-001']);
   assert.deepEqual(harness.saveLevelCalls, ['level-002']);
   assert.ok(harness.statusCalls.includes('levelComplete'));
+});
+
+test('free-play lab applies safe edits and blocks invalid placements', () => {
+  const harness = createControllerHarness();
+
+  harness.controller.initializeLevel('free-play-lab');
+  assert.equal(harness.controller.isFreePlayLabActive(), true);
+
+  assert.equal(harness.controller.setFreePlayMode('obstacle'), true);
+  const obstaclePlacement = harness.controller.applyFreePlayEdit(0, 1);
+  assert.deepEqual(obstaclePlacement, { applied: true, status: 'labEditApplied' });
+
+  assert.equal(harness.controller.setFreePlayMode('robot'), true);
+  const invalidRobotPlacement = harness.controller.applyFreePlayEdit(0, 1);
+  assert.deepEqual(invalidRobotPlacement, { applied: false, status: 'labEditInvalid' });
+
+  const validRobotPlacement = harness.controller.applyFreePlayEdit(2, 2);
+  assert.deepEqual(validRobotPlacement, { applied: true, status: 'labEditApplied' });
+
+  assert.equal(harness.controller.setFreePlayMode('invalid-mode'), false);
+});
+
+test('free-play completion does not save story progress', async () => {
+  const harness = createControllerHarness({
+    runProgram: async ({ onEvent }) => {
+      onEvent({ type: 'statusChanged', status: 'levelComplete' });
+      return {
+        robotState: { row: 0, column: 0, direction: 'east' },
+        objectiveProgress: { completed: true }
+      };
+    }
+  });
+
+  harness.controller.initializeLevel('free-play-lab');
+  assert.equal(harness.controller.startRun(), true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.deepEqual(harness.saveCompletedCalls, []);
+  assert.deepEqual(harness.saveLevelCalls, []);
 });

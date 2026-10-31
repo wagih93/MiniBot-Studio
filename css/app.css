@@ -185,6 +185,37 @@ input:focus-visible,
   gap: 6px;
 }
 
+.lab-controls {
+  border: 1px solid #9bbce1;
+  border-radius: 8px;
+  background: #edf5ff;
+  padding: 8px;
+  display: grid;
+  gap: 8px;
+}
+
+.lab-controls h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #1f4a78;
+}
+
+.lab-controls__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lab-controls__actions button {
+  min-inline-size: 150px;
+  min-block-size: 64px;
+}
+
+.lab-controls__actions button[data-selected="true"] {
+  background: #1f4a78;
+  border-color: #173857;
+}
+
 .level-meta {
   margin: 0;
   font-size: 0.95rem;

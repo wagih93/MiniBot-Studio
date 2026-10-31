@@ -13,6 +13,8 @@ export function createShellEventBindings({
   openLevel,
   readInstructionText
 }) {
+  const freePlayLabId = 'free-play-lab';
+
   return {
     readHasSavedProgress: () => readRuntimeController().hasSavedProgress(),
     onPlay: () => readRuntimeController().startRun(),
@@ -67,6 +69,46 @@ export function createShellEventBindings({
     onOpenTutorial: () => {
       tutorialController.replayTutorial();
       renderActiveTutorialStep();
+    },
+    onOpenLab: () => {
+      readRuntimeController().cancelActiveRun();
+      openLevel(freePlayLabId);
+      if (readRuntimeController().isFreePlayLabActive()) {
+        statusView.setStatus('labOpened');
+      }
+    },
+    onSelectLabRobotMode: () => {
+      if (!readRuntimeController().isFreePlayLabActive()) {
+        return;
+      }
+      if (!readRuntimeController().setFreePlayMode('robot')) {
+        statusView.setStatus('labEditInvalid');
+        return;
+      }
+      readShellView().setLabControlsState(true, 'robot');
+      statusView.setStatus('labModeRobot');
+    },
+    onSelectLabObstacleMode: () => {
+      if (!readRuntimeController().isFreePlayLabActive()) {
+        return;
+      }
+      if (!readRuntimeController().setFreePlayMode('obstacle')) {
+        statusView.setStatus('labEditInvalid');
+        return;
+      }
+      readShellView().setLabControlsState(true, 'obstacle');
+      statusView.setStatus('labModeObstacle');
+    },
+    onLabCellSelected: (row, column) => {
+      if (!readRuntimeController().isFreePlayLabActive()) {
+        return;
+      }
+      const selectionResult = readRuntimeController().applyFreePlayEdit(row, column);
+      if (!selectionResult.applied) {
+        statusView.setStatus(selectionResult.status);
+        return;
+      }
+      statusView.setStatus('labEditApplied');
     },
     onTutorialNext: () => {
       const nextStep = tutorialController.nextStep();

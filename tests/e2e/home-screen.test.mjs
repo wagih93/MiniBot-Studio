@@ -15,7 +15,7 @@ test('Home options show icons, Arabic labels, and child-friendly targets without
     await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
 
     const homeSnapshot = await page.evaluate(() => {
-      const selectors = ['#start-button', '#continue-button', '#parents-button', '#tutorial-button'];
+      const selectors = ['#start-button', '#continue-button', '#parents-button', '#tutorial-button', '#lab-button'];
       const options = selectors.map((selector) => {
         const button = document.querySelector(selector);
         const rect = button?.getBoundingClientRect();
@@ -38,7 +38,7 @@ test('Home options show icons, Arabic labels, and child-friendly targets without
     assert.equal(homeSnapshot.externalLinks, 0);
 
     const visibleOptions = homeSnapshot.options.filter((option) => !option.hidden);
-    assert.equal(visibleOptions.length, 3);
+    assert.equal(visibleOptions.length, 4);
     assert.ok(visibleOptions.every((option) => option.label.length > 0));
     assert.ok(visibleOptions.every((option) => option.hasIcon));
     assert.ok(visibleOptions.every((option) => option.width >= 110));
