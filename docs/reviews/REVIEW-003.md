@@ -285,9 +285,13 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M3 — **Major** (recurrence of REVIEW-002 m1, severity raised) — README structure path is stale
 
+- **Status:** **Closed** in `fix/US-058-correct-readme-structure-paths`.
 - **Story impact:** US-058 / release docs
 - **Evidence:**
   - `README.md:56` still lists `js/i18n/`, but this path does not exist in the repository.
+- **Closure evidence:**
+  - Removed stale `js/i18n/` reference and kept canonical `js/shared/i18n/` path in README structure documentation.
+  - `npm run check` passed after documentation correction.
 - **Why it matters:** Developer onboarding documentation is currently inaccurate.
 - **Fix task:** `fix/US-058-correct-readme-structure-paths`
   1. Remove stale `js/i18n/` reference and keep canonical `js/shared/i18n/`.
@@ -341,4 +345,4 @@ Legend: **Met / Partly / Not met / Untested**
 3. ✅ **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
 4. ✅ **M1** — Meet US-057 64px touch-target requirement for remove controls.
 5. ✅ **M2** — Harden tutorial local-storage initialization against throwing storage access.
-6. **M3** — Correct README structure paths to match repository reality.
+6. ✅ **M3** — Correct README structure paths to match repository reality.

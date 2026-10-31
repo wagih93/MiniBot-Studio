@@ -53,7 +53,7 @@ npx playwright install --with-deps chromium
 - `index.html` — Production entry page.
 - `js/app.js` — Composition root.
 - `js/features/` — Vertical slices (`domain`, `application`, `ui`, optional `infrastructure`) with slice-level `index.js` public API.
-- `js/shared/i18n/` and `js/i18n/` — Localization resources and i18n bridge.
+- `js/shared/i18n/` — Localization resources.
 - `tests/unit/` — Pure unit and contract tests.
 - `tests/e2e/` — Browser integration tests and test entry point.
 - `tests/fixtures/` — Test-only fixture data that must not be shipped.
