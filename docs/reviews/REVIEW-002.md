@@ -6,7 +6,7 @@
 - **Scope reviewed in this report:** all commits on `master` in `da03b04..f9b5f89`, plus open story PRs (none open)
 - **Tip commit reviewed:** `f9b5f89`
 - **Open story PRs at review time:** none (`gh pr list --state open ...` => `[]`)
-- **Verdict:** **Changes requested**
+- **Verdict:** **Changes approved** (all open Blocker and Major findings B1, B2, M1, M2 were closed in follow-up PR stack #58 → #61)
 
 ---
 
@@ -126,7 +126,7 @@ Legend: **Met / Partly / Not met / Untested**
 | `npm run check` includes full gate; CI runs same command | `package.json:19`, `.github/workflows/ci.yml:42` | Local + CI pass | Met |
 | Build outputs shipped files only; CSP validated in dist | `scripts/build.mjs:40`, `:67`, `:78` | `npm run build` passed | Met |
 | Unexpected exceptions: friendly child message + logger port | `js/robot-lab.js:181-189`, `js/features/shell/application/report-runtime-error.js:1` | `tests/e2e/unexpected-error-handling.test.mjs` (in suite), manual browser check | Met |
-| `npm audit --omit=dev` output recorded in PR | Story marked done in `docs/implementation-status.md:79` | PR #45 body still shows unchecked criterion line `- [ ] \`npm audit --omit=dev\` output is recorded in the PR.` | **Not met** |
+| `npm audit --omit=dev` output recorded in PR | Story evidence reconciled in `docs/implementation-status.md` and follow-up comment on PR #45 | `npm audit --omit=dev` rerun returned `found 0 vulnerabilities`; evidence comment: https://github.com/wagih93/MiniBot-Studio/pull/45#issuecomment-6546379082 | **Met** |
 | README + branch-protection docs updated | `README.md`, `docs/recommended-branch-protection.md` | Present and versioned | Partly (see m1 doc drift) |
 
 ---
@@ -280,10 +280,15 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B2 — **Blocker** — US-068 is marked Done with “5 criteria verified” while AC4 is still not satisfied in the recorded PR evidence
 
+- **Status:** **Closed** in `fix/US-068-record-audit-evidence`.
 - **Story impact:** US-068 release-gate truthfulness
 - **Evidence:**
   - `docs/implementation-status.md:79` marks US-068 `Done` and says `5 criteria verified`.
   - PR #45 body still has unchecked AC line: `- [ ] \`npm audit --omit=dev\` output is recorded in the PR.`
+- **Closure evidence:**
+  - `npm audit --omit=dev` rerun result: `found 0 vulnerabilities`.
+  - Canonical evidence recorded in PR #45 follow-up comment: https://github.com/wagih93/MiniBot-Studio/pull/45#issuecomment-6546379082
+  - `docs/implementation-status.md` updated to include audit evidence in the US-068 validation column.
 - **Why it matters:** A story marked implemented with an unmet acceptance criterion is a release-readiness process failure.
 - **Fix:** `fix/US-068-record-audit-evidence`
   1. Record actual `npm audit --omit=dev` output in the canonical US-068 evidence location (PR follow-up comment + status doc).
@@ -293,10 +298,18 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M1 — **Major** — `js/robot-lab.js` has regrown to 402 lines and concentrates orchestration + UI integration + audio + speech + persistence wiring
 
+- **Status:** **Closed** in `fix/US-061-split-robot-lab-orchestrator`.
 - **Evidence:**
   - File length: 402 lines.
   - Module-level mutable orchestration state at `js/robot-lab.js:35-46`.
   - Additional concerns concentrated in same file: audio effects (`:252`), speech synthesis (`:311`), run orchestration (`:360`), error wiring (`:186`).
+- **Closure evidence:**
+  - Run/session orchestration moved into `js/features/program-execution/application/run-session-controller.js` and wired via `createRunSessionController`.
+  - Audio and speech side-effects moved behind `js/features/shell/infrastructure/audio-feedback.js` and wired via `createAudioFeedback`.
+  - Regression coverage added:
+    - `tests/unit/program-execution/run-session-controller.test.js`
+    - `tests/unit/shell/audio-feedback.test.js`
+  - `js/robot-lab.js` reduced to 358 lines with run-token/controller state and audio/speech browser API wiring extracted out of the composition module.
 - **Why it matters:** This reintroduces the god-file trend that earlier architecture work was meant to reduce, increasing change coupling and review risk.
 - **Fix:** `fix/US-061-split-robot-lab-orchestrator`
   1. Extract run/session orchestration state transitions into application-level services.
@@ -307,9 +320,15 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M2 — **Major** (recurrence of REVIEW-001 m2) — Implementation status is stale/inconsistent with repository reality
 
+- **Status:** **Closed** in `fix/US-041-sync-status-with-git-and-pr-state`.
 - **Evidence:**
   - `docs/implementation-status.md` keeps merged stories as `In Review` at lines `14`, `29`, `34-40`, `55` (US-003, US-018, US-023..US-029, US-044), while their PRs are merged and no open story PR exists.
   - `docs/implementation-status.md:52` lists US-041 as `Done` with SHA `9fa936a`, but that SHA is not on `master` (`git merge-base --is-ancestor 9fa936a HEAD` => no); PR #3 is `CLOSED` (not merged).
+- **Closure evidence:**
+  - Reconciled status rows so only stories with open PRs remain `In Review` (current open story PRs: #58, #59, #60).
+  - Updated previously stale rows (US-018, US-023..US-029, US-044) to `Done` with merged-PR next-action notes.
+  - Corrected US-041 SHA from `9fa936a` to `39c4611` (ancestor of `master`) and clarified PR #3 closed-state note.
+  - Added `scripts/check-implementation-status.mjs` and wired it into `npm run check` + CI (`GH_TOKEN`) to enforce status/PR/commit consistency continuously.
 - **Why it matters:** Status checkpoint is a control document; stale or incorrect state misleads planning/review and undermines release traceability.
 - **Fix:** `fix/US-041-sync-status-with-git-and-pr-state`
   1. Reconcile all `In Review` rows to actual PR state (`open` vs `merged/closed`).
@@ -378,6 +397,6 @@ These are stale stack residues and should be deleted/archived to avoid accidenta
 ## 8) Must-close list before new feature work
 
 1. ✅ **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
-2. **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
-3. **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
-4. **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.
+2. ✅ **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
+3. ✅ **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
+4. ✅ **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.

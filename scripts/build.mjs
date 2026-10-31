@@ -8,7 +8,7 @@ const requiredDocumentationPaths = [
   'docs/PRODUCT_BACKLOG_STYKANIMATE.md',
   'docs/implementation-status.md'
 ];
-const shippedEntries = ['index.html', 'css', 'js'];
+const shippedEntries = ['index.html', 'service-worker.js', 'css', 'js'];
 const distRootPath = resolve('dist');
 
 function failBuild(message, details = []) {

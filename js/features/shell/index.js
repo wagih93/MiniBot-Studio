@@ -1,5 +1,9 @@
 export { createShellController } from './application/shell-controller.js';
 export { reportRuntimeError } from './application/report-runtime-error.js';
+export { createTutorialController } from './application/tutorial-controller.js';
 export { createShellState } from './domain/shell-state.js';
 export { createConsoleLogger } from './infrastructure/console-logger.js';
+export { createAudioFeedback } from './infrastructure/audio-feedback.js';
+export { createLocalStorageAppDataRepository } from './infrastructure/local-storage-app-data-repository.js';
+export { createLocalStorageTutorialStateRepository } from './infrastructure/local-storage-tutorial-state-repository.js';
 export { createShellView } from './ui/shell-view.js';

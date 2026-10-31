@@ -12,6 +12,11 @@ export function createShellView({
   onClearProgress,
   onToggleSoundEffects,
   onPlayInstructionAudio,
+  onOpenTutorial,
+  onTutorialNext,
+  onTutorialSkip,
+  onTutorialClose,
+  onPlayTutorialAudio,
   onHint,
   onRetry,
   onReturnHome,
@@ -19,15 +24,20 @@ export function createShellView({
   onNextLevel
 }) {
   const {
-    startButton, continueButton, parentsButton,
+    startButton, continueButton, parentsButton, tutorialButton,
     playButton, stopButton, resetButton, nextLevelButton,
     retryLevelButton, returnHomeButton, saveProgramButton, hintButton, playInstructionAudioButton,
     parentAreaElement, parentProgressSummaryElement, parentConceptListElement,
     soundEffectsToggle,
     clearProgressButton, closeParentAreaButton,
+    tutorialPanelElement, tutorialStepIndicatorElement, tutorialHeadingElement,
+    tutorialBodyElement, tutorialNextButton, tutorialSkipButton, tutorialCloseButton,
+    tutorialAudioButton, blockListElement,
     programWorkspaceElement, levelErrorElement, levelErrorMessageElement,
     levelCompletionElement, levelCompletionMessageElement
   } = elements;
+
+  const tutorialFocusTargets = [blockListElement, programWorkspaceElement, playButton];
 
   function applyStaticLabels() {
     document.title = labels.pageTitle;
@@ -35,6 +45,7 @@ export function createShellView({
     document.querySelector('#start-button-label').textContent = labels.primaryActions.start;
     document.querySelector('#continue-button-label').textContent = labels.primaryActions.continue;
     document.querySelector('#parents-button-label').textContent = labels.primaryActions.parents;
+    document.querySelector('#tutorial-button-label').textContent = labels.tutorial.replay;
     document.querySelector('#parent-area-heading').textContent = labels.parentArea.heading;
     document.querySelector('#parent-area-description').textContent = labels.parentArea.description;
     document.querySelector('#sound-effects-label').textContent = labels.parentArea.soundEffectsLabel;
@@ -57,6 +68,9 @@ export function createShellView({
     nextLevelButton.textContent = labels.controls.nextLevel;
     retryLevelButton.textContent = labels.controls.retryLevel;
     returnHomeButton.textContent = labels.controls.returnHome;
+    tutorialSkipButton.textContent = labels.tutorial.skip;
+    tutorialCloseButton.textContent = labels.tutorial.close;
+    tutorialAudioButton.textContent = labels.tutorial.playAudio;
   }
 
   function syncPrimaryActions(isRunning) {
@@ -65,6 +79,7 @@ export function createShellView({
     startButton.disabled = isRunning;
     continueButton.disabled = isRunning || !hasSaved;
     parentsButton.disabled = isRunning;
+    tutorialButton.disabled = isRunning;
     playInstructionAudioButton.disabled = isRunning;
     nextLevelButton.disabled = isRunning || nextLevelButton.hidden;
   }
@@ -143,6 +158,61 @@ export function createShellView({
     }
   }
 
+  function clearTutorialFocus() {
+    for (const focusTarget of tutorialFocusTargets) {
+      if (!focusTarget) {
+        continue;
+      }
+      if (typeof focusTarget.removeAttribute === 'function') {
+        focusTarget.removeAttribute('data-tutorial-focus');
+      } else if (typeof focusTarget.setAttribute === 'function') {
+        focusTarget.setAttribute('data-tutorial-focus', '');
+      }
+    }
+  }
+
+  function focusTutorialTarget(targetKey) {
+    clearTutorialFocus();
+
+    if (targetKey === 'toolbox' && blockListElement) {
+      blockListElement.setAttribute('data-tutorial-focus', 'true');
+      return;
+    }
+
+    if (targetKey === 'workspace' && programWorkspaceElement) {
+      programWorkspaceElement.setAttribute('data-tutorial-focus', 'true');
+      return;
+    }
+
+    if (targetKey === 'play' && playButton) {
+      playButton.setAttribute('data-tutorial-focus', 'true');
+    }
+  }
+
+  function renderTutorialStep(step) {
+    if (!step) {
+      hideTutorial();
+      return;
+    }
+
+    tutorialPanelElement.hidden = false;
+    tutorialStepIndicatorElement.textContent = labels.tutorial.stepTemplate
+      .replace('{current}', String(step.index + 1))
+      .replace('{total}', String(step.total));
+    tutorialHeadingElement.textContent = step.title;
+    tutorialBodyElement.textContent = step.description;
+    tutorialNextButton.textContent = step.isLastStep ? labels.tutorial.finish : labels.tutorial.next;
+    focusTutorialTarget(step.focusTarget);
+  }
+
+  function hideTutorial() {
+    tutorialPanelElement.hidden = true;
+    tutorialStepIndicatorElement.textContent = '';
+    tutorialHeadingElement.textContent = '';
+    tutorialBodyElement.textContent = '';
+    clearTutorialFocus();
+  }
+
   function attachEvents() {
     playButton.addEventListener('click', onPlay);
     stopButton.addEventListener('click', onStop);
@@ -153,9 +223,14 @@ export function createShellView({
     startButton.addEventListener('click', onStart);
     continueButton.addEventListener('click', onContinue);
     parentsButton.addEventListener('click', onParents);
+    tutorialButton.addEventListener('click', onOpenTutorial);
     closeParentAreaButton.addEventListener('click', onCloseParentsArea);
     clearProgressButton.addEventListener('click', onClearProgress);
     soundEffectsToggle.addEventListener('change', () => onToggleSoundEffects(soundEffectsToggle.checked));
+    tutorialNextButton.addEventListener('click', onTutorialNext);
+    tutorialSkipButton.addEventListener('click', onTutorialSkip);
+    tutorialCloseButton.addEventListener('click', onTutorialClose);
+    tutorialAudioButton.addEventListener('click', onPlayTutorialAudio);
     retryLevelButton.addEventListener('click', onRetry);
     returnHomeButton.addEventListener('click', onReturnHome);
     saveProgramButton.addEventListener('click', onSaveProgram);
@@ -171,6 +246,8 @@ export function createShellView({
     hideLevelCompletion,
     showParentArea,
     hideParentArea,
+    renderTutorialStep,
+    hideTutorial,
     setSoundEffectsEnabled,
     renderParentAreaSummary,
     attachEvents

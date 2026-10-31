@@ -14,9 +14,10 @@
     "architecture:check": "node ./scripts/check-architecture.mjs",
     "language:check": "node ./scripts/check-language.mjs",
     "safety:check": "node ./scripts/check-static-safety.mjs",
+    "status:check": "node ./scripts/check-implementation-status.mjs",
     "test:browser-safety": "node --test --test-concurrency=1 \"tests/e2e/*.test.mjs\"",
     "validate:agent": "node ./scripts/validate-agent-frontmatter.mjs",
-    "check": "npm run lint --if-present && npm test && npm run architecture:check && npm run language:check && npm run safety:check && npm run validate:agent && npm run test:browser-safety && npm run build"
+    "check": "npm run lint --if-present && npm test && npm run architecture:check && npm run language:check && npm run safety:check && npm run validate:agent && npm run status:check && npm run test:browser-safety && npm run build"
   },
   "devDependencies": {
     "playwright": "^1.56.0"

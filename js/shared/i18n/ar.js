@@ -5,7 +5,8 @@ export const arStrings = {
   primaryActions: {
     start: 'ابدأ',
     continue: 'واصل اللعب',
-    parents: 'للأهل'
+    parents: 'للأهل',
+    tutorial: 'دليل البداية'
   },
   world: {
     heading: 'عالم الروبوت',
@@ -13,9 +14,9 @@ export const arStrings = {
   },
   parentArea: {
     heading: 'منطقة الأهل',
-    description: 'يمكنك هنا مسح التقدم المحفوظ على هذا الجهاز.',
+    description: 'يمكنك هنا إدارة البيانات المحلية ومسحها من هذا الجهاز.',
     soundEffectsLabel: 'تشغيل المؤثرات الصوتية',
-    clearProgressConfirm: 'هل تريد مسح التقدم المحفوظ نهائياً؟',
+    clearProgressConfirm: 'هل تريد مسح كل البيانات المحلية للتطبيق من هذا الجهاز؟',
     completedLevelsTemplate: 'المستويات المكتملة: {count}',
     conceptCountTemplate: '{concept}: جُرّب في {count} مستوى.',
     learningConceptLabels: {
@@ -73,8 +74,35 @@ export const arStrings = {
     retryLevel: 'حاول مرة أخرى',
     returnHome: 'العودة للرئيسية',
     saveProgram: 'احفظ البرنامج',
-    clearProgress: 'امسح التقدم',
+    clearProgress: 'امسح البيانات المحلية',
     closeParentArea: 'إغلاق'
+  },
+  tutorial: {
+    heading: 'خطوات البداية',
+    stepTemplate: 'الخطوة {current} من {total}',
+    next: 'التالي',
+    finish: 'أنهِ الشرح',
+    skip: 'تخطَّ الشرح',
+    close: 'إخفاء',
+    replay: 'أعد الشرح',
+    playAudio: 'استمع لهذه الخطوة',
+    steps: [
+      {
+        title: 'اختر الأمر من منطقة الأوامر',
+        description: 'ابدأ بلمس كتلة من منطقة الأوامر لإضافتها إلى البرنامج.',
+        focusTarget: 'toolbox'
+      },
+      {
+        title: 'رتّب الأوامر داخل مساحة البرنامج',
+        description: 'ضع الأوامر بالترتيب داخل مساحة البرنامج حتى يعرف الروبوت ماذا يفعل.',
+        focusTarget: 'workspace'
+      },
+      {
+        title: 'اضغط تشغيل لتجربة البرنامج',
+        description: 'بعد تجهيز البرنامج، اضغط تشغيل لمشاهدة حركة الروبوت خطوةً خطوة.',
+        focusTarget: 'play'
+      }
+    ]
   },
   levelCompletion: {
     message: 'أحسنت! أنهيت هذا المستوى.',
@@ -105,9 +133,10 @@ export const arStrings = {
     stepLimitExceeded: 'الحالة: تم إيقاف البرنامج لأنه تجاوز الحد الآمن للخطوات.',
     continueUnavailable: 'الحالة: لا يوجد تقدّم محفوظ بعد.',
     parentsAreaOpen: 'الحالة: يمكنك إدارة التقدم من منطقة الأهل.',
-    progressCleared: 'الحالة: تم مسح التقدم المحفوظ على هذا الجهاز.',
-    progressClearCancelled: 'الحالة: لم يتم مسح التقدم.',
-    progressClearFailed: 'الحالة: تعذّر مسح التقدم. حاول مرة أخرى.',
+    progressCleared: 'الحالة: تم مسح البيانات المحلية للتطبيق من هذا الجهاز.',
+    progressClearCancelled: 'الحالة: لم يتم مسح البيانات المحلية.',
+    progressClearFailed: 'الحالة: تعذّر مسح البيانات المحلية. حاول مرة أخرى.',
+    progressSaveFailed: 'الحالة: تعذّر حفظ التقدم المحلي. حاول مرة أخرى.',
     soundEffectsEnabled: 'الحالة: تم تشغيل المؤثرات الصوتية.',
     soundEffectsDisabled: 'الحالة: تم إيقاف المؤثرات الصوتية.',
     soundEffectsSaveFailed: 'الحالة: تعذّر حفظ إعدادات الصوت. حاول مرة أخرى.',
@@ -121,8 +150,15 @@ export const arStrings = {
     validationInternalError: 'الحالة: تعذّر التحقق من البرنامج. حاول مرة أخرى.',
     unexpectedError: 'الحالة: حدث خطأ غير متوقع. أعد المحاولة.',
     programSaved: 'الحالة: تم حفظ البرنامج على هذا الجهاز.',
+    programSaveFailed: 'الحالة: تعذّر حفظ البرنامج على هذا الجهاز. حاول مرة أخرى.',
     programRestored: 'الحالة: تم استعادة البرنامج المحفوظ.',
     programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.',
-    invalidRepeatCount: 'الحالة: عدد التكرار يجب أن يكون بين 1 و10.'
+    invalidRepeatCount: 'الحالة: عدد التكرار يجب أن يكون بين 1 و10.',
+    tutorialOpened: 'الحالة: تم فتح دليل البداية.',
+    tutorialStepChanged: 'الحالة: انتقلنا إلى الخطوة التالية في الدليل.',
+    tutorialCompleted: 'الحالة: أكملت دليل البداية.',
+    tutorialSkipped: 'الحالة: تم تخطي دليل البداية.',
+    tutorialHidden: 'الحالة: تم إخفاء دليل البداية.',
+    tutorialSpoken: 'الحالة: تمت قراءة خطوة الدليل بصوت مرتفع.'
   }
 };

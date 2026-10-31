@@ -30,6 +30,24 @@ npx playwright install --with-deps chromium
 | `npm run build` | Produce `dist/` with shipped files and validate CSP in `dist/index.html`. |
 | `npm run check` | Full readiness gate: lint (if present), unit tests, architecture, language, safety, agent validation, browser tests, and build. |
 
+## Offline use
+
+1. Start the app with `npm start`.
+2. Open `http://127.0.0.1:4173` once while connected so the service worker can cache the app shell and requested modules.
+3. Reopen the same URL offline. The home screen, core levels, and robot simulation remain playable from local cache.
+
+## Runtime asset and licensing notes
+
+- MiniBot Studio runtime uses only local project files (`index.html`, `service-worker.js`, `css/`, and `js/`).
+- Core play has no CDN dependency and no required network request after caching.
+- No third-party runtime library is bundled today. If a runtime dependency is added later, it must be vendored locally and documented in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) with license and local-bundling steps.
+
+## Local data policy
+
+- MiniBot stores only local gameplay data: level progress, completed levels, saved programs, tutorial completion state, and sound preference.
+- The app does **not** collect child name, photos, or location data.
+- Parent Area includes **"امسح البيانات المحلية"** to delete all locally stored app data from the device.
+
 ## Project structure
 
 - `index.html` — Production entry page.

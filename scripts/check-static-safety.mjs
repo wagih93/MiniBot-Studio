@@ -1,7 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { extname, join, relative, resolve } from 'node:path';
 
-const scanRoots = [resolve('index.html'), resolve('js')];
+const scanRoots = [resolve('index.html'), resolve('service-worker.js'), resolve('js')];
 const scannedExtensions = new Set(['.html', '.js', '.mjs']);
 const allowlistPath = resolve('scripts', 'safety-allowlist.json');
 

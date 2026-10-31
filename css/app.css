@@ -54,14 +54,19 @@ button {
   padding: 10px 14px;
   cursor: pointer;
   min-inline-size: 110px;
+  min-block-size: 44px;
 }
 
 .primary-actions button {
-  min-block-size: 56px;
+  min-block-size: 64px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.controls button {
+  min-block-size: 64px;
 }
 
 .primary-action-icon {
@@ -114,6 +119,45 @@ button {
   gap: 10px;
 }
 
+.tutorial-panel {
+  border: 1px solid #c6d7ec;
+  border-radius: 10px;
+  background: #f1f7ff;
+  color: #123b67;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.tutorial-panel__step {
+  margin: 0;
+  font-weight: 700;
+}
+
+.tutorial-panel__heading {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tutorial-panel__body {
+  margin: 0;
+}
+
+.tutorial-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tutorial-panel__actions button {
+  min-block-size: 64px;
+}
+
+[data-tutorial-focus="true"] {
+  outline: 3px solid #ffb703;
+  outline-offset: 3px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -147,7 +191,7 @@ button {
   color: #1f4a78;
   border-color: #7ea6d1;
   min-inline-size: 120px;
-  min-block-size: 40px;
+  min-block-size: 64px;
   padding: 8px 12px;
 }
 
@@ -214,7 +258,7 @@ button {
 
 .block-item {
   text-align: start;
-  min-block-size: 56px;
+  min-block-size: 64px;
   display: grid;
   grid-template-columns: auto 1fr;
   align-items: center;
@@ -274,7 +318,7 @@ button {
 
 .program-actions button {
   min-inline-size: 140px;
-  min-block-size: 42px;
+  min-block-size: 64px;
 }
 
 .program-demo {
@@ -492,6 +536,17 @@ button {
   }
   100% {
     transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 

@@ -102,7 +102,7 @@ test('Completed levels are persisted locally and Continue restores progress afte
   }
 });
 
-test('Parent area clears saved progress only after explicit confirmation', async () => {
+test('Parent area clears local app data only after explicit confirmation', async () => {
   const server = createStaticServer();
   const port = await listenOnRandomPort(server);
   const origin = `http://127.0.0.1:${port}`;
@@ -111,6 +111,14 @@ test('Parent area clears saved progress only after explicit confirmation', async
   await context.addInitScript(() => {
     window.localStorage.setItem('minibot.progress.levelId', 'level-003');
     window.localStorage.setItem('minibot.progress.completedLevelIds.v1', JSON.stringify(['level-001', 'level-002']));
+    window.localStorage.setItem('minibot.programs.v1', JSON.stringify({
+      version: 1,
+      programs: {
+        'level-003': ['start', 'moveForward']
+      }
+    }));
+    window.localStorage.setItem('minibot.settings.soundEffectsEnabled', 'false');
+    window.localStorage.setItem('minibot.tutorial.completed', 'true');
   });
   const page = await context.newPage();
 
@@ -124,10 +132,16 @@ test('Parent area clears saved progress only after explicit confirmation', async
 
     const storageAfterCancel = await page.evaluate(() => ({
       savedLevelId: window.localStorage.getItem('minibot.progress.levelId'),
-      completedLevelIds: JSON.parse(window.localStorage.getItem('minibot.progress.completedLevelIds.v1') ?? '[]')
+      completedLevelIds: JSON.parse(window.localStorage.getItem('minibot.progress.completedLevelIds.v1') ?? '[]'),
+      storedPrograms: window.localStorage.getItem('minibot.programs.v1'),
+      soundEffectsSetting: window.localStorage.getItem('minibot.settings.soundEffectsEnabled'),
+      tutorialState: window.localStorage.getItem('minibot.tutorial.completed')
     }));
     assert.equal(storageAfterCancel.savedLevelId, 'level-003');
     assert.deepEqual(storageAfterCancel.completedLevelIds, ['level-001', 'level-002']);
+    assert.notEqual(storageAfterCancel.storedPrograms, null);
+    assert.equal(storageAfterCancel.soundEffectsSetting, 'false');
+    assert.equal(storageAfterCancel.tutorialState, 'true');
 
     await page.click('#parents-button');
     page.once('dialog', (dialog) => dialog.accept());
@@ -137,11 +151,49 @@ test('Parent area clears saved progress only after explicit confirmation', async
     const storageAfterClear = await page.evaluate(() => ({
       savedLevelId: window.localStorage.getItem('minibot.progress.levelId'),
       completedLevelIds: window.localStorage.getItem('minibot.progress.completedLevelIds.v1'),
+      storedPrograms: window.localStorage.getItem('minibot.programs.v1'),
+      soundEffectsSetting: window.localStorage.getItem('minibot.settings.soundEffectsEnabled'),
+      tutorialState: window.localStorage.getItem('minibot.tutorial.completed'),
       continueHidden: document.querySelector('#continue-button')?.hasAttribute('hidden') ?? true
     }));
     assert.equal(storageAfterClear.savedLevelId, null);
     assert.equal(storageAfterClear.completedLevelIds, null);
+    assert.equal(storageAfterClear.storedPrograms, null);
+    assert.equal(storageAfterClear.soundEffectsSetting, null);
+    assert.equal(storageAfterClear.tutorialState, null);
     assert.equal(storageAfterClear.continueHidden, true);
+  } finally {
+    await context.close();
+    await browser.close();
+    await closeServer(server);
+  }
+});
+
+test('Parent area shows a clear status message when local data deletion fails', async () => {
+  const server = createStaticServer();
+  const port = await listenOnRandomPort(server);
+  const origin = `http://127.0.0.1:${port}`;
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    window.localStorage.setItem('minibot.progress.levelId', 'level-003');
+    const storagePrototype = Object.getPrototypeOf(window.localStorage);
+    const originalRemoveItem = storagePrototype.removeItem;
+    storagePrototype.removeItem = function removeItemWithFailure(key) {
+      if (key.startsWith('minibot.')) {
+        throw new Error('remove-failed');
+      }
+      return originalRemoveItem.call(this, key);
+    };
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${origin}/tests/e2e/test-entry.html`, { waitUntil: 'networkidle' });
+    await page.click('#parents-button');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.click('#clear-progress-button');
+    await page.waitForSelector('#status[data-state="progressClearFailed"]');
   } finally {
     await context.close();
     await browser.close();
