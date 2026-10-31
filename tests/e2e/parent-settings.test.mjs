@@ -85,3 +85,35 @@ test('Parent settings can disable and enable sound effects with persistence', as
     await closeServer(server);
   }
 });
+
+test('Parent settings remain reachable after level completion', async () => {
+  const server = createStaticServer();
+  const port = await listenOnRandomPort(server);
+  const origin = `http://127.0.0.1:${port}`;
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001`, { waitUntil: 'networkidle' });
+    await page.click('#block-moveForward');
+    await page.click('#play-button');
+    await page.waitForSelector('#status[data-state="levelComplete"]');
+
+    const primaryActionsSnapshot = await page.evaluate(() => ({
+      startDisabled: document.querySelector('#start-button')?.hasAttribute('disabled') ?? true,
+      continueDisabled: document.querySelector('#continue-button')?.hasAttribute('disabled') ?? true,
+      parentsDisabled: document.querySelector('#parents-button')?.hasAttribute('disabled') ?? true
+    }));
+    assert.equal(primaryActionsSnapshot.startDisabled, false);
+    assert.equal(primaryActionsSnapshot.continueDisabled, false);
+    assert.equal(primaryActionsSnapshot.parentsDisabled, false);
+
+    await page.click('#parents-button');
+    await page.waitForSelector('#parent-area:not([hidden])');
+  } finally {
+    await context.close();
+    await browser.close();
+    await closeServer(server);
+  }
+});

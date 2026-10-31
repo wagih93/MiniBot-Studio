@@ -258,11 +258,17 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B1 — **Blocker** — Primary actions stay disabled after first completion (parent area/continue/start become inaccessible in-session)
 
+- **Status:** **Closed** in `fix/US-003-reenable-primary-actions-after-run`.
 - **Story impact:** US-003 (parent area accessibility), cross-story UX regression
 - **Evidence:**
   - `js/robot-lab.js:387` calls `shellView.syncPrimaryActions(isRunInProgress)` inside `levelComplete` while `isRunInProgress === true`.
   - `js/robot-lab.js:409` run-finalizer re-enables editing controls but does **not** call `syncPrimaryActions(false)`.
   - Repro result (manual + scripted): after `levelComplete`, `startDisabled=true`, `continueDisabled=true`, `parentsDisabled=true`.
+- **Closure evidence:**
+  - `js/robot-lab.js` now syncs primary actions at run start (`syncPrimaryActions(true)`) and always resets them in both run `finally` and `cancelActiveRun` (`syncPrimaryActions(false)`).
+  - Added regression tests:
+    - `tests/unit/shell/shell-view.test.js` — `syncPrimaryActions` re-enables controls after a running state.
+    - `tests/e2e/parent-settings.test.mjs` — parent area remains reachable after `levelComplete`.
 - **Why it matters:** Parent controls are no longer accessible after a child finishes one level unless the page is reloaded, contradicting expected parent-area availability and in-session continuity.
 - **Fix:** `fix/US-003-reenable-primary-actions-after-run`
   1. Always resync primary actions to non-running state when a run ends (`finally`) and when stop/cancel completes.
@@ -371,8 +377,7 @@ These are stale stack residues and should be deleted/archived to avoid accidenta
 
 ## 8) Must-close list before new feature work
 
-1. **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
+1. ✅ **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
 2. **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
 3. **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
 4. **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.
-
