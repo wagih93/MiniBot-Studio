@@ -264,11 +264,17 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M2 — **Major** — Tutorial local-storage repository can throw during construction in blocked-storage environments
 
+- **Status:** **Closed** in `fix/US-030-harden-tutorial-storage-access`.
 - **Story impact:** US-030, US-032
 - **Evidence:**
   - `js/features/shell/infrastructure/local-storage-tutorial-state-repository.js:2` uses `storage = globalThis.localStorage` without a safe getter.
   - `js/robot-lab.js:30` constructs this repository at startup.
   - Reproduction in this review: overriding `globalThis.localStorage` getter to throw caused `createLocalStorageTutorialStateRepository()` to throw `blocked-storage`.
+- **Closure evidence:**
+  - Repository default storage now resolves through a guarded `getDefaultStorage()` helper.
+  - `hasCompletedTutorial()` now catches storage read exceptions and returns a safe fallback.
+  - Added unit coverage for both throwing `localStorage` getter and throwing `getItem()` read path in `tests/unit/shell/local-storage-tutorial-state-repository.test.js`.
+  - `npm run check` passed after hardening.
 - **Why it matters:** In restricted browser storage contexts, tutorial initialization can crash instead of failing gracefully.
 - **Fix task:** `fix/US-030-harden-tutorial-storage-access`
   1. Replace default parameter access with `getDefaultStorage()` guarded by `try/catch` (same pattern as other repositories).
@@ -334,5 +340,5 @@ Legend: **Met / Partly / Not met / Untested**
 2. ✅ **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
 3. ✅ **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
 4. ✅ **M1** — Meet US-057 64px touch-target requirement for remove controls.
-5. **M2** — Harden tutorial local-storage initialization against throwing storage access.
+5. ✅ **M2** — Harden tutorial local-storage initialization against throwing storage access.
 6. **M3** — Correct README structure paths to match repository reality.
