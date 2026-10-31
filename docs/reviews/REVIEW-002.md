@@ -126,7 +126,7 @@ Legend: **Met / Partly / Not met / Untested**
 | `npm run check` includes full gate; CI runs same command | `package.json:19`, `.github/workflows/ci.yml:42` | Local + CI pass | Met |
 | Build outputs shipped files only; CSP validated in dist | `scripts/build.mjs:40`, `:67`, `:78` | `npm run build` passed | Met |
 | Unexpected exceptions: friendly child message + logger port | `js/robot-lab.js:181-189`, `js/features/shell/application/report-runtime-error.js:1` | `tests/e2e/unexpected-error-handling.test.mjs` (in suite), manual browser check | Met |
-| `npm audit --omit=dev` output recorded in PR | Story marked done in `docs/implementation-status.md:79` | PR #45 body still shows unchecked criterion line `- [ ] \`npm audit --omit=dev\` output is recorded in the PR.` | **Not met** |
+| `npm audit --omit=dev` output recorded in PR | Story evidence reconciled in `docs/implementation-status.md` and follow-up comment on PR #45 | `npm audit --omit=dev` rerun returned `found 0 vulnerabilities`; evidence comment: https://github.com/wagih93/MiniBot-Studio/pull/45#issuecomment-6546379082 | **Met** |
 | README + branch-protection docs updated | `README.md`, `docs/recommended-branch-protection.md` | Present and versioned | Partly (see m1 doc drift) |
 
 ---
@@ -280,10 +280,15 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B2 — **Blocker** — US-068 is marked Done with “5 criteria verified” while AC4 is still not satisfied in the recorded PR evidence
 
+- **Status:** **Closed** in `fix/US-068-record-audit-evidence`.
 - **Story impact:** US-068 release-gate truthfulness
 - **Evidence:**
   - `docs/implementation-status.md:79` marks US-068 `Done` and says `5 criteria verified`.
   - PR #45 body still has unchecked AC line: `- [ ] \`npm audit --omit=dev\` output is recorded in the PR.`
+- **Closure evidence:**
+  - `npm audit --omit=dev` rerun result: `found 0 vulnerabilities`.
+  - Canonical evidence recorded in PR #45 follow-up comment: https://github.com/wagih93/MiniBot-Studio/pull/45#issuecomment-6546379082
+  - `docs/implementation-status.md` updated to include audit evidence in the US-068 validation column.
 - **Why it matters:** A story marked implemented with an unmet acceptance criterion is a release-readiness process failure.
 - **Fix:** `fix/US-068-record-audit-evidence`
   1. Record actual `npm audit --omit=dev` output in the canonical US-068 evidence location (PR follow-up comment + status doc).
@@ -378,6 +383,6 @@ These are stale stack residues and should be deleted/archived to avoid accidenta
 ## 8) Must-close list before new feature work
 
 1. ✅ **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
-2. **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
+2. ✅ **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
 3. **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
 4. **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.
