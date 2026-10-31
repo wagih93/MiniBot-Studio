@@ -83,6 +83,7 @@ const workspaceView = createProgramWorkspaceView({
     icon: arStrings.blockArea.iconsByType?.[blockType] ?? '⬜'
   }),
   deleteStepLabel: arStrings.controls.deleteStep,
+  addToBodyLabel: arStrings.blockArea.addToBody,
   emptyProgramLabel: arStrings.blockArea.emptyProgram,
   repeatBodyEmptyLabel: arStrings.blockArea.repeatBodyEmpty,
   repeatCountTemplate: arStrings.blockArea.repeatCountTemplate,
