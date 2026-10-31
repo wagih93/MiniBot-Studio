@@ -4,7 +4,7 @@ import { createRobotState, createWorldGridView } from './features/robot-simulati
 import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, createRunSessionController, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
-import { createAudioFeedback, createConsoleLogger, reportRuntimeError, createShellView } from './features/shell/index.js';
+import { createAudioFeedback, createConsoleLogger, createLocalStorageTutorialStateRepository, createTutorialController, reportRuntimeError, createShellView } from './features/shell/index.js';
 import { createDefaultRuntimeConfig } from './shared/runtime-config.js';
 import { createAbortSignalDelay } from './shared/abort-signal-delay.js';
 const qs = (sel) => document.querySelector(sel);
@@ -26,6 +26,7 @@ const playableLevelsById = Object.fromEntries(
 const progressRepo = createLocalStorageProgressRepository({ allowedLevelIds: playableLevelIds });
 const programRepo = createLocalStorageProgramRepository({ allowedLevelIds: playableLevelIds });
 const parentSettingsRepo = createLocalStorageParentSettingsRepository();
+const tutorialStateRepo = createLocalStorageTutorialStateRepository();
 const delay = createAbortSignalDelay();
 const runSessionController = createRunSessionController();
 let activeLevel = fallbackLevel;
@@ -39,6 +40,11 @@ let currentRequestedLevelId = runtimeConfig.initialLevelId;
 let soundEffectsEnabled = parentSettingsRepo.loadSoundEffectsEnabled();
 const audioFeedback = createAudioFeedback({
   readLogger: () => runtimeLogger
+});
+const tutorialController = createTutorialController({
+  steps: arStrings.tutorial.steps,
+  hasCompletedTutorial: () => tutorialStateRepo.hasCompletedTutorial(),
+  markCompletedTutorial: () => tutorialStateRepo.markCompletedTutorial()
 });
 const programEditor = createProgramEditor(fallbackLevel.availableBlocks);
 const statusView = createExecutionStatusView({ statusElement: qs('#status'), labels: arStrings.status });
@@ -70,9 +76,10 @@ const metaView = createLevelMetaView({
 const shellView = createShellView({
   elements: {
     startButton: qs('#start-button'), continueButton: qs('#continue-button'), parentsButton: qs('#parents-button'),
+    tutorialButton: qs('#tutorial-button'),
     playButton: qs('#play-button'), stopButton: qs('#stop-button'), resetButton: qs('#reset-button'), nextLevelButton: qs('#next-level-button'),
     retryLevelButton: qs('#retry-level-button'), returnHomeButton: qs('#return-home-button'),
-    saveProgramButton: qs('#save-program-button'), programWorkspaceElement: qs('#program-workspace'),
+    saveProgramButton: qs('#save-program-button'), blockListElement: qs('#block-list'), programWorkspaceElement: qs('#program-workspace'),
     playInstructionAudioButton: qs('#play-instruction-audio-button'),
     parentAreaElement: qs('#parent-area'),
     parentProgressSummaryElement: qs('#parent-progress-summary'),
@@ -80,6 +87,14 @@ const shellView = createShellView({
     soundEffectsToggle: qs('#sound-effects-toggle'),
     clearProgressButton: qs('#clear-progress-button'),
     closeParentAreaButton: qs('#close-parent-area-button'),
+    tutorialPanelElement: qs('#tutorial-panel'),
+    tutorialStepIndicatorElement: qs('#tutorial-step-indicator'),
+    tutorialHeadingElement: qs('#tutorial-heading'),
+    tutorialBodyElement: qs('#tutorial-body'),
+    tutorialNextButton: qs('#tutorial-next-button'),
+    tutorialSkipButton: qs('#tutorial-skip-button'),
+    tutorialCloseButton: qs('#tutorial-close-button'),
+    tutorialAudioButton: qs('#tutorial-audio-button'),
     hintButton: qs('#hint-button'),
     levelErrorElement: qs('#level-error'), levelErrorMessageElement: qs('#level-error-message'),
     levelCompletionElement: qs('#level-completion'), levelCompletionMessageElement: qs('#level-completion-message')
@@ -141,6 +156,44 @@ const shellView = createShellView({
     }
 
     statusView.setStatus(soundEffectsEnabled ? 'soundEffectsEnabled' : 'soundEffectsDisabled');
+  },
+  onOpenTutorial: () => {
+    tutorialController.replayTutorial();
+    renderActiveTutorialStep();
+  },
+  onTutorialNext: () => {
+    const nextTutorialStep = tutorialController.nextStep();
+    if (nextTutorialStep.completed) {
+      shellView.hideTutorial();
+      return;
+    }
+
+    if (nextTutorialStep.step) {
+      renderActiveTutorialStep();
+    }
+  },
+  onTutorialSkip: () => {
+    if (tutorialController.skipTutorial()) {
+      shellView.hideTutorial();
+    }
+  },
+  onTutorialClose: () => {
+    tutorialController.closeTutorial();
+    shellView.hideTutorial();
+  },
+  onPlayTutorialAudio: () => {
+    const activeTutorialStep = tutorialController.getCurrentStep();
+    if (!activeTutorialStep) {
+      statusView.setStatus('instructionSpeechUnavailable');
+      return;
+    }
+    if (!soundEffectsEnabled) {
+      statusView.setStatus('instructionAudioMuted');
+      return;
+    }
+
+    const spoken = audioFeedback.speakInstruction(activeTutorialStep.description, { enabled: soundEffectsEnabled });
+    statusView.setStatus(spoken ? 'tutorialSpoken' : 'instructionSpeechUnavailable');
   },
   onHint: () => {
     const hintResult = metaView.showNextHint({
@@ -243,6 +296,16 @@ function getParentAreaSummary() {
     completedLevelIds: progressRepo.loadCompletedLevelIds(),
     levelsById: playableLevelsById
   });
+}
+
+function renderActiveTutorialStep() {
+  const activeTutorialStep = tutorialController.getCurrentStep();
+  if (!activeTutorialStep) {
+    shellView.hideTutorial();
+    return;
+  }
+
+  shellView.renderTutorialStep(activeTutorialStep);
 }
 
 function getExecConfig(level) {
@@ -354,5 +417,10 @@ export function initializeRobotLab(config = createDefaultRuntimeConfig()) {
   currentRequestedLevelId = typeof runtimeConfig.initialLevelId === 'string' && runtimeConfig.initialLevelId.length > 0 ? runtimeConfig.initialLevelId : fallbackLevel.id;
   attachRuntimeErrorListeners(); shellView.applyStaticLabels(); shellView.attachEvents();
   workspaceView.attachInteractions(); initializeLevel(currentRequestedLevelId); shellView.syncPrimaryActions(false);
+  if (tutorialController.openTutorialIfNeeded()) {
+    renderActiveTutorialStep();
+  } else {
+    shellView.hideTutorial();
+  }
   hasInitialized = true;
 }

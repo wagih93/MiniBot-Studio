@@ -30,6 +30,10 @@
           <span class="primary-action-icon" aria-hidden="true">👪</span>
           <span id="parents-button-label"></span>
         </button>
+        <button id="tutorial-button" type="button">
+          <span class="primary-action-icon" aria-hidden="true">❓</span>
+          <span id="tutorial-button-label"></span>
+        </button>
       </nav>
       <section id="parent-area" class="parent-area" hidden aria-live="polite">
         <h2 id="parent-area-heading"></h2>
@@ -43,6 +47,17 @@
         <div class="parent-area__actions">
           <button id="clear-progress-button" type="button"></button>
           <button id="close-parent-area-button" type="button"></button>
+        </div>
+      </section>
+      <section id="tutorial-panel" class="tutorial-panel" hidden aria-live="polite">
+        <p id="tutorial-step-indicator" class="tutorial-panel__step"></p>
+        <h2 id="tutorial-heading" class="tutorial-panel__heading"></h2>
+        <p id="tutorial-body" class="tutorial-panel__body"></p>
+        <div class="tutorial-panel__actions">
+          <button id="tutorial-audio-button" type="button"></button>
+          <button id="tutorial-next-button" type="button"></button>
+          <button id="tutorial-skip-button" type="button"></button>
+          <button id="tutorial-close-button" type="button"></button>
         </div>
       </section>
       <div class="workspace">

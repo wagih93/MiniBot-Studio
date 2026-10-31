@@ -5,7 +5,8 @@ export const arStrings = {
   primaryActions: {
     start: 'ابدأ',
     continue: 'واصل اللعب',
-    parents: 'للأهل'
+    parents: 'للأهل',
+    tutorial: 'دليل البداية'
   },
   world: {
     heading: 'عالم الروبوت',
@@ -76,6 +77,33 @@ export const arStrings = {
     clearProgress: 'امسح التقدم',
     closeParentArea: 'إغلاق'
   },
+  tutorial: {
+    heading: 'خطوات البداية',
+    stepTemplate: 'الخطوة {current} من {total}',
+    next: 'التالي',
+    finish: 'أنهِ الشرح',
+    skip: 'تخطَّ الشرح',
+    close: 'إخفاء',
+    replay: 'أعد الشرح',
+    playAudio: 'استمع لهذه الخطوة',
+    steps: [
+      {
+        title: 'اختر الأمر من منطقة الأوامر',
+        description: 'ابدأ بلمس كتلة من منطقة الأوامر لإضافتها إلى البرنامج.',
+        focusTarget: 'toolbox'
+      },
+      {
+        title: 'رتّب الأوامر داخل مساحة البرنامج',
+        description: 'ضع الأوامر بالترتيب داخل مساحة البرنامج حتى يعرف الروبوت ماذا يفعل.',
+        focusTarget: 'workspace'
+      },
+      {
+        title: 'اضغط تشغيل لتجربة البرنامج',
+        description: 'بعد تجهيز البرنامج، اضغط تشغيل لمشاهدة حركة الروبوت خطوةً خطوة.',
+        focusTarget: 'play'
+      }
+    ]
+  },
   levelCompletion: {
     message: 'أحسنت! أنهيت هذا المستوى.',
     finalLevelMessage: 'أحسنت! أكملت كل المستويات المتاحة.'
@@ -123,6 +151,12 @@ export const arStrings = {
     programSaved: 'الحالة: تم حفظ البرنامج على هذا الجهاز.',
     programRestored: 'الحالة: تم استعادة البرنامج المحفوظ.',
     programLoadFailed: 'الحالة: تعذّر استعادة البرنامج المحفوظ، ويمكنك البدء من جديد.',
-    invalidRepeatCount: 'الحالة: عدد التكرار يجب أن يكون بين 1 و10.'
+    invalidRepeatCount: 'الحالة: عدد التكرار يجب أن يكون بين 1 و10.',
+    tutorialOpened: 'الحالة: تم فتح دليل البداية.',
+    tutorialStepChanged: 'الحالة: انتقلنا إلى الخطوة التالية في الدليل.',
+    tutorialCompleted: 'الحالة: أكملت دليل البداية.',
+    tutorialSkipped: 'الحالة: تم تخطي دليل البداية.',
+    tutorialHidden: 'الحالة: تم إخفاء دليل البداية.',
+    tutorialSpoken: 'الحالة: تمت قراءة خطوة الدليل بصوت مرتفع.'
   }
 };

@@ -114,6 +114,41 @@ button {
   gap: 10px;
 }
 
+.tutorial-panel {
+  border: 1px solid #c6d7ec;
+  border-radius: 10px;
+  background: #f1f7ff;
+  color: #123b67;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.tutorial-panel__step {
+  margin: 0;
+  font-weight: 700;
+}
+
+.tutorial-panel__heading {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tutorial-panel__body {
+  margin: 0;
+}
+
+.tutorial-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+[data-tutorial-focus="true"] {
+  outline: 3px solid #ffb703;
+  outline-offset: 3px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
