@@ -8,6 +8,7 @@ function makeElement(init = {}) {
     _attrs: {},
     setAttribute(name, val) { this._attrs[name] = val; },
     getAttribute(name) { return this._attrs[name] ?? null; },
+    removeAttribute(name) { delete this._attrs[name]; },
     addEventListener() {},
     querySelectorAll: () => [],
     ...init
@@ -24,7 +25,7 @@ function stubQuerySelector(sel) {
 
 function makeShellView(overrides = {}) {
   const elements = {
-    startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(),
+    startButton: makeElement(), continueButton: makeElement(), parentsButton: makeElement(), tutorialButton: makeElement(),
     playButton: makeElement(), stopButton: makeElement(), resetButton: makeElement(), nextLevelButton: makeElement({ hidden: true }),
     retryLevelButton: makeElement(), returnHomeButton: makeElement(), saveProgramButton: makeElement(), hintButton: makeElement(),
     playInstructionAudioButton: makeElement(),
@@ -33,6 +34,15 @@ function makeShellView(overrides = {}) {
       _items: [],
       append(item) { this._items.push(item); }
     }), soundEffectsToggle: makeElement({ checked: false }), clearProgressButton: makeElement(), closeParentAreaButton: makeElement(),
+    tutorialPanelElement: makeElement({ hidden: true }),
+    tutorialStepIndicatorElement: makeElement(),
+    tutorialHeadingElement: makeElement(),
+    tutorialBodyElement: makeElement(),
+    tutorialNextButton: makeElement(),
+    tutorialSkipButton: makeElement(),
+    tutorialCloseButton: makeElement(),
+    tutorialAudioButton: makeElement(),
+    blockListElement: makeElement(),
     programWorkspaceElement: makeElement(), levelErrorElement: makeElement(), levelErrorMessageElement: makeElement(),
     levelCompletionElement: makeElement({ hidden: true }), levelCompletionMessageElement: makeElement()
   };
@@ -52,6 +62,15 @@ function makeShellView(overrides = {}) {
         directions: 'الاتجاهات',
         repetition: 'التكرار'
       }
+    },
+    tutorial: {
+      replay: 'أعد الشرح',
+      stepTemplate: 'الخطوة {current} من {total}',
+      next: 'التالي',
+      finish: 'أنهِ الشرح',
+      skip: 'تخطَّ',
+      close: 'إخفاء',
+      playAudio: 'استمع'
     },
     world: { heading: 'عالم الروبوت' },
     blockArea: { heading: 'الأوامر', programHeading: 'مساحة', firstLevelDemo: 'مثال' },
@@ -79,6 +98,11 @@ function makeShellView(overrides = {}) {
     onClearProgress: overrides.onClearProgress ?? (() => {}),
     onToggleSoundEffects: overrides.onToggleSoundEffects ?? (() => {}),
     onPlayInstructionAudio: overrides.onPlayInstructionAudio ?? (() => {}),
+    onOpenTutorial: overrides.onOpenTutorial ?? (() => {}),
+    onTutorialNext: overrides.onTutorialNext ?? (() => {}),
+    onTutorialSkip: overrides.onTutorialSkip ?? (() => {}),
+    onTutorialClose: overrides.onTutorialClose ?? (() => {}),
+    onPlayTutorialAudio: overrides.onPlayTutorialAudio ?? (() => {}),
     onHint: overrides.onHint ?? (() => {}),
     onRetry: overrides.onRetry ?? (() => {}),
     onReturnHome: overrides.onReturnHome ?? (() => {}),
@@ -105,6 +129,7 @@ test('createShellView syncPrimaryActions disables all action buttons when runnin
   view.syncPrimaryActions(true);
   assert.equal(elements.startButton.disabled, true);
   assert.equal(elements.parentsButton.disabled, true);
+  assert.equal(elements.tutorialButton.disabled, true);
   assert.equal(elements.playInstructionAudioButton.disabled, true);
 });
 
@@ -180,6 +205,45 @@ test('createShellView showParentArea and hideParentArea toggle visibility', () =
   assert.equal(elements.parentAreaElement.hidden, false);
   view.hideParentArea();
   assert.equal(elements.parentAreaElement.hidden, true);
+});
+
+test('createShellView renderTutorialStep shows tutorial content and focused target', () => {
+  const { view, elements } = makeShellView();
+
+  view.renderTutorialStep({
+    index: 0,
+    total: 3,
+    title: 'عنوان',
+    description: 'وصف',
+    focusTarget: 'toolbox',
+    isLastStep: false
+  });
+
+  assert.equal(elements.tutorialPanelElement.hidden, false);
+  assert.equal(elements.tutorialStepIndicatorElement.textContent, 'الخطوة 1 من 3');
+  assert.equal(elements.tutorialHeadingElement.textContent, 'عنوان');
+  assert.equal(elements.tutorialBodyElement.textContent, 'وصف');
+  assert.equal(elements.tutorialNextButton.textContent, 'التالي');
+  assert.equal(elements.blockListElement.getAttribute('data-tutorial-focus'), 'true');
+});
+
+test('createShellView hideTutorial clears tutorial state and focus styles', () => {
+  const { view, elements } = makeShellView();
+  view.renderTutorialStep({
+    index: 2,
+    total: 3,
+    title: 'عنوان',
+    description: 'وصف',
+    focusTarget: 'play',
+    isLastStep: true
+  });
+
+  view.hideTutorial();
+
+  assert.equal(elements.tutorialPanelElement.hidden, true);
+  assert.equal(elements.tutorialHeadingElement.textContent, '');
+  assert.equal(elements.tutorialBodyElement.textContent, '');
+  assert.equal(elements.playButton.getAttribute('data-tutorial-focus'), null);
 });
 
 test('createShellView setSoundEffectsEnabled syncs the sound toggle state', () => {
