@@ -100,6 +100,34 @@ export async function runProgram(options) {
         continue;
       }
 
+      if (instruction.blockType === 'lightOn') {
+        robotState = { ...robotState, lightOn: true };
+        emit(onEvent, {
+          type: 'robotUpdated',
+          robotState,
+          animation: null
+        });
+        emit(onEvent, { type: 'statusChanged', status: 'lightOn' });
+        const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
+        if (!canContinue || signal?.aborted) {
+          return { terminal: true, status: 'aborted' };
+        }
+        continue;
+      }
+
+      if (instruction.blockType === 'playSound') {
+        emit(onEvent, { type: 'statusChanged', status: 'running' });
+        emit(onEvent, {
+          type: 'soundEffectRequested',
+          effectType: 'interaction'
+        });
+        const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
+        if (!canContinue || signal?.aborted) {
+          return { terminal: true, status: 'aborted' };
+        }
+        continue;
+      }
+
       if (instruction.blockType === 'if') {
         if (instruction.condition !== 'pathBlocked') {
           emit(onEvent, { type: 'statusChanged', status: 'unsupported' });

@@ -36,6 +36,7 @@ function createRunSessionControllerStub() {
 function createControllerHarness({
   loadSavedLevelId = () => null,
   loadCompletedLevelIds = () => [],
+  initialSoundEffectsEnabled = true,
   saveSoundEffectsEnabled = () => true,
   clearAppData = () => true,
   runProgram = async () => ({ robotState: { row: 0, column: 0, direction: 'east' }, objectiveProgress: { completed: false } })
@@ -71,6 +72,7 @@ function createControllerHarness({
   const soundSaveCalls = [];
   const clearCalls = [];
   const setEditingCalls = [];
+  const soundEffectCalls = [];
 
   const controller = createRobotLabRuntimeController({
     fallbackLevel: levelsById['level-001'],
@@ -109,7 +111,7 @@ function createControllerHarness({
       saveProgram: () => true
     },
     parentSettingsRepository: {
-      loadSoundEffectsEnabled: () => true,
+      loadSoundEffectsEnabled: () => initialSoundEffectsEnabled,
       saveSoundEffectsEnabled(value) {
         soundSaveCalls.push(value);
         return saveSoundEffectsEnabled(value);
@@ -126,7 +128,10 @@ function createControllerHarness({
       wait: async () => {}
     },
     audioFeedback: {
-      playSoundEffect() {},
+      playSoundEffect(effectType, options) {
+        soundEffectCalls.push({ effectType, options });
+        return true;
+      },
       playLevelCompletionSound() {}
     },
     programEditor: {
@@ -184,6 +189,7 @@ function createControllerHarness({
     saveCompletedCalls,
     saveLevelCalls,
     soundSaveCalls,
+    soundEffectCalls,
     clearCalls,
     setEditingCalls
   };
@@ -293,4 +299,43 @@ test('free-play completion does not save story progress', async () => {
 
   assert.deepEqual(harness.saveCompletedCalls, []);
   assert.deepEqual(harness.saveLevelCalls, []);
+});
+
+test('sound block requests play audio and reports visual status when sound is enabled', async () => {
+  const harness = createControllerHarness({
+    runProgram: async ({ onEvent }) => {
+      onEvent({ type: 'soundEffectRequested', effectType: 'interaction' });
+      return {
+        robotState: { row: 0, column: 0, direction: 'east', lightOn: false },
+        objectiveProgress: { completed: false }
+      };
+    }
+  });
+
+  harness.controller.initializeLevel('level-001');
+  assert.equal(harness.controller.startRun(), true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.ok(harness.statusCalls.includes('soundPlayed'));
+  assert.deepEqual(harness.soundEffectCalls, [{ effectType: 'interaction', options: { enabled: true } }]);
+});
+
+test('sound block shows muted feedback without requesting audio when muted', async () => {
+  const harness = createControllerHarness({
+    initialSoundEffectsEnabled: false,
+    runProgram: async ({ onEvent }) => {
+      onEvent({ type: 'soundEffectRequested', effectType: 'interaction' });
+      return {
+        robotState: { row: 0, column: 0, direction: 'east', lightOn: false },
+        objectiveProgress: { completed: false }
+      };
+    }
+  });
+
+  harness.controller.initializeLevel('level-001');
+  assert.equal(harness.controller.startRun(), true);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.ok(harness.statusCalls.includes('soundMuted'));
+  assert.deepEqual(harness.soundEffectCalls, []);
 });

@@ -53,6 +53,15 @@ test('createWorldGridView marks robot cell with robot class', () => {
   assert.equal(robotCell.dataset.direction, 'east');
 });
 
+test('createWorldGridView shows a lit robot state when light is on', () => {
+  const worldGridElement = makeElement();
+  const isCollectibleCollected = () => false;
+  const view = createWorldGridView({ worldGridElement, isCollectibleCollected });
+  view.render(simpleLevel, { ...robotState, lightOn: true }, objectiveProgress);
+  const robotCell = worldGridElement.children.find((c) => c._classes.has('robot'));
+  assert.ok(robotCell?._classes.has('robot-light-on'));
+});
+
 test('createWorldGridView marks obstacle cell with wall class', () => {
   const worldGridElement = makeElement();
   const isCollectibleCollected = () => false;
