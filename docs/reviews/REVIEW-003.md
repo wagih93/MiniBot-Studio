@@ -197,11 +197,15 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B2 — **Blocker** (recurrence of REVIEW-002 M2) — `docs/implementation-status.md` is stale after stack merge
 
+- **Status:** **Closed** in `fix/US-041-reconcile-status-after-pr-66`.
 - **Story impact:** US-041
 - **Evidence:**
   - `docs/implementation-status.md:42` (US-031), `:43` (US-032), `:52` (US-041), `:68` (US-057), `:72` (US-061), `:79` (US-068) are still `In Review`.
   - Their PRs are merged (`#63`, `#64`, `#61`, `#65`, `#60`, `#59`).
   - `npm run status:check` fails on these six rows.
+- **Closure evidence:**
+  - US-031, US-032, US-041, US-057, US-061, and US-068 were reconciled from `In Review` to `Done` with merged-PR next-action notes.
+  - `npm run status:check` passed after reconciliation.
 - **Why it matters:** The source-of-truth status file is no longer truthful, and the repo gate fails locally and in CI.
 - **Fix task:** `fix/US-041-reconcile-status-after-pr-66`
   1. Move merged stories out of `In Review` unless an explicit manual blocker remains.
@@ -309,7 +313,7 @@ Legend: **Met / Partly / Not met / Untested**
 ## 10) Must-close list before new feature work
 
 1. **B1** — Make `status:check` CI-safe under shallow checkout (or switch CI checkout depth to full history).
-2. **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
+2. ✅ **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
 3. **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
 4. **M1** — Meet US-057 64px touch-target requirement for remove controls.
 5. **M2** — Harden tutorial local-storage initialization against throwing storage access.
