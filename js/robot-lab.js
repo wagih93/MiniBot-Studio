@@ -4,7 +4,7 @@ import { createRobotState, createWorldGridView } from './features/robot-simulati
 import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, createRunSessionController, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
-import { createAudioFeedback, createConsoleLogger, createLocalStorageTutorialStateRepository, createTutorialController, reportRuntimeError, createShellView } from './features/shell/index.js';
+import { createAudioFeedback, createConsoleLogger, createLocalStorageAppDataRepository, createLocalStorageTutorialStateRepository, createTutorialController, reportRuntimeError, createShellView } from './features/shell/index.js';
 import { createDefaultRuntimeConfig } from './shared/runtime-config.js';
 import { createAbortSignalDelay } from './shared/abort-signal-delay.js';
 const qs = (sel) => document.querySelector(sel);
@@ -26,6 +26,7 @@ const playableLevelsById = Object.fromEntries(
 const progressRepo = createLocalStorageProgressRepository({ allowedLevelIds: playableLevelIds });
 const programRepo = createLocalStorageProgramRepository({ allowedLevelIds: playableLevelIds });
 const parentSettingsRepo = createLocalStorageParentSettingsRepository();
+const appDataRepo = createLocalStorageAppDataRepository();
 const tutorialStateRepo = createLocalStorageTutorialStateRepository();
 const delay = createAbortSignalDelay();
 const runSessionController = createRunSessionController();
@@ -133,11 +134,13 @@ const shellView = createShellView({
       return;
     }
 
-    if (!progressRepo.clearProgress()) {
+    if (!appDataRepo.clearAppData()) {
       statusView.setStatus('progressClearFailed');
       return;
     }
 
+    soundEffectsEnabled = parentSettingsRepo.loadSoundEffectsEnabled();
+    shellView.setSoundEffectsEnabled(soundEffectsEnabled);
     cancelActiveRun();
     initializeLevel(playableLevelIds[0] ?? 'level-001');
     shellView.syncPrimaryActions(false);
@@ -227,7 +230,7 @@ const shellView = createShellView({
   },
   onSaveProgram: () => {
     const saved = programRepo.saveProgram(activeLevel.id, programEditor.getProgramBlockTypes());
-    statusView.setStatus(saved ? 'programSaved' : 'programLoadFailed');
+    statusView.setStatus(saved ? 'programSaved' : 'programSaveFailed');
   }
 });
 
@@ -352,11 +355,20 @@ async function runRobotSession(runToken, signal, execConfig) {
         }
         if (ev.status === 'levelComplete') {
           const nextLevelId = getNextLevelId(activeLevel.id);
-          progressRepo.saveCompletedLevelId(activeLevel.id);
-          progressRepo.saveSavedLevelId(nextLevelId ?? activeLevel.id);
+          const shouldPersistProgress = playableLevelIds.includes(activeLevel.id);
+          let completedSaved = true;
+          let nextLevelSaved = true;
+          if (shouldPersistProgress) {
+            completedSaved = progressRepo.saveCompletedLevelId(activeLevel.id);
+            nextLevelSaved = progressRepo.saveSavedLevelId(nextLevelId ?? activeLevel.id);
+          }
           audioFeedback.playLevelCompletionSound({ enabled: soundEffectsEnabled });
           shellView.showLevelCompletion(getNextLevelId(activeLevel.id) !== null);
           shellView.syncPrimaryActions(runSessionController.isRunInProgress());
+          if (!completedSaved || !nextLevelSaved) {
+            statusView.setStatus('progressSaveFailed');
+            return;
+          }
         }
         statusView.setStatus(ev.status);
       }
