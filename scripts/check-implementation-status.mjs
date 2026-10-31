@@ -81,6 +81,15 @@ function isCommitSha(value) {
   return /^[0-9a-f]{7,40}$/i.test(value);
 }
 
+function isCommitObjectAvailable(commitSha) {
+  try {
+    execFileSync('git', ['cat-file', '-e', `${commitSha}^{commit}`], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function isCommitOnCurrentHistory(commitSha) {
   try {
     execFileSync('git', ['merge-base', '--is-ancestor', commitSha, 'HEAD'], { stdio: 'ignore' });
@@ -158,7 +167,15 @@ for (const row of rows) {
   }
 
   if (hasCommitSha && isCommitSha(row.commitSha) && (row.status === 'Done' || row.status === 'In Review')) {
-    if (!isCommitOnCurrentHistory(row.commitSha)) {
+    const commitObjectAvailable = isCommitObjectAvailable(row.commitSha);
+    if (!commitObjectAvailable) {
+      const message = `${row.story}: commit SHA "${row.commitSha}" is not available in the current checkout, so ancestry could not be verified.`;
+      if (process.env.CI === 'true') {
+        warnings.push(`${message} This can happen with shallow checkout; fetch full history to enforce ancestry.`);
+      } else {
+        violations.push(`${message} Run \`git fetch --all --prune --unshallow\` (or \`git fetch --all --prune\`) and retry.`);
+      }
+    } else if (!isCommitOnCurrentHistory(row.commitSha)) {
       violations.push(`${row.story}: commit SHA "${row.commitSha}" is not on current git history (HEAD ancestry check failed).`);
     }
   }

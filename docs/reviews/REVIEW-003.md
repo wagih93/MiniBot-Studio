@@ -182,11 +182,16 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B1 — **Blocker** — `status:check` is CI-hostile on shallow checkout and keeps default-branch CI red
 
+- **Status:** **Closed** in `fix/US-041-make-status-check-ci-shallow-safe`.
 - **Story impact:** US-041, US-068
 - **Evidence:**
   - `.github/workflows/ci.yml:20` uses `actions/checkout@v4` without `fetch-depth: 0`.
   - `scripts/check-implementation-status.mjs:84` and `scripts/check-implementation-status.mjs:86` require `git merge-base --is-ancestor` for many historical SHAs.
   - Latest master run `41232417321` and PR run `41232409952` fail with multiple `HEAD ancestry check failed` violations.
+- **Closure evidence:**
+  - CI checkout now uses `fetch-depth: 0` to keep ancestry validation deterministic.
+  - `check-implementation-status` now distinguishes missing commit objects from true ancestry failures.
+  - `npm run check` passed locally after the hardening changes.
 - **Why it matters:** The release gate is red on current `master`; this blocks trustworthy CI signal and delivery.
 - **Fix task:** `fix/US-041-make-status-check-ci-shallow-safe`
   1. Either fetch full history in CI (`fetch-depth: 0`) or fetch required SHAs before ancestry checks.
@@ -312,7 +317,7 @@ Legend: **Met / Partly / Not met / Untested**
 
 ## 10) Must-close list before new feature work
 
-1. **B1** — Make `status:check` CI-safe under shallow checkout (or switch CI checkout depth to full history).
+1. ✅ **B1** — Make `status:check` CI-safe under shallow checkout (or switch CI checkout depth to full history).
 2. ✅ **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
 3. **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
 4. **M1** — Meet US-057 64px touch-target requirement for remove controls.
