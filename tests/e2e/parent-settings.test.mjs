@@ -117,3 +117,60 @@ test('Parent settings remain reachable after level completion', async () => {
     await closeServer(server);
   }
 });
+
+test('App stores only local gameplay data and avoids personal identifiers', async () => {
+  const server = createStaticServer();
+  const port = await listenOnRandomPort(server);
+  const origin = `http://127.0.0.1:${port}`;
+  const browser = await chromium.launch();
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    window.localStorage.setItem('minibot.tutorial.completed', 'true');
+  });
+  const page = await context.newPage();
+
+  try {
+    await page.goto(`${origin}/tests/e2e/test-entry.html?level=level-001`, { waitUntil: 'networkidle' });
+    await page.click('#block-moveForward');
+    await page.click('#save-program-button');
+    await page.click('#play-button');
+    await page.waitForSelector('#status[data-state="levelComplete"]');
+    await page.click('#parents-button');
+    await page.waitForSelector('#parent-area:not([hidden])');
+    await page.click('#sound-effects-toggle');
+    await page.waitForSelector('#status[data-state="soundEffectsDisabled"]');
+
+    const privacySnapshot = await page.evaluate(() => {
+      const localStorageEntries = {};
+      for (let index = 0; index < window.localStorage.length; index += 1) {
+        const key = window.localStorage.key(index);
+        if (key) {
+          localStorageEntries[key] = window.localStorage.getItem(key);
+        }
+      }
+
+      return {
+        storageKeys: Object.keys(localStorageEntries).sort(),
+        personalInputCount: document.querySelectorAll(
+          'input[type="text"], input[type="email"], input[type="password"], input[type="file"], textarea'
+        ).length,
+        trackerCount: document.querySelectorAll(
+          'script[src*="analytics"], script[src*="gtag"], iframe[src*="ads"], [data-ad], [data-ads]'
+        ).length
+      };
+    });
+
+    assert.ok(privacySnapshot.storageKeys.includes('minibot.progress.levelId'));
+    assert.ok(privacySnapshot.storageKeys.includes('minibot.progress.completedLevelIds.v1'));
+    assert.ok(privacySnapshot.storageKeys.includes('minibot.programs.v1'));
+    assert.ok(privacySnapshot.storageKeys.includes('minibot.settings.soundEffectsEnabled'));
+    assert.ok(privacySnapshot.storageKeys.every((key) => key.startsWith('minibot.')));
+    assert.ok(privacySnapshot.storageKeys.every((key) => !/name|photo|location/i.test(key)));
+    assert.equal(privacySnapshot.personalInputCount, 0);
+    assert.equal(privacySnapshot.trackerCount, 0);
+  } finally {
+    await context.close();
+    await browser.close();
+    await closeServer(server);
+  }
+});

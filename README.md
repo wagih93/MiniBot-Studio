@@ -42,6 +42,12 @@ npx playwright install --with-deps chromium
 - Core play has no CDN dependency and no required network request after caching.
 - No third-party runtime library is bundled today. If a runtime dependency is added later, it must be vendored locally and documented in [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) with license and local-bundling steps.
 
+## Local data policy
+
+- MiniBot stores only local gameplay data: level progress, completed levels, saved programs, tutorial completion state, and sound preference.
+- The app does **not** collect child name, photos, or location data.
+- Parent Area includes **"امسح البيانات المحلية"** to delete all locally stored app data from the device.
+
 ## Project structure
 
 - `index.html` — Production entry page.
