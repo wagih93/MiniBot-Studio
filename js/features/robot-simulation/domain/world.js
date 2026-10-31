@@ -30,3 +30,7 @@ export function canMoveForward(level, robotState) {
   return isInsideGrid(level, forwardPosition.row, forwardPosition.column) &&
     !hasObstacle(level, forwardPosition.row, forwardPosition.column);
 }
+
+export function readForwardSensorState(level, robotState) {
+  return canMoveForward(level, robotState) ? 'clear' : 'blocked';
+}

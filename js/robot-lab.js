@@ -1,6 +1,6 @@
 import { arStrings } from './shared/i18n/ar.js';
 import { getLevelById, listLevelIds, validateLevelData, createLevelMetaView } from './features/levels/index.js';
-import { createRobotState, createWorldGridView } from './features/robot-simulation/index.js';
+import { createRobotState, createWorldGridView, readForwardSensorState } from './features/robot-simulation/index.js';
 import { createLearningProgressSummary, createLocalStorageParentSettingsRepository, createLocalStorageProgramRepository, createLocalStorageProgressRepository } from './features/learning-progress/index.js';
 import { createProgramEditor, createProgramWorkspaceView, createBlockToolboxView } from './features/program-editing/index.js';
 import { compileProgram, createObjectiveProgress, createRunSessionController, getCollectedCollectibleCount, isCollectibleCollected, runProgram, createExecutionStatusView } from './features/program-execution/index.js';
@@ -112,6 +112,7 @@ const metaView = createLevelMetaView({
   hintButtonElement: qs('#hint-button'),
   objectiveConditionElement: qs('#success-condition'),
   collectionSummaryElement: qs('#collection-summary'),
+  sensorStateElement: qs('#sensor-state'),
   levelIndicatorElement: qs('#level-indicator'),
   labels: arStrings.levelMeta,
   playableLevelIds,
@@ -185,6 +186,7 @@ runtimeController = createRobotLabRuntimeController({
   getLevelById,
   validateLevelData,
   createRobotState,
+  readForwardSensorState,
   createObjectiveProgress,
   createLearningProgressSummary,
   compileProgram,

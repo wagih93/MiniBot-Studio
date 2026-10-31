@@ -6,6 +6,7 @@ export {
 } from './domain/robot.js';
 export {
   canMoveForward,
+  readForwardSensorState,
   getForwardPosition,
   hasObstacle,
   isInsideGrid

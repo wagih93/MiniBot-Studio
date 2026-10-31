@@ -3,6 +3,7 @@ export function createLevelMetaView({
   hintButtonElement,
   objectiveConditionElement,
   collectionSummaryElement,
+  sensorStateElement,
   levelIndicatorElement,
   labels,
   playableLevelIds,
@@ -70,5 +71,16 @@ export function createLevelMetaView({
     collectionSummaryElement.textContent = `${labels.collectionPrefix} ${count}/${objectiveProgress.totalCollectibles}`;
   }
 
-  return { render, showNextHint, updateLevelIndicator, updateCollectionSummary };
+  function updateSensorState(sensorState) {
+    if (!sensorStateElement) {
+      return;
+    }
+
+    const sensorLabel = sensorState === 'blocked'
+      ? labels.sensorBlocked
+      : labels.sensorClear;
+    sensorStateElement.textContent = `${labels.sensorPrefix} ${sensorLabel}`;
+  }
+
+  return { render, showNextHint, updateLevelIndicator, updateCollectionSummary, updateSensorState };
 }

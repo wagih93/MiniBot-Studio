@@ -74,6 +74,7 @@ function createControllerHarness({
     getLevelById: (levelId) => levelsById[levelId] ?? null,
     validateLevelData: () => ({ isValid: true, errors: [] }),
     createRobotState: (robot) => ({ ...robot }),
+    readForwardSensorState: () => 'clear',
     createObjectiveProgress: (level) => ({ levelId: level.id, completed: false }),
     createLearningProgressSummary: ({ completedLevelIds }) => ({
       completedLevelCount: completedLevelIds.length,
@@ -138,6 +139,7 @@ function createControllerHarness({
     metaView: {
       updateLevelIndicator() {},
       updateCollectionSummary() {},
+      updateSensorState() {},
       render() {},
       showNextHint: () => ({ wasSpoken: false })
     },

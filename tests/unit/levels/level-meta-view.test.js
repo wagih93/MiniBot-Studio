@@ -11,6 +11,9 @@ const labels = {
   hintPrefix: 'تلميح:',
   successPrefix: 'الهدف:',
   collectionPrefix: 'النجوم المجموعة:',
+  sensorPrefix: 'المستشعر:',
+  sensorBlocked: 'يوجد عائق أمام الروبوت.',
+  sensorClear: 'الطريق أمام الروبوت واضح.',
   defaultHint: 'اتبع المسار حتى النجمة.',
   defaultSuccess: 'صل إلى النجمة لتنجح.',
   reachGoalSuccess: 'وصل إلى الهدف المحدد.'
@@ -22,6 +25,7 @@ function makeView() {
   const hintButtonElement = makeElement();
   const objectiveConditionElement = makeElement();
   const collectionSummaryElement = makeElement();
+  const sensorStateElement = makeElement();
   const levelIndicatorElement = makeElement();
   const getCollectedCollectibleCount = (progress) => progress.collected;
   const view = createLevelMetaView({
@@ -29,12 +33,21 @@ function makeView() {
     hintButtonElement,
     objectiveConditionElement,
     collectionSummaryElement,
+    sensorStateElement,
     levelIndicatorElement,
     labels,
     playableLevelIds,
     getCollectedCollectibleCount
   });
-  return { view, levelHintElement, hintButtonElement, objectiveConditionElement, collectionSummaryElement, levelIndicatorElement };
+  return {
+    view,
+    levelHintElement,
+    hintButtonElement,
+    objectiveConditionElement,
+    collectionSummaryElement,
+    sensorStateElement,
+    levelIndicatorElement
+  };
 }
 
 test('createLevelMetaView render sets hint and success condition from level', () => {
@@ -70,6 +83,16 @@ test('createLevelMetaView updateCollectionSummary shows collected count', () => 
   const { view, collectionSummaryElement } = makeView();
   view.updateCollectionSummary({ collected: 2, totalCollectibles: 5 });
   assert.ok(collectionSummaryElement.textContent.includes('2/5'));
+});
+
+test('createLevelMetaView updateSensorState renders Arabic clear and blocked labels', () => {
+  const { view, sensorStateElement } = makeView();
+  view.updateSensorState('clear');
+  assert.ok(sensorStateElement.textContent.includes(labels.sensorPrefix));
+  assert.ok(sensorStateElement.textContent.includes(labels.sensorClear));
+
+  view.updateSensorState('blocked');
+  assert.ok(sensorStateElement.textContent.includes(labels.sensorBlocked));
 });
 
 test('createLevelMetaView showNextHint advances progressively and keeps one piece per step', () => {
