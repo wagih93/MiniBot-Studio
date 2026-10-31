@@ -244,11 +244,16 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M1 — **Major** — US-057 touch-target criterion is not fully met (`.program-step__remove` is 36x36)
 
+- **Status:** **Closed** in `fix/US-057-raise-program-step-remove-target-size`.
 - **Story impact:** US-057
 - **Evidence:**
   - CSS sets remove button size below criterion: `css/app.css:365`..`css/app.css:367` (`min-block-size: 36px`).
   - Manual browser measurement in this review reported `.program-step__remove` = `36x36`.
   - The automated touch-target test list omits this control (`tests/e2e/accessibility-comfort.test.mjs:21`).
+- **Closure evidence:**
+  - `.program-step__remove` now enforces `64x64` minimum target size in `css/app.css`.
+  - `tests/e2e/accessibility-comfort.test.mjs` now creates a program step and validates `.program-step__remove` in the touch-target selector set.
+  - `npm run check` passed after the update.
 - **Why it matters:** This misses the stated “64 CSS pixels” target-size acceptance criterion for child-facing interaction.
 - **Fix task:** `fix/US-057-raise-program-step-remove-target-size`
   1. Increase remove-control touch target to at least `64x64` (or equivalent accessible redesign).
@@ -328,6 +333,6 @@ Legend: **Met / Partly / Not met / Untested**
 1. ✅ **B1** — Make `status:check` CI-safe under shallow checkout (or switch CI checkout depth to full history).
 2. ✅ **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
 3. ✅ **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
-4. **M1** — Meet US-057 64px touch-target requirement for remove controls.
+4. ✅ **M1** — Meet US-057 64px touch-target requirement for remove controls.
 5. **M2** — Harden tutorial local-storage initialization against throwing storage access.
 6. **M3** — Correct README structure paths to match repository reality.
