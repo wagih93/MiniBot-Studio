@@ -79,93 +79,123 @@ export async function runProgram(options) {
   let objectiveProgress = cloneObjectiveProgress(initialObjectiveProgress);
   const stepDelayMilliseconds = executionConfig.stepDelayMilliseconds;
   const maxStepsPerRun = executionConfig.maxStepsPerRun;
+  let executedInstructionCount = 0;
 
-  for (let stepNumber = 0; stepNumber < instructionSequence.length; stepNumber += 1) {
-    if (signal?.aborted) {
-      return { status: 'aborted', robotState, objectiveProgress };
-    }
-
-    if (stepNumber >= maxStepsPerRun) {
-      emit(onEvent, { type: 'statusChanged', status: 'stepLimitExceeded' });
-      return { status: 'stepLimitExceeded', robotState, objectiveProgress };
-    }
-
-    const instruction = instructionSequence[stepNumber];
-    emit(onEvent, { type: 'activeStepChanged', stepId: instruction.stepId });
-
-    if (instruction.blockType === 'start') {
-      continue;
-    }
-
-    if (instruction.blockType === 'moveForward') {
-      if (!canMoveForward(level, robotState)) {
-        emit(onEvent, { type: 'statusChanged', status: 'blocked' });
-        return { status: 'blocked', robotState, objectiveProgress };
+  async function executeInstructionSequence(sequence) {
+    for (const instruction of sequence) {
+      if (signal?.aborted) {
+        return { terminal: true, status: 'aborted' };
       }
 
-      robotState = moveForward(robotState);
-      emit(onEvent, {
-        type: 'robotUpdated',
-        robotState,
-        animation: {
-          kind: 'move',
-          row: robotState.row,
-          column: robotState.column,
-          direction: robotState.direction
+      if (executedInstructionCount >= maxStepsPerRun) {
+        emit(onEvent, { type: 'statusChanged', status: 'stepLimitExceeded' });
+        return { terminal: true, status: 'stepLimitExceeded' };
+      }
+
+      executedInstructionCount += 1;
+      emit(onEvent, { type: 'activeStepChanged', stepId: instruction.stepId });
+
+      if (instruction.blockType === 'start') {
+        continue;
+      }
+
+      if (instruction.blockType === 'if') {
+        if (instruction.condition !== 'pathBlocked') {
+          emit(onEvent, { type: 'statusChanged', status: 'unsupported' });
+          return { terminal: true, status: 'unsupported' };
         }
-      });
-      emit(onEvent, { type: 'statusChanged', status: 'running' });
-      const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
-      if (!canContinue || signal?.aborted) {
-        return { status: 'aborted', robotState, objectiveProgress };
-      }
-
-      const progress = updateObjectiveProgress(level, objectiveProgress, robotState);
-      objectiveProgress = progress.objectiveProgress;
-      emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
-      emit(onEvent, { type: 'objectiveUpdated', objectiveProgress });
-
-      if (progress.collectedCollectibleKey) {
-        emit(onEvent, { type: 'statusChanged', status: 'collected' });
-        const canContinueAfterCollection = await waitWithAbort(delay, 180, signal);
-        if (!canContinueAfterCollection || signal?.aborted) {
-          return { status: 'aborted', robotState, objectiveProgress };
+        if (canMoveForward(level, robotState)) {
+          continue;
         }
+        const nestedInstructions = Array.isArray(instruction.body) ? instruction.body : [];
+        const nestedResult = await executeInstructionSequence(nestedInstructions);
+        if (nestedResult.terminal) {
+          return nestedResult;
+        }
+        continue;
       }
 
-      if (progress.isObjectiveComplete) {
-        emit(onEvent, { type: 'statusChanged', status: 'levelComplete' });
-        return { status: 'levelComplete', robotState, objectiveProgress };
+      if (instruction.blockType === 'moveForward') {
+        if (!canMoveForward(level, robotState)) {
+          emit(onEvent, { type: 'statusChanged', status: 'blocked' });
+          return { terminal: true, status: 'blocked' };
+        }
+
+        robotState = moveForward(robotState);
+        emit(onEvent, {
+          type: 'robotUpdated',
+          robotState,
+          animation: {
+            kind: 'move',
+            row: robotState.row,
+            column: robotState.column,
+            direction: robotState.direction
+          }
+        });
+        emit(onEvent, { type: 'statusChanged', status: 'running' });
+        const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
+        if (!canContinue || signal?.aborted) {
+          return { terminal: true, status: 'aborted' };
+        }
+
+        const progress = updateObjectiveProgress(level, objectiveProgress, robotState);
+        objectiveProgress = progress.objectiveProgress;
+        emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
+        emit(onEvent, { type: 'objectiveUpdated', objectiveProgress });
+
+        if (progress.collectedCollectibleKey) {
+          emit(onEvent, { type: 'statusChanged', status: 'collected' });
+          const canContinueAfterCollection = await waitWithAbort(delay, 180, signal);
+          if (!canContinueAfterCollection || signal?.aborted) {
+            return { terminal: true, status: 'aborted' };
+          }
+        }
+
+        if (progress.isObjectiveComplete) {
+          emit(onEvent, { type: 'statusChanged', status: 'levelComplete' });
+          return { terminal: true, status: 'levelComplete' };
+        }
+
+        continue;
       }
 
-      continue;
+      if (instruction.blockType === 'turnRight' || instruction.blockType === 'turnLeft') {
+        const direction = instruction.blockType === 'turnRight' ? 'right' : 'left';
+        robotState = direction === 'right' ? turnRight(robotState) : turnLeft(robotState);
+        emit(onEvent, {
+          type: 'robotUpdated',
+          robotState,
+          animation: {
+            kind: 'turn',
+            row: robotState.row,
+            column: robotState.column,
+            turnDirection: direction
+          }
+        });
+        emit(onEvent, { type: 'statusChanged', status: 'running' });
+        const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
+        if (!canContinue || signal?.aborted) {
+          return { terminal: true, status: 'aborted' };
+        }
+
+        emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
+        continue;
+      }
+
+      emit(onEvent, { type: 'statusChanged', status: 'unsupported' });
+      return { terminal: true, status: 'unsupported' };
     }
 
-    if (instruction.blockType === 'turnRight' || instruction.blockType === 'turnLeft') {
-      const direction = instruction.blockType === 'turnRight' ? 'right' : 'left';
-      robotState = direction === 'right' ? turnRight(robotState) : turnLeft(robotState);
-      emit(onEvent, {
-        type: 'robotUpdated',
-        robotState,
-        animation: {
-          kind: 'turn',
-          row: robotState.row,
-          column: robotState.column,
-          turnDirection: direction
-        }
-      });
-      emit(onEvent, { type: 'statusChanged', status: 'running' });
-      const canContinue = await waitWithAbort(delay, stepDelayMilliseconds, signal);
-      if (!canContinue || signal?.aborted) {
-        return { status: 'aborted', robotState, objectiveProgress };
-      }
+    return { terminal: false, status: 'complete' };
+  }
 
-      emit(onEvent, { type: 'robotUpdated', robotState, animation: null });
-      continue;
-    }
-
-    emit(onEvent, { type: 'statusChanged', status: 'unsupported' });
-    return { status: 'unsupported', robotState, objectiveProgress };
+  const executionResult = await executeInstructionSequence(instructionSequence);
+  if (executionResult.terminal) {
+    return {
+      status: executionResult.status,
+      robotState,
+      objectiveProgress
+    };
   }
 
   emit(onEvent, { type: 'statusChanged', status: 'complete' });

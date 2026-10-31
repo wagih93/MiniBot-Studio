@@ -47,17 +47,22 @@ test('level 3 introduces turning before movement', () => {
   assert.ok(level.collectibles.some((collectible) => collectible.row === 1 && collectible.column === 0));
 });
 
-test('level 4 asks the child to route around walls', () => {
+test('level 4 introduces the if condition with a guided tutorial hint', () => {
   const level = getLevelById('level-004');
 
+  assert.ok(level.availableBlocks.includes('if'));
+  assert.ok(level.obstacles.some((obstacle) => obstacle.row === 0 && obstacle.column === 1));
+  assert.ok(level.hints[0].includes('مستوى تمهيدي'));
+  assert.ok(level.hints[1].includes('إذا كان الطريق مغلقاً'));
   assert.ok(level.obstacles.length >= 3);
-  assert.ok(level.obstacles.some((obstacle) => obstacle.row === 0 && obstacle.column === 2));
 });
 
-test('level 5 requires choosing a longer instruction sequence', () => {
+test('level 5 exposes an independent if-condition challenge', () => {
   const level = getLevelById('level-005');
 
   assert.equal(level.grid.rows, 5);
   assert.equal(level.grid.columns, 5);
+  assert.ok(level.availableBlocks.includes('if'));
+  assert.ok(level.hints[0].includes('جرّب هذا التحدي وحدك'));
   assert.ok(level.obstacles.length >= 3);
 });

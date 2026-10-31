@@ -292,6 +292,11 @@ button {
   border-style: dotted;
 }
 
+.block-item--if {
+  border-inline-start: 5px solid #8a2d8f;
+  border-style: double;
+}
+
 .block-item[data-selected="true"] {
   background: #1f4a78;
   border-color: #173857;
