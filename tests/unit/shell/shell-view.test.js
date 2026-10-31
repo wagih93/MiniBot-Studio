@@ -108,6 +108,17 @@ test('createShellView syncPrimaryActions disables all action buttons when runnin
   assert.equal(elements.playInstructionAudioButton.disabled, true);
 });
 
+test('createShellView syncPrimaryActions re-enables primary actions after run end', () => {
+  const { view, elements } = makeShellView({ readHasSavedProgress: () => true });
+  view.syncPrimaryActions(true);
+  view.syncPrimaryActions(false);
+  assert.equal(elements.startButton.disabled, false);
+  assert.equal(elements.continueButton.hidden, false);
+  assert.equal(elements.continueButton.disabled, false);
+  assert.equal(elements.parentsButton.disabled, false);
+  assert.equal(elements.playInstructionAudioButton.disabled, false);
+});
+
 test('createShellView setEditingEnabled disables control buttons when false', () => {
   const { view, elements } = makeShellView();
   const programListEl = makeElement({ querySelectorAll: () => [] });

@@ -404,15 +404,23 @@ function startRun() {
   activeRunController = controller;
   isRunInProgress = true;
   setEditing(false);
+  shellView.syncPrimaryActions(true);
   void runRobotSession(runToken, controller.signal, getExecConfig(activeLevel))
     .catch((err) => { if (runToken === activeRunToken) handleError(err, 'run.session'); })
-    .finally(() => { isRunInProgress = false; setActiveStep(null); setEditing(true); if (runToken === activeRunToken && activeRunController === controller) activeRunController = null; });
+    .finally(() => {
+      isRunInProgress = false;
+      setActiveStep(null);
+      setEditing(true);
+      shellView.syncPrimaryActions(false);
+      if (runToken === activeRunToken && activeRunController === controller) activeRunController = null;
+    });
 }
 
 function cancelActiveRun(nextStatus = null) {
   activeRunToken += 1;
   if (activeRunController) { activeRunController.abort(); activeRunController = null; }
   isRunInProgress = false; setActiveStep(null); setEditing(true);
+  shellView.syncPrimaryActions(false);
   if (nextStatus) statusView.setStatus(nextStatus);
 }
 
