@@ -298,10 +298,18 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M1 — **Major** — `js/robot-lab.js` has regrown to 402 lines and concentrates orchestration + UI integration + audio + speech + persistence wiring
 
+- **Status:** **Closed** in `fix/US-061-split-robot-lab-orchestrator`.
 - **Evidence:**
   - File length: 402 lines.
   - Module-level mutable orchestration state at `js/robot-lab.js:35-46`.
   - Additional concerns concentrated in same file: audio effects (`:252`), speech synthesis (`:311`), run orchestration (`:360`), error wiring (`:186`).
+- **Closure evidence:**
+  - Run/session orchestration moved into `js/features/program-execution/application/run-session-controller.js` and wired via `createRunSessionController`.
+  - Audio and speech side-effects moved behind `js/features/shell/infrastructure/audio-feedback.js` and wired via `createAudioFeedback`.
+  - Regression coverage added:
+    - `tests/unit/program-execution/run-session-controller.test.js`
+    - `tests/unit/shell/audio-feedback.test.js`
+  - `js/robot-lab.js` reduced to 358 lines with run-token/controller state and audio/speech browser API wiring extracted out of the composition module.
 - **Why it matters:** This reintroduces the god-file trend that earlier architecture work was meant to reduce, increasing change coupling and review risk.
 - **Fix:** `fix/US-061-split-robot-lab-orchestrator`
   1. Extract run/session orchestration state transitions into application-level services.
@@ -384,5 +392,5 @@ These are stale stack residues and should be deleted/archived to avoid accidenta
 
 1. ✅ **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
 2. ✅ **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
-3. **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
+3. ✅ **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
 4. **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.

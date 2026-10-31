@@ -1,4 +1,5 @@
 export { runProgram } from './application/run-program.js';
+export { createRunSessionController } from './application/run-session-controller.js';
 export { compileProgram } from './domain/program-compiler.js';
 export { validateProgram } from './domain/program-validation.js';
 export {
