@@ -8,6 +8,7 @@ export function createRobotLabRuntimeController({
   getLevelById,
   validateLevelData,
   createRobotState,
+  readForwardSensorState,
   createObjectiveProgress,
   createLearningProgressSummary,
   compileProgram,
@@ -247,6 +248,7 @@ export function createRobotLabRuntimeController({
     toolboxView.render(level.availableBlocks);
     const restoreResult = restoreProgram(level.id);
     metaView.updateCollectionSummary(objectiveProgress);
+    metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
     metaView.render(level);
     if (usedFallback) {
       return {
@@ -290,6 +292,7 @@ export function createRobotLabRuntimeController({
           }
           robotState = event.robotState;
           gridView.render(activeLevel, robotState, objectiveProgress, event.animation);
+          metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
           return;
         }
         if (event.type === 'objectiveUpdated') {
@@ -368,6 +371,7 @@ export function createRobotLabRuntimeController({
     objectiveProgress = createObjectiveProgress(activeLevel);
     gridView.render(activeLevel, robotState, objectiveProgress);
     metaView.updateCollectionSummary(objectiveProgress);
+    metaView.updateSensorState(readForwardSensorState(activeLevel, robotState));
   }
 
   function goToNextLevel() {

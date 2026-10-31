@@ -1,5 +1,6 @@
 import {
   canMoveForward,
+  readForwardSensorState,
   moveForward,
   turnLeft,
   turnRight
@@ -104,7 +105,8 @@ export async function runProgram(options) {
           emit(onEvent, { type: 'statusChanged', status: 'unsupported' });
           return { terminal: true, status: 'unsupported' };
         }
-        if (canMoveForward(level, robotState)) {
+        const sensorState = readForwardSensorState(level, robotState);
+        if (sensorState !== 'blocked') {
           continue;
         }
         const nestedInstructions = Array.isArray(instruction.body) ? instruction.body : [];
