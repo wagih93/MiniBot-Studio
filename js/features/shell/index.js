@@ -1,4 +1,6 @@
 export { createShellController } from './application/shell-controller.js';
+export { createShellEventBindings } from './application/shell-event-bindings.js';
+export { createRobotLabRuntimeController } from './application/robot-lab-runtime-controller.js';
 export { reportRuntimeError } from './application/report-runtime-error.js';
 export { createTutorialController } from './application/tutorial-controller.js';
 export { createShellState } from './domain/shell-state.js';
