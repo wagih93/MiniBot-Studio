@@ -221,19 +221,11 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### B3 — **Blocker** (recurrence of REVIEW-002 M1, severity raised) — `js/robot-lab.js` regrew into a multi-responsibility god module
 
-- **Status:** **Closed** in `fix/US-061-complete-robot-lab-split`.
 - **Story impact:** US-061
 - **Evidence:**
   - `js/robot-lab.js` currently measures **438 lines** (local line-count check).
   - Module-level mutable state remains concentrated at `js/robot-lab.js:33`..`js/robot-lab.js:41`.
   - The same file still owns parent-area, tutorial, execution lifecycle, persistence coordination, error routing, and UI wiring (`js/robot-lab.js:115`, `:125`, `:163`, `:237`, `:382`, `:412`, `:426`).
-- **Closure evidence:**
-  - Runtime session state and orchestration moved to slice-level controllers:
-    - `js/features/shell/application/robot-lab-runtime-controller.js`
-    - `js/features/shell/application/shell-event-bindings.js`
-  - `js/robot-lab.js` now serves composition wiring and is reduced to **269 lines**.
-  - Added unit coverage for extracted orchestration state in `tests/unit/shell/robot-lab-runtime-controller.test.js`.
-  - `npm run check` passed after the split.
 - **Why it matters:** This is direct recurrence of the previously closed orchestration-regrowth finding and increases coupling/risk for every new story.
 - **Fix task:** `fix/US-061-complete-robot-lab-split`
   1. Move mutable runtime session state behind slice-level controllers/factories.
@@ -327,7 +319,7 @@ Legend: **Met / Partly / Not met / Untested**
 
 1. ✅ **B1** — Make `status:check` CI-safe under shallow checkout (or switch CI checkout depth to full history).
 2. ✅ **B2** — Reconcile stale `In Review` rows now that PRs `#59/#60/#61/#63/#64/#65` are merged.
-3. ✅ **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
+3. **B3** — Stop `robot-lab.js` regrowth and finish the orchestration split.
 4. **M1** — Meet US-057 64px touch-target requirement for remove controls.
 5. **M2** — Harden tutorial local-storage initialization against throwing storage access.
 6. **M3** — Correct README structure paths to match repository reality.
