@@ -13,6 +13,17 @@ test('addProgramStep for repeat creates step with default count and empty body',
   assert.deepEqual(steps[0].body, []);
 });
 
+test('addProgramStep for if creates a path-blocked condition with an empty body', () => {
+  const editor = createProgramEditor(['moveForward', 'if']);
+  const added = editor.addProgramStep('if');
+  assert.equal(added, true);
+  const steps = editor.getProgramSteps();
+  assert.equal(steps.length, 1);
+  assert.equal(steps[0].blockType, 'if');
+  assert.equal(steps[0].condition, 'pathBlocked');
+  assert.deepEqual(steps[0].body, []);
+});
+
 test('addBodyStep adds a movement block to a repeat step body', () => {
   const editor = createProgramEditor(['moveForward', 'repeat']);
   editor.addProgramStep('repeat');
@@ -24,12 +35,23 @@ test('addBodyStep adds a movement block to a repeat step body', () => {
   assert.equal(repeatStep.body[0].blockType, 'moveForward');
 });
 
-test('addBodyStep rejects repeat as a nested block type', () => {
-  const editor = createProgramEditor(['moveForward', 'repeat']);
+test('addBodyStep adds a movement block to an if condition body', () => {
+  const editor = createProgramEditor(['moveForward', 'if']);
+  editor.addProgramStep('if');
+  const conditionStepId = editor.getProgramSteps()[0].id;
+  const added = editor.addBodyStep(conditionStepId, 'moveForward');
+  assert.equal(added, true);
+  const conditionStep = editor.getProgramSteps()[0];
+  assert.equal(conditionStep.body.length, 1);
+  assert.equal(conditionStep.body[0].blockType, 'moveForward');
+});
+
+test('addBodyStep rejects container block types as nested steps', () => {
+  const editor = createProgramEditor(['moveForward', 'repeat', 'if']);
   editor.addProgramStep('repeat');
   const repeatId = editor.getProgramSteps()[0].id;
-  const added = editor.addBodyStep(repeatId, 'repeat');
-  assert.equal(added, false);
+  assert.equal(editor.addBodyStep(repeatId, 'repeat'), false);
+  assert.equal(editor.addBodyStep(repeatId, 'if'), false);
   assert.equal(editor.getProgramSteps()[0].body.length, 0);
 });
 
@@ -49,6 +71,19 @@ test('removeBodyStep removes a specific body step from a repeat', () => {
   editor.addBodyStep(repeatId, 'turnRight');
   const bodyStepId = editor.getProgramSteps()[0].body[0].id;
   const removed = editor.removeBodyStep(repeatId, bodyStepId);
+  assert.equal(removed, true);
+  assert.equal(editor.getProgramSteps()[0].body.length, 1);
+  assert.equal(editor.getProgramSteps()[0].body[0].blockType, 'turnRight');
+});
+
+test('removeBodyStep removes a specific body step from an if condition', () => {
+  const editor = createProgramEditor(['moveForward', 'turnRight', 'if']);
+  editor.addProgramStep('if');
+  const conditionStepId = editor.getProgramSteps()[0].id;
+  editor.addBodyStep(conditionStepId, 'moveForward');
+  editor.addBodyStep(conditionStepId, 'turnRight');
+  const bodyStepId = editor.getProgramSteps()[0].body[0].id;
+  const removed = editor.removeBodyStep(conditionStepId, bodyStepId);
   assert.equal(removed, true);
   assert.equal(editor.getProgramSteps()[0].body.length, 1);
   assert.equal(editor.getProgramSteps()[0].body[0].blockType, 'turnRight');

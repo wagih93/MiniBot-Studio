@@ -1,6 +1,21 @@
+function collectBlockTypes(instructionSequence, bucket = []) {
+  if (!Array.isArray(instructionSequence)) {
+    return bucket;
+  }
+
+  for (const instruction of instructionSequence) {
+    bucket.push(instruction.blockType);
+    if (instruction.blockType === 'if' && Array.isArray(instruction.body)) {
+      collectBlockTypes(instruction.body, bucket);
+    }
+  }
+
+  return bucket;
+}
+
 export function validateProgram(level, instructionSequence) {
   const validationRules = level.programValidation ?? {};
-  const blockTypes = instructionSequence.map((step) => step.blockType);
+  const blockTypes = collectBlockTypes(instructionSequence);
   const allowEmptyProgram = validationRules.allowEmptyProgram === true;
 
   if (!allowEmptyProgram && blockTypes.length === 0) {

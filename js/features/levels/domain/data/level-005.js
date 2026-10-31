@@ -16,14 +16,14 @@ export const level005 = {
     { row: 2, column: 1 },
     { row: 3, column: 2 }
   ],
-  availableBlocks: ['moveForward', 'turnRight', 'turnLeft'],
+  availableBlocks: ['moveForward', 'turnRight', 'turnLeft', 'if'],
   successConditions: {
     reachGoal: true,
     collectAllCollectibles: true
   },
   learningConcepts: ['sequencing', 'directions'],
   hints: [
-    'قسّم الطريق إلى خطوات قصيرة قبل تشغيل البرنامج.',
-    'استخدم الانعطاف كلما تغيّر اتجاه المسار نحو النجمة.'
+    'جرّب هذا التحدي وحدك: خطّط برنامجاً يغيّر اتجاه الروبوت عندما يصبح الطريق مغلقاً.',
+    'يمكنك استخدام كتلة "إذا كان الطريق مغلقاً" أكثر من مرة مع أوامر الحركة.'
   ]
 };

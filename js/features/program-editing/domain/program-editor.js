@@ -2,6 +2,8 @@ import { REPEAT_DEFAULT_COUNT, REPEAT_MIN_COUNT, REPEAT_MAX_COUNT } from '../../
 
 export { REPEAT_MIN_COUNT, REPEAT_MAX_COUNT };
 
+const containerBlockTypes = new Set(['repeat', 'if']);
+
 export function createProgramEditorState({
   programSteps = [],
   nextProgramStepId = 1,
@@ -63,9 +65,7 @@ export function addProgramStep(state, { blockType, insertIndex, availableBlockTy
   }
 
   const normalizedInsertIndex = normalizeInsertIndex(insertIndex, state.programSteps.length);
-  const newStep = blockType === 'repeat'
-    ? { id: state.nextProgramStepId, blockType, repeatCount: REPEAT_DEFAULT_COUNT, body: [] }
-    : { id: state.nextProgramStepId, blockType };
+  const newStep = createProgramStep(state.nextProgramStepId, blockType);
   const nextProgramSteps = [...state.programSteps];
   nextProgramSteps.splice(normalizedInsertIndex, 0, newStep);
 
@@ -122,11 +122,11 @@ export function moveProgramStep(state, stepId, insertIndex) {
 }
 
 export function addBodyStep(state, { repeatStepId, blockType, availableBlockTypes }) {
-  if (!isAvailableBlockType(blockType, availableBlockTypes) || blockType === 'repeat') {
+  if (!isAvailableBlockType(blockType, availableBlockTypes) || containerBlockTypes.has(blockType)) {
     return { state, added: false };
   }
   const repeatIndex = state.programSteps.findIndex((s) => String(s.id) === String(repeatStepId));
-  if (repeatIndex < 0 || state.programSteps[repeatIndex].blockType !== 'repeat') {
+  if (repeatIndex < 0 || !isContainerStep(state.programSteps[repeatIndex])) {
     return { state, added: false };
   }
   const repeatStep = state.programSteps[repeatIndex];
@@ -139,7 +139,7 @@ export function addBodyStep(state, { repeatStepId, blockType, availableBlockType
 
 export function removeBodyStep(state, { repeatStepId, bodyStepId }) {
   const repeatIndex = state.programSteps.findIndex((s) => String(s.id) === String(repeatStepId));
-  if (repeatIndex < 0 || state.programSteps[repeatIndex].blockType !== 'repeat') {
+  if (repeatIndex < 0 || !isContainerStep(state.programSteps[repeatIndex])) {
     return { state, removed: false };
   }
   const repeatStep = state.programSteps[repeatIndex];
@@ -186,4 +186,20 @@ function normalizeInsertIndex(insertIndex, listLength) {
 
 function isAvailableBlockType(blockType, availableBlockTypes) {
   return Array.isArray(availableBlockTypes) && availableBlockTypes.includes(blockType);
+}
+
+function createProgramStep(stepId, blockType) {
+  if (blockType === 'repeat') {
+    return { id: stepId, blockType, repeatCount: REPEAT_DEFAULT_COUNT, body: [] };
+  }
+
+  if (blockType === 'if') {
+    return { id: stepId, blockType, condition: 'pathBlocked', body: [] };
+  }
+
+  return { id: stepId, blockType };
+}
+
+function isContainerStep(step) {
+  return step && containerBlockTypes.has(step.blockType);
 }

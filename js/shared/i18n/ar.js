@@ -35,14 +35,16 @@ export const arStrings = {
       moveForward: 'تقدّم خطوة',
       turnRight: 'انعطف يميناً',
       turnLeft: 'انعطف يساراً',
-      repeat: 'كرر'
+      repeat: 'كرر',
+      if: 'إذا كان الطريق مغلقاً'
     },
     iconsByType: {
       start: '🏁',
       moveForward: '⬆️',
       turnRight: '↱',
       turnLeft: '↰',
-      repeat: '🔁'
+      repeat: '🔁',
+      if: '🚧'
     },
     repeatCountTemplate: 'كرر {count} مرات',
     repeatBodyEmpty: 'اسحب أوامر هنا.'

@@ -131,8 +131,8 @@ export function createProgramWorkspaceView({
   }
 
   function createStepElement(step, activeProgramStepId) {
-    if (step.blockType === 'repeat') {
-      return createRepeatStepElement(step, activeProgramStepId);
+    if (isContainerStep(step)) {
+      return createContainerStepElement(step, activeProgramStepId);
     }
     const presentation = getBlockPresentation(step.blockType);
     const stepElement = document.createElement('li');
@@ -184,26 +184,30 @@ export function createProgramWorkspaceView({
     return stepElement;
   }
 
-  function createRepeatStepElement(step, activeProgramStepId) {
-    const presentation = getBlockPresentation('repeat');
+  function createContainerStepElement(step, activeProgramStepId) {
+    const presentation = getBlockPresentation(step.blockType);
     const isBodyActive = Array.isArray(step.body) && step.body.some((s) => String(s.id) === String(activeProgramStepId));
     const stepElement = document.createElement('li');
-    stepElement.classList.add('program-step', 'program-step--repeat');
+    stepElement.classList.add('program-step', 'program-step--container', `program-step--${step.blockType}`);
     stepElement.dataset.stepId = String(step.id);
     stepElement.dataset.active = (isBodyActive || String(step.id) === String(activeProgramStepId)) ? 'true' : 'false';
 
     const headerEl = document.createElement('div');
-    headerEl.classList.add('program-step__repeat-header');
+    headerEl.classList.add('program-step__container-header');
 
     const iconEl = document.createElement('span');
     iconEl.classList.add('program-step__icon');
     iconEl.setAttribute('aria-hidden', 'true');
     iconEl.textContent = presentation.icon;
 
-    const count = Number.isInteger(step.repeatCount) ? step.repeatCount : 3;
     const labelEl = document.createElement('span');
     labelEl.classList.add('program-step__label');
-    labelEl.textContent = (repeatCountTemplate ?? '').replace('{count}', String(count));
+    if (step.blockType === 'repeat') {
+      const count = Number.isInteger(step.repeatCount) ? step.repeatCount : 3;
+      labelEl.textContent = (repeatCountTemplate ?? '').replace('{count}', String(count));
+    } else {
+      labelEl.textContent = presentation.label;
+    }
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -295,4 +299,8 @@ export function createProgramWorkspaceView({
     attachInteractions,
     render
   };
+}
+
+function isContainerStep(step) {
+  return step?.blockType === 'repeat' || step?.blockType === 'if';
 }
