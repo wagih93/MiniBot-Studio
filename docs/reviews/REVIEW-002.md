@@ -6,7 +6,7 @@
 - **Scope reviewed in this report:** all commits on `master` in `da03b04..f9b5f89`, plus open story PRs (none open)
 - **Tip commit reviewed:** `f9b5f89`
 - **Open story PRs at review time:** none (`gh pr list --state open ...` => `[]`)
-- **Verdict:** **Changes requested**
+- **Verdict:** **Changes approved** (all open Blocker and Major findings B1, B2, M1, M2 were closed in follow-up PR stack #58 → #61)
 
 ---
 
@@ -320,9 +320,15 @@ Legend: **Met / Partly / Not met / Untested**
 
 ### M2 — **Major** (recurrence of REVIEW-001 m2) — Implementation status is stale/inconsistent with repository reality
 
+- **Status:** **Closed** in `fix/US-041-sync-status-with-git-and-pr-state`.
 - **Evidence:**
   - `docs/implementation-status.md` keeps merged stories as `In Review` at lines `14`, `29`, `34-40`, `55` (US-003, US-018, US-023..US-029, US-044), while their PRs are merged and no open story PR exists.
   - `docs/implementation-status.md:52` lists US-041 as `Done` with SHA `9fa936a`, but that SHA is not on `master` (`git merge-base --is-ancestor 9fa936a HEAD` => no); PR #3 is `CLOSED` (not merged).
+- **Closure evidence:**
+  - Reconciled status rows so only stories with open PRs remain `In Review` (current open story PRs: #58, #59, #60).
+  - Updated previously stale rows (US-018, US-023..US-029, US-044) to `Done` with merged-PR next-action notes.
+  - Corrected US-041 SHA from `9fa936a` to `39c4611` (ancestor of `master`) and clarified PR #3 closed-state note.
+  - Added `scripts/check-implementation-status.mjs` and wired it into `npm run check` + CI (`GH_TOKEN`) to enforce status/PR/commit consistency continuously.
 - **Why it matters:** Status checkpoint is a control document; stale or incorrect state misleads planning/review and undermines release traceability.
 - **Fix:** `fix/US-041-sync-status-with-git-and-pr-state`
   1. Reconcile all `In Review` rows to actual PR state (`open` vs `merged/closed`).
@@ -393,4 +399,4 @@ These are stale stack residues and should be deleted/archived to avoid accidenta
 1. ✅ **B1** — Re-enable primary actions after runs end (parent/start/continue accessibility).
 2. ✅ **B2** — Resolve US-068 AC4 evidence mismatch before continuing to treat US-068 as fully done.
 3. ✅ **M1** — Stop `robot-lab.js` architectural regrowth by extracting concentrated orchestration concerns.
-4. **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.
+4. ✅ **M2** — Reconcile `docs/implementation-status.md` with actual PR/commit state.
